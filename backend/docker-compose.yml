@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:18.4
+    container_name: shmap_postgresql
+    environment:
+      POSTGRES_USER: shmap_admin
+      POSTGRES_PASSWORD: shmap_admin
+      POSTGRES_DB: shmapdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+volumes:
+  postgres_data:
