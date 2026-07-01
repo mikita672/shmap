@@ -2,6 +2,7 @@ services:
   db:
     image: postgres:18.4
     container_name: shmap_postgresql
+    restart: unless-stopped
     environment:
       POSTGRES_USER: shmap_admin
       POSTGRES_PASSWORD: shmap_admin
@@ -10,5 +11,10 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shmap_admin -d shmapdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   postgres_data:
