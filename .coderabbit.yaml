@@ -1,6 +1,7 @@
 language: "en"
 reviews:
   review_status: true
-  base_branches:
-    - "release"
-    - "develop"
+  auto_review:
+    base_branches:
+      - "release"
+      - "develop"
