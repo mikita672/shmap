@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class ShmapApplication {
-    public static void main(String[] args) {
+    void main(String[] args) {
         SpringApplication.run(ShmapApplication.class, args);
     }
 }
