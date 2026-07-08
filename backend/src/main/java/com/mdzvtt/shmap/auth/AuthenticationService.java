@@ -131,6 +131,11 @@ public class AuthenticationService {
                 return;
             }
 
+            if (storedToken.getTokenType() != TokenType.REFRESH) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Provided token is not a refresh token");
+                return;
+            }
+
             if (jwtService.isTokenValid(refreshToken, user)) {
                 revokeAllUserTokens(user);
 
