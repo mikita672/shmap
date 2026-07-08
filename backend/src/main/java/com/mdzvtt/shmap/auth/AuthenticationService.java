@@ -30,6 +30,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final ObjectMapper objectMapper;
 
     public AuthenticationResponse register(RegisterRequest request) {
         if (repository.findByEmail(request.getEmail()).isPresent()) {
@@ -104,17 +105,28 @@ public class AuthenticationService {
         final String userEmail;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Missing or invalid Authorization header");
             return;
         }
 
         refreshToken = authHeader.substring(7);
-        userEmail = jwtService.extractUserEmail(refreshToken);
+        try {
+            userEmail = jwtService.extractUserEmail(refreshToken);
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or expired refresh token");
+            return;
+        }
 
         if (userEmail != null) {
-            var user = this.repository.findByEmail(userEmail).orElseThrow();
+            var user = this.repository.findByEmail(userEmail).orElse(null);
+            if (user == null) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "User not found");
+                return;
+            }
 
             var storedToken = tokenRepository.findByToken(refreshToken).orElse(null);
             if (storedToken == null || storedToken.isExpired() || storedToken.isRevoked()) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Refresh token is invalid or revoked");
                 return;
             }
 
@@ -133,8 +145,12 @@ public class AuthenticationService {
                         .build();
 
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+                objectMapper.writeValue(response.getOutputStream(), authResponse);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Refresh token is invalid");
             }
+        } else {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Could not extract user from token");
         }
     }
 }
