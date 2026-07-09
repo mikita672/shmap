@@ -91,7 +91,7 @@ jobs:
               console.log(build.artifacts.buildUrl);
             });
           ")
-          curl -L -o shmap-android.apk "$BUILD_URL"
+          curl -fL -o shmap-android.apk "$BUILD_URL"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -155,7 +155,7 @@ jobs:
               console.log(build.artifacts.buildUrl);
             });
           ")
-          curl -L -o shmap-ios-simulator.tar.gz "$BUILD_URL"
+          curl -fL -o shmap-ios-simulator.tar.gz "$BUILD_URL"
 
       - name: Upload iOS artifact
         uses: actions/upload-artifact@v4
