@@ -1,0 +1,222 @@
+name: Build & Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - release
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-and-release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Determine Version
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.calc.outputs.version }}
+      tag: ${{ steps.calc.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate next patch version
+        id: calc
+        run: |
+          LATEST=$(git tag --list 'v0.0.*' --sort=-version:refname | head -n1)
+          if [ -z "$LATEST" ]; then
+            NEXT=0
+          else
+            CURRENT=${LATEST#v0.0.}
+            NEXT=$((CURRENT + 1))
+          fi
+          echo "version=0.0.$NEXT" >> "$GITHUB_OUTPUT"
+          echo "tag=v0.0.$NEXT" >> "$GITHUB_OUTPUT"
+          echo "📦 Next version: 0.0.$NEXT"
+
+  build_android:
+    name: Build Android (EAS)
+    needs: version
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up Expo & EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update version in app.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('app.json','utf8'));
+            cfg.expo.version = '${{ needs.version.outputs.version }}';
+            fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2) + '\n');
+          "
+
+      - name: Build Android APK
+        id: build_android
+        run: |
+          BUILD_JSON=$(eas build --platform android --profile release --non-interactive --wait --json)
+          BUILD_ID=$(echo "$BUILD_JSON" | node -e "
+            let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
+              const builds = JSON.parse(d);
+              console.log(builds[0].id);
+            });
+          ")
+          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download build artifact
+        run: |
+          BUILD_URL=$(eas build:view ${{ steps.build_android.outputs.build_id }} --json | node -e "
+            let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
+              const build = JSON.parse(d);
+              console.log(build.artifacts.buildUrl);
+            });
+          ")
+          curl -fL -o shmap-android.apk "$BUILD_URL"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: frontend/shmap-android.apk
+          if-no-files-found: error
+
+  build_ios:
+    name: Build iOS Simulator (EAS)
+    needs: version
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up Expo & EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update version in app.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('app.json','utf8'));
+            cfg.expo.version = '${{ needs.version.outputs.version }}';
+            fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2) + '\n');
+          "
+
+      - name: Build iOS Simulator App
+        id: build_ios
+        run: |
+          BUILD_JSON=$(eas build --platform ios --profile release --non-interactive --wait --json)
+          BUILD_ID=$(echo "$BUILD_JSON" | node -e "
+            let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
+              const builds = JSON.parse(d);
+              console.log(builds[0].id);
+            });
+          ")
+          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download build artifact
+        run: |
+          BUILD_URL=$(eas build:view ${{ steps.build_ios.outputs.build_id }} --json | node -e "
+            let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
+              const build = JSON.parse(d);
+              console.log(build.artifacts.buildUrl);
+            });
+          ")
+          curl -fL -o shmap-ios-simulator.tar.gz "$BUILD_URL"
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: frontend/shmap-ios-simulator.tar.gz
+          if-no-files-found: error
+
+  release:
+    name: Create Release
+    needs: [version, build_android, build_ios]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: artifacts/android
+
+      - name: Download iOS Simulator App
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: artifacts/ios
+
+      - name: Rename artifacts for release
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          mv artifacts/android/shmap-android.apk "artifacts/shmap-${VERSION}-android.apk"
+          mv artifacts/ios/shmap-ios-simulator.tar.gz "artifacts/shmap-${VERSION}-ios-simulator.tar.gz"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: Release ${{ needs.version.outputs.version }}
+          body: |
+            ## 📱 Release ${{ needs.version.outputs.version }}
+
+            ### Downloads
+            - **Android**: `shmap-${{ needs.version.outputs.version }}-android.apk` — Install directly on your device
+            - **iOS Simulator**: `shmap-${{ needs.version.outputs.version }}-ios-simulator.tar.gz` — Extract and drag into Simulator
+
+            ### iOS Simulator Installation
+            ```bash
+            tar -xzf shmap-${{ needs.version.outputs.version }}-ios-simulator.tar.gz
+            xcrun simctl install booted shmap.app
+            ```
+
+            ---
+            *Built from PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}*
+          files: |
+            artifacts/shmap-${{ needs.version.outputs.version }}-android.apk
+            artifacts/shmap-${{ needs.version.outputs.version }}-ios-simulator.tar.gz
+          generate_release_notes: true
+          make_latest: true
