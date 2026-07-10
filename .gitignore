@@ -1,1 +1,5 @@
 backend/.commandcode/taste/taste.md
+.env
+.envrc
+.direnv/
+*.nix
