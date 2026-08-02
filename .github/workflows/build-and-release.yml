@@ -97,11 +97,13 @@ jobs:
         run: npm ci
 
       - name: Update version in app.json
+        env:
+          APP_VERSION: ${{ needs.version.outputs.version }}
         run: |
           node -e "
             const fs = require('fs');
             const cfg = JSON.parse(fs.readFileSync('app.json','utf8'));
-            cfg.expo.version = '${{ needs.version.outputs.version }}';
+            cfg.expo.version = process.env.APP_VERSION;
             fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2) + '\n');
           "
 
@@ -163,11 +165,13 @@ jobs:
         run: npm ci
 
       - name: Update version in app.json
+        env:
+          APP_VERSION: ${{ needs.version.outputs.version }}
         run: |
           node -e "
             const fs = require('fs');
             const cfg = JSON.parse(fs.readFileSync('app.json','utf8'));
-            cfg.expo.version = '${{ needs.version.outputs.version }}';
+            cfg.expo.version = process.env.APP_VERSION;
             fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2) + '\n');
           "
 
@@ -223,11 +227,13 @@ jobs:
         run: npm ci
 
       - name: Update version in app.json
+        env:
+          APP_VERSION: ${{ needs.version.outputs.version }}
         run: |
           node -e "
             const fs = require('fs');
             const cfg = JSON.parse(fs.readFileSync('app.json','utf8'));
-            cfg.expo.version = '${{ needs.version.outputs.version }}';
+            cfg.expo.version = process.env.APP_VERSION;
             fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2) + '\n');
           "
 
@@ -294,8 +300,9 @@ jobs:
           path: artifacts/ios-unsigned
 
       - name: Rename artifacts for release
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
-          VERSION="${{ needs.version.outputs.version }}"
           mv artifacts/android/shmap-android.apk "artifacts/shmap-${VERSION}-android.apk"
           mv artifacts/ios-simulator/shmap-ios-simulator.tar.gz "artifacts/shmap-${VERSION}-ios-simulator.tar.gz"
           mv artifacts/ios-unsigned/shmap-ios-unsigned.ipa "artifacts/shmap-${VERSION}-ios-unsigned.ipa"
