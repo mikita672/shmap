@@ -244,7 +244,7 @@ jobs:
         run: pod install
         working-directory: frontend/ios
 
-      - name: Build unsigned archive
+      - name: Build ad-hoc signed archive
         run: |
           xcodebuild archive \
             -workspace ios/shmap.xcworkspace \
@@ -252,10 +252,9 @@ jobs:
             -configuration Release \
             -archivePath build/shmap.xcarchive \
             -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGN_ENTITLEMENTS="" \
+            CODE_SIGNING_ALLOWED=YES \
             -quiet
 
       - name: Package unsigned IPA
