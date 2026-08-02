@@ -40,15 +40,45 @@ jobs:
           echo "tag=v0.0.$NEXT" >> "$GITHUB_OUTPUT"
           echo "📦 Next version: 0.0.$NEXT"
 
-  build_android:
-    name: Build Android (EAS)
-    needs: version
+  lint-and-typecheck:
+    name: Lint & Typecheck
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck (strict)
+        run: npm run typecheck
+
+  build_android:
+    name: Build Android (EAS)
+    needs: [version, lint-and-typecheck]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -67,11 +97,13 @@ jobs:
         run: npm ci
 
       - name: Update version in app.json
+        env:
+          APP_VERSION: ${{ needs.version.outputs.version }}
         run: |
           node -e "
             const fs = require('fs');
             const cfg = JSON.parse(fs.readFileSync('app.json','utf8'));
-            cfg.expo.version = '${{ needs.version.outputs.version }}';
+            cfg.expo.version = process.env.APP_VERSION;
             fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2) + '\n');
           "
 
@@ -106,13 +138,15 @@ jobs:
 
   build_ios:
     name: Build iOS Simulator (EAS)
-    needs: version
+    needs: [version, lint-and-typecheck]
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -131,11 +165,13 @@ jobs:
         run: npm ci
 
       - name: Update version in app.json
+        env:
+          APP_VERSION: ${{ needs.version.outputs.version }}
         run: |
           node -e "
             const fs = require('fs');
             const cfg = JSON.parse(fs.readFileSync('app.json','utf8'));
-            cfg.expo.version = '${{ needs.version.outputs.version }}';
+            cfg.expo.version = process.env.APP_VERSION;
             fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2) + '\n');
           "
 
@@ -168,9 +204,77 @@ jobs:
           path: frontend/shmap-ios-simulator.tar.gz
           if-no-files-found: error
 
+  build_ios_unsigned:
+    name: Build iOS (Unsigned IPA)
+    needs: [version, lint-and-typecheck]
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update version in app.json
+        env:
+          APP_VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('app.json','utf8'));
+            cfg.expo.version = process.env.APP_VERSION;
+            fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2) + '\n');
+          "
+
+      - name: Generate native iOS project
+        run: npx expo prebuild --platform ios --clean --no-install
+
+      - name: Install CocoaPods dependencies
+        run: pod install
+        working-directory: frontend/ios
+
+      - name: Build unsigned archive
+        run: |
+          xcodebuild archive \
+            -workspace ios/shmap.xcworkspace \
+            -scheme shmap \
+            -configuration Release \
+            -archivePath build/shmap.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            -quiet
+
+      - name: Package unsigned IPA
+        run: |
+          mkdir -p build/Payload
+          cp -R build/shmap.xcarchive/Products/Applications/shmap.app build/Payload/
+          cd build
+          zip -r -q ../shmap-ios-unsigned.ipa Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-unsigned-ipa
+          path: frontend/shmap-ios-unsigned.ipa
+          if-no-files-found: error
+
   release:
     name: Create Release
-    needs: [version, build_android, build_ios]
+    needs: [version, build_android, build_ios, build_ios_unsigned]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -187,13 +291,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ios-simulator-app
-          path: artifacts/ios
+          path: artifacts/ios-simulator
+
+      - name: Download iOS Unsigned IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-unsigned-ipa
+          path: artifacts/ios-unsigned
 
       - name: Rename artifacts for release
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
-          VERSION="${{ needs.version.outputs.version }}"
           mv artifacts/android/shmap-android.apk "artifacts/shmap-${VERSION}-android.apk"
-          mv artifacts/ios/shmap-ios-simulator.tar.gz "artifacts/shmap-${VERSION}-ios-simulator.tar.gz"
+          mv artifacts/ios-simulator/shmap-ios-simulator.tar.gz "artifacts/shmap-${VERSION}-ios-simulator.tar.gz"
+          mv artifacts/ios-unsigned/shmap-ios-unsigned.ipa "artifacts/shmap-${VERSION}-ios-unsigned.ipa"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -206,6 +318,7 @@ jobs:
             ### Downloads
             - **Android**: `shmap-${{ needs.version.outputs.version }}-android.apk` — Install directly on your device
             - **iOS Simulator**: `shmap-${{ needs.version.outputs.version }}-ios-simulator.tar.gz` — Extract and drag into Simulator
+            - **iOS (unsigned)**: `shmap-${{ needs.version.outputs.version }}-ios-unsigned.ipa` — Sign with your certificate before installing
 
             ### iOS Simulator Installation
             ```bash
@@ -218,5 +331,6 @@ jobs:
           files: |
             artifacts/shmap-${{ needs.version.outputs.version }}-android.apk
             artifacts/shmap-${{ needs.version.outputs.version }}-ios-simulator.tar.gz
+            artifacts/shmap-${{ needs.version.outputs.version }}-ios-unsigned.ipa
           generate_release_notes: true
           make_latest: true
