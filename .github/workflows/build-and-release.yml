@@ -244,23 +244,32 @@ jobs:
         run: pod install
         working-directory: frontend/ios
 
-      - name: Build ad-hoc signed app
+      - name: Build unsigned archive
         run: |
-          xcodebuild build \
+          xcodebuild archive \
             -workspace ios/shmap.xcworkspace \
             -scheme shmap \
             -configuration Release \
-            -derivedDataPath derivedData \
+            -archivePath build/shmap.xcarchive \
             -destination 'generic/platform=iOS' \
-            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
             -quiet
 
-      - name: Package unsigned IPA
+      - name: Install ldid
+        run: brew install ldid
+
+      - name: Ad-hoc sign and package IPA
         run: |
           mkdir -p build/Payload
-          cp -R derivedData/Build/Products/Release-iphoneos/shmap.app build/Payload/
+          cp -R build/shmap.xcarchive/Products/Applications/shmap.app build/Payload/
+          
+          # Find all Mach-O binaries (main app + frameworks) and ad-hoc sign them with ldid
+          # ldid recalculates the __LINKEDIT vmsize, avoiding the dyld crash caused by macOS codesign
+          find build/Payload/shmap.app -type f -exec sh -c 'file "$1" | grep -q "Mach-O" && ldid -S "$1"' _ {} \;
+          
           cd build
           zip -r -q ../shmap-ios-unsigned.ipa Payload
 
