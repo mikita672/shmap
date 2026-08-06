@@ -263,12 +263,24 @@ jobs:
 
       - name: Ad-hoc sign and package IPA
         run: |
+          set -euo pipefail
           mkdir -p build/Payload
           cp -R build/shmap.xcarchive/Products/Applications/shmap.app build/Payload/
           
           # Find all Mach-O binaries (main app + frameworks) and ad-hoc sign them with ldid
           # ldid recalculates the __LINKEDIT vmsize, avoiding the dyld crash caused by macOS codesign
-          find build/Payload/shmap.app -type f -exec sh -c 'file "$1" | grep -q "Mach-O" && ldid -S "$1"' _ {} \;
+          found_macho=false
+          while IFS= read -r -d '' file; do
+            if file "$file" | grep -q "Mach-O"; then
+              found_macho=true
+              ldid -S "$file"
+            fi
+          done < <(find build/Payload/shmap.app -type f -print0)
+          
+          if [ "$found_macho" = false ]; then
+            echo "Error: No Mach-O binaries found"
+            exit 1
+          fi
           
           cd build
           zip -r -q ../shmap-ios-unsigned.ipa Payload
