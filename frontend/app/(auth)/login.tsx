@@ -37,6 +37,18 @@ export default function LoginScreen() {
           />
         </Button>
       </View>
+      <View className="flex-row items-center justify-center w-full mt-2 flex-wrap">
+        <Text className="text-textSecondary text-sm">You can also </Text>
+        <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
+          <Text className="text-textSecondary text-sm underline">Register</Text>
+        </Button>
+        <Text className="text-textSecondary text-sm"> or </Text>
+        <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
+          <Text className="text-textSecondary bold text-sm underline">
+            Reset password
+          </Text>
+        </Button>
+      </View>
     </View>
   );
 }
