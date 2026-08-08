@@ -52,11 +52,13 @@ export default function LoginScreen() {
           </Button>
         </Link>
         <Text className="text-[#5F6F52] text-sm"> or </Text>
-        <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-          <Text className="text-[#5F6F52] font-bold text-sm underline">
-            Reset password
-          </Text>
-        </Button>
+        <Link href="/passwordReset" asChild>
+          <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
+            <Text className="text-[#5F6F52] font-bold text-sm underline">
+              Reset password
+            </Text>
+          </Button>
+        </Link>
       </View>
     </View>
   );
