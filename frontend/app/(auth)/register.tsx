@@ -55,9 +55,7 @@ export default function RegisterScreen() {
         <Text className="text-secondary text-sm">Already have an account?</Text>
         <Link href="/login" asChild>
           <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-            <Text className="text-secondary font-bold text-sm underline">
-              Log In
-            </Text>
+            <Text className="text-secondary text-sm underline">Log In</Text>
           </Button>
         </Link>
       </View>

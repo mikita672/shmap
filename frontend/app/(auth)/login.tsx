@@ -46,15 +46,13 @@ export default function LoginScreen() {
         <Text className="text-secondary text-sm">You can also </Text>
         <Link href="/register" asChild>
           <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-            <Text className="text-secondary font-bold text-sm underline">
-              Register
-            </Text>
+            <Text className="text-secondary text-sm underline">Register</Text>
           </Button>
         </Link>
         <Text className="text-secondary text-sm"> or </Text>
         <Link href="/passwordReset" asChild>
           <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-            <Text className="text-secondary font-bold text-sm underline">
+            <Text className="text-secondary text-sm underline">
               Reset password
             </Text>
           </Button>

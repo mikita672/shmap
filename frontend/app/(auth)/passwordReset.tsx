@@ -3,7 +3,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link, router } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/lib/icons";
 
 export default function PasswordResetScreen() {
   return (
@@ -12,7 +12,11 @@ export default function PasswordResetScreen() {
         className="absolute top-16 left-6 active:opacity-50"
         onPress={() => router.back()}
       >
-        <MaterialIcons name="keyboard-arrow-left" size={52} color="#5F6F52" />
+        <MaterialIcons
+          name="keyboard-arrow-left"
+          size={52}
+          className="text-secondary"
+        />
       </Pressable>
 
       <Text className="absolute top-16 right-8 text-logo font-black text-xl tracking-widest">
@@ -41,9 +45,7 @@ export default function PasswordResetScreen() {
         <Text className="text-secondary text-sm">Already have an account?</Text>
         <Link href="/login" asChild>
           <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-            <Text className="text-secondary font-bold text-sm underline">
-              Log In
-            </Text>
+            <Text className="text-secondary text-sm underline">Log In</Text>
           </Button>
         </Link>
       </View>
