@@ -26,10 +26,10 @@ export default function LoginScreen() {
         className="bg-secondary text-textSecondary placeholder:text-textSecondary/70 rounded-full h-[60px]"
       />
       <View className="flex-row items-center w-full max-w-[360px] mt-4 gap-4">
-        <Button className="flex-1 bg-secondary-foreground rounded-full h-[60px]">
+        <Button className="flex-1 bg-secondary-foreground active:bg-secondary-foreground/80 rounded-full h-[60px]">
           <Text className="text-textSecondary font-bold text-lg">Log In</Text>
         </Button>
-        <Button className="bg-textSecondary rounded-full h-[60px] w-[60px] justify-center items-center">
+        <Button className="bg-textSecondary active:bg-textSecondary/80 rounded-full h-[60px] w-[60px] justify-center items-center">
           <Image
             source={require("@/assets/images/google-logo.png")}
             style={{ width: 32, height: 32 }}
