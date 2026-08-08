@@ -3,9 +3,8 @@ import React from "react";
 import { Image } from "expo-image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link } from "expo-router";
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   return (
     <View className="flex-1 justify-center items-center bg-primary p-6">
       <Text className="absolute top-16 right-8 text-logo font-black text-xl tracking-widest">
@@ -13,7 +12,7 @@ export default function LoginScreen() {
       </Text>
 
       <Text className="text-5xl font-bold mb-16 text-textPrimary p-6">
-        Log In
+        Register
       </Text>
       <Input
         keyboardType="email-address"
@@ -44,13 +43,11 @@ export default function LoginScreen() {
       </View>
       <View className="flex-row items-center justify-center w-full mt-2 flex-wrap">
         <Text className="text-[#5F6F52] text-sm">You can also </Text>
-        <Link href="/register" asChild>
-          <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-            <Text className="text-[#5F6F52] font-bold text-sm underline">
-              Register
-            </Text>
-          </Button>
-        </Link>
+        <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
+          <Text className="text-[#5F6F52] font-bold text-sm underline">
+            Register
+          </Text>
+        </Button>
         <Text className="text-[#5F6F52] text-sm"> or </Text>
         <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
           <Text className="text-[#5F6F52] font-bold text-sm underline">
