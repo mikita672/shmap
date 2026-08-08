@@ -40,6 +40,9 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        textPrimary: "hsl(var(--text-primary))",
+        textSecondary: "hsl(var(--text-secondary))",
+        logo: "hsl(var(--logo))",
       },
       borderWidth: {
         hairline: "1px",
