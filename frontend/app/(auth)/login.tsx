@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 import React from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function LoginScreen() {
   return (
@@ -23,6 +24,14 @@ export default function LoginScreen() {
         placeholder="Password"
         className="bg-secondary text-textSecondary placeholder:text-textSecondary/70 rounded-full h-[60px]"
       />
+      <View className="flex-row items-center w-full max-w-[360px] mt-4 gap-4">
+        <Button className="flex-1 bg-secondary-foreground rounded-full h-[60px]">
+          <Text className="text-textSecondary font-bold text-lg">Log In</Text>
+        </Button>
+        <Button className="bg-textSecondary rounded-full h-[60px] w-[60px]">
+          <Text>G</Text>
+        </Button>
+      </View>
     </View>
   );
 }
