@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 export default function LoginScreen() {
   return (
     <View className="flex-1 justify-center items-center bg-primary p-6">
+      <Text className="absolute top-16 right-8 text-logo font-black text-xl tracking-widest">
+        SHMAP
+      </Text>
+
       <Text className="text-5xl font-bold mb-16 text-textPrimary p-6">
         Log In
       </Text>
@@ -26,10 +30,10 @@ export default function LoginScreen() {
         className="bg-secondary text-textSecondary placeholder:text-textSecondary/70 rounded-full h-[60px]"
       />
       <View className="flex-row items-center w-full max-w-[360px] mt-4 gap-4">
-        <Button className="flex-1 bg-secondary-foreground active:bg-secondary-foreground/80 rounded-full h-[60px]">
-          <Text className="text-textSecondary font-bold text-lg">Log In</Text>
+        <Button className="flex-1 bg-[#B99470] active:bg-[#B99470]/80 rounded-full h-[60px]">
+          <Text className="text-[#5F6F52] font-bold text-lg">Log In</Text>
         </Button>
-        <Button className="bg-textSecondary active:bg-textSecondary/80 rounded-full h-[60px] w-[60px] justify-center items-center">
+        <Button className="bg-[#5F6F52] active:bg-[#5F6F52]/80 rounded-full h-[60px] w-[60px] justify-center items-center">
           <Image
             source={require("@/assets/images/google-logo.png")}
             style={{ width: 32, height: 32 }}
@@ -38,13 +42,15 @@ export default function LoginScreen() {
         </Button>
       </View>
       <View className="flex-row items-center justify-center w-full mt-2 flex-wrap">
-        <Text className="text-textSecondary text-sm">You can also </Text>
+        <Text className="text-[#5F6F52] text-sm">You can also </Text>
         <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-          <Text className="text-textSecondary text-sm underline">Register</Text>
+          <Text className="text-[#5F6F52] font-bold text-sm underline">
+            Register
+          </Text>
         </Button>
-        <Text className="text-textSecondary text-sm"> or </Text>
+        <Text className="text-[#5F6F52] text-sm"> or </Text>
         <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-          <Text className="text-textSecondary bold text-sm underline">
+          <Text className="text-[#5F6F52] font-bold text-sm underline">
             Reset password
           </Text>
         </Button>
