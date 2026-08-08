@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 import React from "react";
+import { Image } from "expo-image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -28,8 +29,12 @@ export default function LoginScreen() {
         <Button className="flex-1 bg-secondary-foreground rounded-full h-[60px]">
           <Text className="text-textSecondary font-bold text-lg">Log In</Text>
         </Button>
-        <Button className="bg-textSecondary rounded-full h-[60px] w-[60px]">
-          <Text>G</Text>
+        <Button className="bg-textSecondary rounded-full h-[60px] w-[60px] justify-center items-center">
+          <Image
+            source={require("@/assets/images/google-logo.png")}
+            style={{ width: 32, height: 32 }}
+            contentFit="contain"
+          />
         </Button>
       </View>
     </View>
