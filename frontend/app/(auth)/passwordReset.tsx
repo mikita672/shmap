@@ -1,12 +1,20 @@
-import { Text, View } from "react-native";
+import { Text, View, Pressable } from "react-native";
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function PasswordResetScreen() {
   return (
     <View className="flex-1 justify-center items-center bg-primary p-6">
+      <Pressable
+        className="absolute top-16 left-6 active:opacity-50"
+        onPress={() => router.back()}
+      >
+        <MaterialIcons name="keyboard-arrow-left" size={52} color="#5F6F52" />
+      </Pressable>
+
       <Text className="absolute top-16 right-8 text-logo font-black text-xl tracking-widest">
         SHMAP
       </Text>
