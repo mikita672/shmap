@@ -3,6 +3,7 @@ import React from "react";
 import { Image } from "expo-image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Link } from "expo-router";
 
 export default function RegisterScreen() {
   return (
@@ -18,7 +19,15 @@ export default function RegisterScreen() {
         keyboardType="email-address"
         textContentType="emailAddress"
         autoComplete="email"
-        placeholder="Username or Email"
+        placeholder="Email"
+        className="mb-4 bg-secondary text-textSecondary placeholder:text-textSecondary/70 rounded-full h-[60px]"
+      />
+      <Input
+        keyboardType="default"
+        textContentType="password"
+        secureTextEntry
+        autoComplete="password"
+        placeholder="Password"
         className="mb-4 bg-secondary text-textSecondary placeholder:text-textSecondary/70 rounded-full h-[60px]"
       />
       <Input
@@ -29,9 +38,10 @@ export default function RegisterScreen() {
         placeholder="Password"
         className="bg-secondary text-textSecondary placeholder:text-textSecondary/70 rounded-full h-[60px]"
       />
+
       <View className="flex-row items-center w-full max-w-[360px] mt-4 gap-4">
         <Button className="flex-1 bg-[#B99470] active:bg-[#B99470]/80 rounded-full h-[60px]">
-          <Text className="text-[#5F6F52] font-bold text-lg">Log In</Text>
+          <Text className="text-[#5F6F52] font-bold text-lg">Register</Text>
         </Button>
         <Button className="bg-[#5F6F52] active:bg-[#5F6F52]/80 rounded-full h-[60px] w-[60px] justify-center items-center">
           <Image
@@ -42,18 +52,14 @@ export default function RegisterScreen() {
         </Button>
       </View>
       <View className="flex-row items-center justify-center w-full mt-2 flex-wrap">
-        <Text className="text-[#5F6F52] text-sm">You can also </Text>
-        <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-          <Text className="text-[#5F6F52] font-bold text-sm underline">
-            Register
-          </Text>
-        </Button>
-        <Text className="text-[#5F6F52] text-sm"> or </Text>
-        <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-          <Text className="text-[#5F6F52] font-bold text-sm underline">
-            Reset password
-          </Text>
-        </Button>
+        <Text className="text-[#5F6F52] text-sm">Already have an account?</Text>
+        <Link href="/login" asChild>
+          <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
+            <Text className="text-[#5F6F52] font-bold text-sm underline">
+              Log In
+            </Text>
+          </Button>
+        </Link>
       </View>
     </View>
   );
