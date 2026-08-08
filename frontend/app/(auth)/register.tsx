@@ -39,7 +39,7 @@ export default function RegisterScreen() {
         className="bg-secondary text-textSecondary placeholder:text-textSecondary/70 rounded-full h-[60px]"
       />
 
-      <View className="flex-row items-center w-full max-w-[360px] mt-4 gap-4">
+      <View className="flex-row items-center w-full mt-4 gap-4">
         <Button className="flex-1 bg-[#B99470] active:bg-[#B99470]/80 rounded-full h-[60px]">
           <Text className="text-[#5F6F52] font-bold text-lg">Register</Text>
         </Button>
