@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 74, 22%, 62%; /* Laurel Green */
+    --text-primary: 52 93% 93%; /* Cornsilk */
+    --primary: 30 34% 58%; /* Camel */
+    --secondary: 93.1 15.03% 37.84%; /* Dark Olive Green */
+    --logo: 25.82 72.69% 44.51%; /* Alloy Orange */
+    --text-secondary: 52 93% 80%;
+  }
+  .dark:root {
+    --background: 93 15% 38%;
+    --text-primary: 29.59 34.27% 58.24%;
+    --primary: 52 93% 93%;
+    --secondary: 93.1 15.03% 37.84%;
+    --logo: 25.82 72.69% 44.51%;
+    --text-secondary: 29.59 34.27% 45%;
+  }
+}
