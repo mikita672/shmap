@@ -56,10 +56,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    SecureStore.getItemAsync(ACCESS_TOKEN_KEY).then((token) => {
-      setIsAuthenticated(!!token);
-      setIsLoading(false);
-    });
+    SecureStore.getItemAsync(ACCESS_TOKEN_KEY)
+      .then((token) => {
+        setIsAuthenticated(!!token);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.warn("Failed to load access token", error);
+        setIsAuthenticated(false);
+        setIsLoading(false);
+      });
   }, []);
 
   useEffect(() => {
