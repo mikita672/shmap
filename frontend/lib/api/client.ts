@@ -20,11 +20,11 @@ const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-type SignOutCallback = () => void;
-let onSignOut: SignOutCallback | null = null;
+type SessionClearCallback = () => void;
+let onSessionClear: SessionClearCallback | null = null;
 
-export function setOnSignOut(callback: SignOutCallback): void {
-  onSignOut = callback;
+export function setOnSessionClear(callback: SessionClearCallback): void {
+  onSessionClear = callback;
 }
 
 apiClient.interceptors.request.use(
@@ -69,8 +69,13 @@ apiClient.interceptors.response.use(
     }
 
     const status = error.response?.status;
+    const isAuthEndpoint =
+      originalRequest.url?.includes("/authenticate") ||
+      originalRequest.url?.includes("/register") ||
+      originalRequest.url?.includes("/logout");
+
     const shouldAttemptRefresh =
-      (status === 401 || status === 403) && !originalRequest._retry;
+      (status === 401 || status === 403) && !originalRequest._retry && !isAuthEndpoint;
 
     if (!shouldAttemptRefresh) {
       return Promise.reject(error);
@@ -112,7 +117,7 @@ apiClient.interceptors.response.use(
 
       await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-      onSignOut?.();
+      onSessionClear?.();
 
       return Promise.reject(refreshError);
     } finally {

@@ -15,7 +15,7 @@ import {
 } from "@tanstack/react-query";
 
 import {
-  setOnSignOut,
+  setOnSessionClear,
   ACCESS_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
 } from "@/lib/api/client";
@@ -67,17 +67,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.remove();
   }, []);
 
-  const signOut = useCallback(async () => {
-    await logoutUser().catch(console.warn);
+  const clearSession = useCallback(async () => {
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
     queryClient.clear();
     setIsAuthenticated(false);
   }, []);
 
+  const signOut = useCallback(async () => {
+    await logoutUser().catch(console.warn);
+    await clearSession();
+  }, [clearSession]);
+
   useEffect(() => {
-    setOnSignOut(signOut);
-  }, [signOut]);
+    setOnSessionClear(clearSession);
+  }, [clearSession]);
 
   const handleAuth = useCallback(async (response: AuthenticationResponse) => {
     await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, response.access_token);
