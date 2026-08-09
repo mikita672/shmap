@@ -124,5 +124,7 @@ const Button = React.forwardRef<
   );
 });
 
+Button.displayName = "Button";
+
 export { Button, buttonTextVariants, buttonVariants };
 export type { ButtonProps };
