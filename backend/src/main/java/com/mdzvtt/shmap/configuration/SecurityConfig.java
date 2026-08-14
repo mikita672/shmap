@@ -12,6 +12,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -21,15 +23,17 @@ public class SecurityConfig {
         private final LogoutHandler logoutHandler;
 
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/api/v1/auth/**",
-                                                                "/swagger-ui/**",
-                                                                "/swagger-ui.html",
-                                                                "/v3/api-docs/**",
-                                                                "/v3/api-docs.yaml")
+                                                .requestMatchers(
+                                                        withDefaults().matcher("/api/v1/auth/**"),
+                                                        withDefaults().matcher("/swagger-ui/**"),
+                                                        withDefaults().matcher("/swagger-ui.html"),
+                                                        withDefaults().matcher("/v3/api-docs/**"),
+                                                        withDefaults().matcher("/v3/api-docs.yaml")
+                                                )
                                                 .permitAll()
                                                 .anyRequest()
                                                 .authenticated())
