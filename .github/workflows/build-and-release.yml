@@ -314,9 +314,9 @@ jobs:
 
       - name: Build and Deploy to Cloud Run
         run: |
-          IMAGE_TAG="europe-central2-docker.pkg.dev/shmap-505120/shmap-repo/shmap-backend:latest"
-          gcloud builds submit ./backend --tag $IMAGE_TAG --project shmap-505120
-          gcloud run deploy shmap-backend --image $IMAGE_TAG --region europe-central2 --project shmap-505120
+          IMAGE_TAG="europe-central2-docker.pkg.dev/shmap-505120/shmap-repo/shmap-backend:${GITHUB_SHA}"
+          gcloud builds submit ./backend --tag "$IMAGE_TAG" --project shmap-505120
+          gcloud run deploy shmap-backend --image "$IMAGE_TAG" --region europe-central2 --project shmap-505120
 
   release:
     name: Create Release
