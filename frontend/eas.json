@@ -7,6 +7,9 @@
     "release": {
       "channel": "release",
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://shmap-backend-761707913997.europe-central2.run.app"
+      },
       "ios": {
         "simulator": true,
         "resourceClass": "m-medium"
