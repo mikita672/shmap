@@ -292,9 +292,36 @@ jobs:
           path: frontend/shmap-ios-unsigned.ipa
           if-no-files-found: error
 
+  deploy_backend:
+    name: Deploy Backend to Cloud Run
+    needs: [version, lint-and-typecheck]
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/761707913997/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: '761707913997-compute@developer.gserviceaccount.com'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and Deploy to Cloud Run
+        run: |
+          IMAGE_TAG="europe-central2-docker.pkg.dev/shmap-505120/shmap-repo/shmap-backend:${GITHUB_SHA}"
+          gcloud builds submit ./backend --tag "$IMAGE_TAG" --project shmap-505120
+          gcloud run deploy shmap-backend --image "$IMAGE_TAG" --region europe-central2 --project shmap-505120 \
+            --update-secrets "RESEND_API_KEY=RESEND_API_KEY:latest"
+
   release:
     name: Create Release
-    needs: [version, build_android, build_ios, build_ios_unsigned]
+    needs: [version, build_android, build_ios, build_ios_unsigned, deploy_backend]
     runs-on: ubuntu-latest
     permissions:
       contents: write

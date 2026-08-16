@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.auth;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,5 +15,6 @@ public class RegisterRequest {
     private String lastname;
     private String username;
     private String email;
+    @NotBlank(message = "Password is required")
     private String password;
 }

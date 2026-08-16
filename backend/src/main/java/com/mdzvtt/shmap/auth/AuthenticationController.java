@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +26,8 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthenticationResponse> register(
+            @jakarta.validation.Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
 
@@ -43,5 +46,10 @@ public class AuthenticationController {
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, String>> handleIllegalStateException(IllegalStateException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
+    public ResponseEntity<Map<String, String>> handleAuthenticationException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid email or password"));
     }
 }

@@ -73,9 +73,21 @@ public class JwtService {
         return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
     }
 
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(secretKey);
+        } catch (io.jsonwebtoken.io.DecodingException e) {
+            throw new IllegalArgumentException("JWT secret key must be a valid Base64-encoded string.", e);
+        }
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("JWT secret key must decode to at least 32 bytes (256 bits).");
+        }
+    }
+
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
