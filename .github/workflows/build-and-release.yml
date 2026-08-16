@@ -316,7 +316,8 @@ jobs:
         run: |
           IMAGE_TAG="europe-central2-docker.pkg.dev/shmap-505120/shmap-repo/shmap-backend:${GITHUB_SHA}"
           gcloud builds submit ./backend --tag "$IMAGE_TAG" --project shmap-505120
-          gcloud run deploy shmap-backend --image "$IMAGE_TAG" --region europe-central2 --project shmap-505120
+          gcloud run deploy shmap-backend --image "$IMAGE_TAG" --region europe-central2 --project shmap-505120 \
+            --update-env-vars "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}"
 
   release:
     name: Create Release
