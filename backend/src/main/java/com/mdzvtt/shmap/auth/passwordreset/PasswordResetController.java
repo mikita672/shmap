@@ -34,7 +34,7 @@ public class PasswordResetController {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
+            return ResponseEntity.ok("OTP send to your email");
         }
 
         User user = userOptional.get();
@@ -54,7 +54,8 @@ public class PasswordResetController {
 
             return ResponseEntity.ok("OTP send to your email");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Failed to send email");
+            System.err.println("Email delivery failed for " + request.getEmail() + ": " + e.getMessage());
+            return ResponseEntity.ok("OTP send to your email");
         }
     }
 
