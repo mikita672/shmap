@@ -27,3 +27,5 @@ application:
       expiration: 86400000
       refresh-token:
         expiration: 604800000
+resend:
+  api-key: ${RESEND_API_KEY}
