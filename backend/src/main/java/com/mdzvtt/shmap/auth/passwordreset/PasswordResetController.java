@@ -66,15 +66,27 @@ public class PasswordResetController {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
-        }
-
-        Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUser(userOptional.get());
-        if (tokenOptional.isEmpty() || !tokenOptional.get().getOtp().equals(request.getOtp())) {
             return ResponseEntity.badRequest().body("Invalid OTP");
         }
 
-        if (tokenOptional.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+        Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUser(userOptional.get());
+        if (tokenOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid OTP");
+        }
+
+        PasswordResetToken token = tokenOptional.get();
+        if (token.getFailedAttempts() >= 5) {
+            tokenRepository.delete(token);
+            return ResponseEntity.badRequest().body("Too many failed attempts. Please request a new OTP.");
+        }
+
+        if (!token.getOtp().equals(request.getOtp())) {
+            token.setFailedAttempts(token.getFailedAttempts() + 1);
+            tokenRepository.save(token);
+            return ResponseEntity.badRequest().body("Invalid OTP");
+        }
+
+        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
             return ResponseEntity.badRequest().body("OTP has expired");
         }
 
@@ -86,17 +98,29 @@ public class PasswordResetController {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
+            return ResponseEntity.badRequest().body("Invalid OTP");
         }
 
         User user = userOptional.get();
         Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUser(user);
 
-        if (tokenOptional.isEmpty() || !tokenOptional.get().getOtp().equals(request.getOtp())) {
+        if (tokenOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid OTP");
         }
 
-        if (tokenOptional.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+        PasswordResetToken token = tokenOptional.get();
+        if (token.getFailedAttempts() >= 5) {
+            tokenRepository.delete(token);
+            return ResponseEntity.badRequest().body("Too many failed attempts. Please request a new OTP.");
+        }
+
+        if (!token.getOtp().equals(request.getOtp())) {
+            token.setFailedAttempts(token.getFailedAttempts() + 1);
+            tokenRepository.save(token);
+            return ResponseEntity.badRequest().body("Invalid OTP");
+        }
+
+        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
             return ResponseEntity.badRequest().body("OTP has expired");
         }
 

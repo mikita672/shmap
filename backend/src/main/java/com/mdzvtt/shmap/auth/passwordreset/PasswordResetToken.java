@@ -27,4 +27,6 @@ public class PasswordResetToken {
     private User user;
 
     private LocalDateTime expiryDate;
+
+    private int failedAttempts = 0;
 }
