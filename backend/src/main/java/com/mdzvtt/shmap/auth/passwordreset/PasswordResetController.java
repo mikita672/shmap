@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RestController
@@ -65,6 +66,7 @@ public class PasswordResetController {
         }
     }
 
+    @Transactional
     @PostMapping("/verify-otp")
     public ResponseEntity<String> verifyOtp(@RequestBody VerifyOtpRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
@@ -73,7 +75,7 @@ public class PasswordResetController {
             return ResponseEntity.badRequest().body("Invalid OTP");
         }
 
-        Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUser(userOptional.get());
+        Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUserForUpdate(userOptional.get());
         if (tokenOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid OTP");
         }
@@ -97,6 +99,7 @@ public class PasswordResetController {
         return ResponseEntity.ok("OTP verified successfull");
     }
 
+    @Transactional
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
@@ -106,7 +109,7 @@ public class PasswordResetController {
         }
 
         User user = userOptional.get();
-        Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUser(user);
+        Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUserForUpdate(user);
 
         if (tokenOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid OTP");
