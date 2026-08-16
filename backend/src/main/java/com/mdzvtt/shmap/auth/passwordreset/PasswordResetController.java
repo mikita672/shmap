@@ -1,7 +1,7 @@
 package com.mdzvtt.shmap.auth.passwordreset;
 
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.security.SecureRandom;
 
 import java.util.Optional;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class PasswordResetController {
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final EmailService emailService;
@@ -41,7 +43,7 @@ public class PasswordResetController {
 
         tokenRepository.deleteByUser(user);
 
-        String otp = String.format("%06d", new Random().nextInt(999999));
+        String otp = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
 
         PasswordResetToken token = new PasswordResetToken();
         token.setUser(user);
