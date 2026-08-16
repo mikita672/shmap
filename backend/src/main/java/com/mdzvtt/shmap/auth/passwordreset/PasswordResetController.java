@@ -17,10 +17,12 @@ import com.mdzvtt.shmap.user.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -57,7 +59,8 @@ public class PasswordResetController {
 
             return ResponseEntity.ok("OTP send to your email");
         } catch (Exception e) {
-            System.err.println("Email delivery failed for " + request.getEmail() + ": " + e.getMessage());
+            String redacted = request.getEmail().replaceAll("(^[^@]{0,2})[^@]*", "$1***");
+            log.error("Email delivery failed for {}", redacted);
             return ResponseEntity.ok("OTP send to your email");
         }
     }
