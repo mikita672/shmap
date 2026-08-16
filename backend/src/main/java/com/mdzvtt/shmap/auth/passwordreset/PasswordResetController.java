@@ -48,7 +48,7 @@ public class PasswordResetController {
 
         PasswordResetToken token = new PasswordResetToken();
         token.setUser(user);
-        token.setOtp(otp);
+        token.setOtp(passwordEncoder.encode(otp));
         token.setExpiryDate(LocalDateTime.now().plusMinutes(15));
         tokenRepository.save(token);
 
@@ -81,7 +81,7 @@ public class PasswordResetController {
             return ResponseEntity.badRequest().body("Too many failed attempts. Please request a new OTP.");
         }
 
-        if (!token.getOtp().equals(request.getOtp())) {
+        if (!passwordEncoder.matches(request.getOtp(), token.getOtp())) {
             token.setFailedAttempts(token.getFailedAttempts() + 1);
             tokenRepository.save(token);
             return ResponseEntity.badRequest().body("Invalid OTP");
@@ -115,7 +115,7 @@ public class PasswordResetController {
             return ResponseEntity.badRequest().body("Too many failed attempts. Please request a new OTP.");
         }
 
-        if (!token.getOtp().equals(request.getOtp())) {
+        if (!passwordEncoder.matches(request.getOtp(), token.getOtp())) {
             token.setFailedAttempts(token.getFailedAttempts() + 1);
             tokenRepository.save(token);
             return ResponseEntity.badRequest().body("Invalid OTP");
