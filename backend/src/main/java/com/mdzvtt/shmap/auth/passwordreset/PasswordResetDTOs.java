@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.auth.passwordreset;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 public class PasswordResetDTOs {
@@ -18,6 +19,7 @@ public class PasswordResetDTOs {
     public static class ResetPasswordRequest {
         private String email;
         private String otp;
+        @NotBlank(message = "Password is required")
         private String newPassword;
     }
 }
