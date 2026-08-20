@@ -41,11 +41,11 @@ export default function RegisterScreen() {
 
   return (
     <View className="flex-1 justify-center items-center bg-background p-6">
-      <Text className="absolute top-16 right-8 text-logo font-black text-xl tracking-widest">
+      <Text className="absolute top-16 right-8 text-brand font-black text-xl tracking-widest">
         SHMAP
       </Text>
 
-      <Text className="text-5xl font-bold mb-16 text-textPrimary p-6">
+      <Text className="text-5xl font-bold mb-16 text-surface p-6">
         Register
       </Text>
 
@@ -61,7 +61,7 @@ export default function RegisterScreen() {
           value={firstname}
           onChangeText={setFirstname}
           editable={!isDisabled}
-          className="flex-1 bg-textPrimary text-primary placeholder:text-primary rounded-full h-[60px]"
+          className="flex-1 rounded-full h-[60px]"
         />
         <Input
           textContentType="familyName"
@@ -70,7 +70,7 @@ export default function RegisterScreen() {
           value={lastname}
           onChangeText={setLastname}
           editable={!isDisabled}
-          className="flex-1 bg-textPrimary text-primary placeholder:text-primary rounded-full h-[60px]"
+          className="flex-1 rounded-full h-[60px]"
         />
       </View>
 
@@ -82,7 +82,7 @@ export default function RegisterScreen() {
         value={username}
         onChangeText={setUsername}
         editable={!isDisabled}
-        className="mb-4 bg-textPrimary text-primary placeholder:text-primary rounded-full h-[60px]"
+        className="mb-4 rounded-full h-[60px]"
       />
       <Input
         keyboardType="email-address"
@@ -93,7 +93,7 @@ export default function RegisterScreen() {
         value={email}
         onChangeText={setEmail}
         editable={!isDisabled}
-        className="mb-4 bg-textPrimary text-primary placeholder:text-primary rounded-full h-[60px]"
+        className="mb-4 rounded-full h-[60px]"
       />
       <Input
         keyboardType="default"
@@ -104,7 +104,7 @@ export default function RegisterScreen() {
         value={password}
         onChangeText={setPassword}
         editable={!isDisabled}
-        className="mb-4 bg-textPrimary text-primary placeholder:text-primary rounded-full h-[60px]"
+        className="mb-4 rounded-full h-[60px]"
       />
       <Input
         keyboardType="default"
@@ -115,7 +115,7 @@ export default function RegisterScreen() {
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         editable={!isDisabled}
-        className="bg-textPrimary text-primary placeholder:text-primary rounded-full h-[60px]"
+        className="rounded-full h-[60px]"
       />
 
       <View className="flex-row items-center w-full mt-4 gap-4">

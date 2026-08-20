@@ -7,10 +7,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        background: "hsl(var(--background))",
+        surface: "hsl(var(--surface))",
+        brand: "hsl(var(--brand))",
+        "on-surface": "hsl(var(--on-surface))",
+        "on-surface-muted": "hsl(var(--on-surface-muted))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
@@ -20,18 +24,21 @@ module.exports = {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -40,9 +47,6 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        textPrimary: "hsl(var(--text-primary))",
-        textSecondary: "hsl(var(--text-secondary))",
-        logo: "hsl(var(--logo))",
       },
       borderWidth: {
         hairline: "1px",
@@ -50,5 +54,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
-
+};

@@ -19,14 +19,14 @@ export default function PasswordResetScreen() {
         />
       </Pressable>
 
-      <Text className="absolute top-16 right-8 text-logo font-black text-xl tracking-widest">
+      <Text className="absolute top-16 right-8 text-brand font-black text-xl tracking-widest">
         SHMAP
       </Text>
 
-      <Text className="text-4xl font-bold text-textPrimary">
+      <Text className="text-4xl font-bold text-surface">
         Reset the password
       </Text>
-      <Text className="mb-16 text-lg text-textPrimary">
+      <Text className="mb-16 text-lg text-surface">
         Reset link will be sent to your email
       </Text>
       <Input
@@ -34,7 +34,7 @@ export default function PasswordResetScreen() {
         textContentType="emailAddress"
         autoComplete="email"
         placeholder="Email"
-        className="bg-textPrimary text-primary placeholder:text-primary rounded-full h-[60px]"
+        className="rounded-full h-[60px]"
       />
       <View className="flex-row items-center w-full mt-4 gap-4">
         <Button className="flex-1 bg-primary active:bg-primary/80 rounded-full h-[60px]">
