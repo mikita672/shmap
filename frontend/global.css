@@ -4,19 +4,109 @@
 
 @layer base {
   :root {
-    --background: 74, 22%, 62%; /* Laurel Green */
-    --text-primary: 52 93% 93%; /* Cornsilk */
-    --primary: 30 34% 58%; /* Camel */
-    --secondary: 93.1 15.03% 37.84%; /* Dark Olive Green */
-    --logo: 25.82 72.69% 44.51%; /* Alloy Orange */
-    --text-secondary: 52 93% 80%;
-  }
-  .dark:root {
-    --background: 93 15% 38%;
-    --text-primary: 29.59 34.27% 58.24%;
-    --primary: 52 93% 93%;
+    /* ── Light Mode ───────────────────────────────────────── */
+
+    /* Page / screen background — Laurel Green */
+    --background: 74 22% 62%;
+
+    /* Heading / page foreground text — Cornsilk */
+    --foreground: 52 93% 93%;
+
+    /* Input / card surface — Cornsilk */
+    --surface: 52 93% 93%;
+
+    /* Primary action (CTA buttons) — Camel */
+    --primary: 30 34% 58%;
+    /* Text on primary button — Dark Olive Green */
+    --primary-foreground: 93.1 15.03% 37.84%;
+
+    /* Secondary elements (secondary buttons, body text) — Dark Olive Green */
     --secondary: 93.1 15.03% 37.84%;
-    --logo: 25.82 72.69% 44.51%;
-    --text-secondary: 29.59 34.27% 45%;
+    /* Text on secondary button — Cornsilk */
+    --secondary-foreground: 52 93% 93%;
+
+    /* Logo / wordmark — Alloy Orange */
+    --brand: 25.82 72.69% 44.51%;
+
+    /* Typed text on input / card surfaces — Dark Camel */
+    --on-surface: 30 34% 38%;
+    /* Placeholder text on input / card surfaces — Mid Camel */
+    --on-surface-muted: 30 34% 55%;
+
+    /* Ghost-button hover overlay — slightly darker Laurel */
+    --accent: 74 22% 54%;
+    --accent-foreground: 52 93% 93%;
+
+    --muted: 93.1 15.03% 37.84%;
+    --muted-foreground: 30 34% 55%;
+
+    /* Error / danger states */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Subtle UI chrome */
+    --border: 74 22% 45%;              /* Slightly darker Laurel */
+    --input: 30 34% 50%;              /* Mid-Camel — input borders */
+    --ring: 30 34% 58%;               /* Camel — focus rings (= primary) */
+
+    /* Card / Popover surfaces (same as main surface for now) */
+    --card: 52 93% 93%;
+    --card-foreground: 30 34% 38%;
+    --popover: 52 93% 93%;
+    --popover-foreground: 30 34% 38%;
+  }
+
+  .dark:root {
+    /* ── Dark Mode ────────────────────────────────────────── */
+
+    /* Page / screen background — Dark Olive Green */
+    --background: 93 15% 38%;
+
+    /* Heading / page foreground text — Cornsilk (high contrast on Dark Olive) */
+    --foreground: 52 93% 93%;
+
+    /* Input / card surface — Camel */
+    --surface: 30 34% 58%;
+
+    /* Primary action (CTA buttons) — Russet */
+    --primary: 22.74 65.52% 28.43%;
+    /* Text on primary button — Laurel Green */
+    --primary-foreground: 74 22% 62%;
+
+    /* Secondary elements (Google button, body text) — Laurel Green */
+    --secondary: 74 22% 62%;
+    /* Text on secondary button — Russet */
+    --secondary-foreground: 22.74 65.52% 28.43%;
+
+    /* Logo / wordmark — Alloy Orange */
+    --brand: 25.82 72.69% 44.51%;
+
+    /* Typed text on input surfaces — Russet */
+    --on-surface: 22.74 65.52% 28.43%;
+    /* Placeholder text on input surfaces — lighter Russet */
+    --on-surface-muted: 22.74 65.52% 44%;
+
+    /* Ghost-button hover overlay — slightly lighter Olive */
+    --accent: 93 15% 45%;
+    --accent-foreground: 74 22% 62%;
+
+    --muted: 93.1 15.03% 37.84%;
+    /* Muted text — Laurel Green */
+    --muted-foreground: 74 22% 62%;
+
+    /* Error / danger states */
+    --destructive: 0 72% 55%;         /* Slightly lighter red for dark bg */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Subtle UI chrome */
+    --border: 93 15% 50%;             /* Mid-olive — subtle border on dark bg */
+    --input: 93 15% 28%;              /* Darker olive — dark:bg-input/30 in buttons */
+    --ring: 74 22% 62%;               /* Laurel Green — focus rings in dark mode */
+
+    /* Card / Popover surfaces (same as main surface for now) */
+    --card: 30 34% 58%;
+    --card-foreground: 22.74 65.52% 28.43%;
+    --popover: 30 34% 58%;
+    --popover-foreground: 22.74 65.52% 28.43%;
   }
 }
