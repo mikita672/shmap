@@ -39,6 +39,21 @@
 
     --muted: 93.1 15.03% 37.84%;
     --muted-foreground: 30 34% 55%;
+
+    /* Error / danger states */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Subtle UI chrome */
+    --border: 74 22% 45%;              /* Slightly darker Laurel */
+    --input: 30 34% 50%;              /* Mid-Camel — input borders */
+    --ring: 30 34% 58%;               /* Camel — focus rings (= primary) */
+
+    /* Card / Popover surfaces (same as main surface for now) */
+    --card: 52 93% 93%;
+    --card-foreground: 30 34% 38%;
+    --popover: 52 93% 93%;
+    --popover-foreground: 30 34% 38%;
   }
 
   .dark:root {
@@ -78,5 +93,20 @@
     --muted: 93.1 15.03% 37.84%;
     /* Muted text — Laurel Green */
     --muted-foreground: 74 22% 62%;
+
+    /* Error / danger states */
+    --destructive: 0 72% 55%;         /* Slightly lighter red for dark bg */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Subtle UI chrome */
+    --border: 93 15% 50%;             /* Mid-olive — subtle border on dark bg */
+    --input: 93 15% 28%;              /* Darker olive — dark:bg-input/30 in buttons */
+    --ring: 74 22% 62%;               /* Laurel Green — focus rings in dark mode */
+
+    /* Card / Popover surfaces (same as main surface for now) */
+    --card: 30 34% 58%;
+    --card-foreground: 22.74 65.52% 28.43%;
+    --popover: 30 34% 58%;
+    --popover-foreground: 22.74 65.52% 28.43%;
   }
 }
