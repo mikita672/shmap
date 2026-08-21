@@ -34,7 +34,7 @@ export default function LoginScreen() {
         SHMAP
       </Text>
 
-      <Text className="text-5xl font-bold mb-16 text-surface p-6">Log In</Text>
+      <Text className="text-5xl font-bold mb-16 text-foreground p-6">Log In</Text>
 
       {errorMessage && (
         <Text className="text-destructive text-sm mb-4">{errorMessage}</Text>

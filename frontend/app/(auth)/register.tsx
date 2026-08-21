@@ -45,7 +45,7 @@ export default function RegisterScreen() {
         SHMAP
       </Text>
 
-      <Text className="text-5xl font-bold mb-16 text-surface p-6">
+      <Text className="text-5xl font-bold mb-16 text-foreground p-6">
         Register
       </Text>
 

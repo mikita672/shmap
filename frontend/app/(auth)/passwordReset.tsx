@@ -23,10 +23,10 @@ export default function PasswordResetScreen() {
         SHMAP
       </Text>
 
-      <Text className="text-4xl font-bold text-surface">
+      <Text className="text-4xl font-bold text-foreground">
         Reset the password
       </Text>
-      <Text className="mb-16 text-lg text-surface">
+      <Text className="mb-16 text-lg text-foreground">
         Reset link will be sent to your email
       </Text>
       <Input

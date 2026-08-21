@@ -9,6 +9,9 @@
     /* Page / screen background — Laurel Green */
     --background: 74 22% 62%;
 
+    /* Heading / page foreground text — Cornsilk */
+    --foreground: 52 93% 93%;
+
     /* Input / card surface — Cornsilk */
     --surface: 52 93% 93%;
 
@@ -43,6 +46,9 @@
 
     /* Page / screen background — Dark Olive Green */
     --background: 93 15% 38%;
+
+    /* Heading / page foreground text — Cornsilk (high contrast on Dark Olive) */
+    --foreground: 52 93% 93%;
 
     /* Input / card surface — Camel */
     --surface: 30 34% 58%;
