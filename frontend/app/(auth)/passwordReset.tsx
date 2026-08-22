@@ -22,19 +22,16 @@ export default function PasswordResetScreen() {
   const forgotMutation = useMutation({
     mutationFn: forgotPassword,
     onSuccess: () => setStep("otp"),
-    onError: (error) => console.error("Forgot Password Error:", error),
   });
 
   const verifyMutation = useMutation({
     mutationFn: verifyOtp,
     onSuccess: () => setStep("newPassword"),
-    onError: (error) => console.error("Verify OTP Error:", error),
   });
 
   const resetMutation = useMutation({
     mutationFn: resetPassword,
     onSuccess: () => router.replace("/login"),
-    onError: (error) => console.error("Reset Password Error:", error),
   });
 
   function getError(
