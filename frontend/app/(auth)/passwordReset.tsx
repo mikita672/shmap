@@ -9,44 +9,46 @@ import { Button } from "@/components/ui/button";
 import { MaterialIcons } from "@/lib/icons";
 import { forgotPassword, verifyOtp, resetPassword } from "@/lib/api/auth";
 
-// Which step of the 3-step flow are we on?
 type Step = "email" | "otp" | "newPassword";
 
 export default function PasswordResetScreen() {
   const [step, setStep] = useState<Step>("email");
 
-  // Carried forward through each step so later API calls have all required data.
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // ── Step 1: request OTP ──────────────────────────────────────────────────
   const forgotMutation = useMutation({
     mutationFn: forgotPassword,
     onSuccess: () => setStep("otp"),
+    onError: (error) => console.error("Forgot Password Error:", error),
   });
 
-  // ── Step 2: verify OTP ───────────────────────────────────────────────────
   const verifyMutation = useMutation({
     mutationFn: verifyOtp,
     onSuccess: () => setStep("newPassword"),
+    onError: (error) => console.error("Verify OTP Error:", error),
   });
 
-  // ── Step 3: set new password ─────────────────────────────────────────────
   const resetMutation = useMutation({
     mutationFn: resetPassword,
     onSuccess: () => router.replace("/login"),
+    onError: (error) => console.error("Reset Password Error:", error),
   });
 
-  // Extract a human-readable error message from an Axios (or generic) error.
   function getError(
     mutation:
       typeof forgotMutation | typeof verifyMutation | typeof resetMutation,
   ): string | undefined {
     if (!mutation.error) return undefined;
+
     if (mutation.error instanceof AxiosError) {
-      return mutation.error.response?.data?.message ?? "Something went wrong";
+      return (
+        mutation.error.response?.data?.error ??
+        mutation.error.response?.data?.message ??
+        "Something went wrong"
+      );
     }
     return mutation.error.message;
   }
@@ -83,19 +85,16 @@ export default function PasswordResetScreen() {
 
       <Text className="text-4xl font-bold text-foreground">Reset password</Text>
 
-      {/* Step subtitle */}
       <Text className="mb-16 text-lg text-foreground text-center">
         {step === "email" && "Enter your e-mail to receive a one-time code"}
         {step === "otp" && `Enter the 6-digit code sent to ${email}`}
         {step === "newPassword" && "Choose a strong new password"}
       </Text>
 
-      {/* Error banner */}
       {errorMessage && (
         <Text className="text-destructive text-sm mb-4">{errorMessage}</Text>
       )}
 
-      {/* ── STEP 1: E-mail ─────────────────────────────────────────────── */}
       {step === "email" && (
         <>
           <Input
@@ -125,13 +124,10 @@ export default function PasswordResetScreen() {
         </>
       )}
 
-      {/* ── STEP 2: OTP ────────────────────────────────────────────────── */}
       {step === "otp" && (
         <>
           <Input
             keyboardType="numeric"
-            // No textContentType="oneTimeCode" — that only works for SMS,
-            // not for OTPs delivered by e-mail.
             placeholder="6-digit code"
             value={otp}
             onChangeText={setOtp}
@@ -154,7 +150,6 @@ export default function PasswordResetScreen() {
         </>
       )}
 
-      {/* ── STEP 3: New password ───────────────────────────────────────── */}
       {step === "newPassword" && (
         <>
           <Input
