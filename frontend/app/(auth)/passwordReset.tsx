@@ -174,7 +174,13 @@ export default function PasswordResetScreen() {
           )}
           <Button
             className="w-full mt-4 bg-primary active:bg-primary/80 rounded-full h-[60px]"
-            disabled={!newPassword || passwordsMismatch || isPending}
+            disabled={
+              !email ||
+              !newPassword ||
+              !confirmPassword ||
+              passwordsMismatch ||
+              isPending
+            }
             onPress={() => resetMutation.mutate({ email, otp, newPassword })}
           >
             {resetMutation.isPending ? (
