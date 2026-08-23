@@ -1,6 +1,9 @@
 name: Build & Release
 
 on:
+  push:
+    branches:
+      - feature/ios-build-fixes
   pull_request:
     types: [closed]
     branches:
@@ -16,7 +19,6 @@ concurrency:
 jobs:
   version:
     name: Determine Version
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.calc.outputs.version }}
@@ -42,7 +44,6 @@ jobs:
 
   lint-and-typecheck:
     name: Lint & Typecheck
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -322,7 +323,6 @@ jobs:
   deploy_backend:
     name: Deploy Backend to Cloud Run
     needs: [version, lint-and-typecheck]
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
