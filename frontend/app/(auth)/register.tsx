@@ -1,7 +1,17 @@
 import { useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Text,
+  View,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
+  Pressable,
+  ScrollView,
+} from "react-native";
 import { Image } from "expo-image";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
@@ -9,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { registerUser } from "@/lib/api/auth";
 import { useAuth } from "@/hooks/useAuth";
+import { MaterialIcons } from "@/lib/icons";
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -40,123 +51,155 @@ export default function RegisterScreen() {
   const isDisabled = registerMutation.isPending;
 
   return (
-    <View className="flex-1 justify-center items-center bg-background p-6">
-      <Text className="absolute top-16 right-8 text-brand font-black text-xl tracking-widest">
-        SHMAP
-      </Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <ScrollView
+        contentContainerClassName="flex-grow"
+        keyboardShouldPersistTaps="handled"
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View className="flex-1 justify-center items-center bg-background p-6">
+            <Pressable
+              className="absolute top-16 left-6 active:opacity-50"
+              onPress={() => router.back()}
+            >
+              <MaterialIcons
+                name="keyboard-arrow-left"
+                size={52}
+                className="text-secondary"
+              />
+            </Pressable>
 
-      <Text className="text-5xl font-bold mb-16 text-foreground p-6">
-        Register
-      </Text>
+            <Text className="absolute top-16 right-8 text-brand font-black text-xl tracking-widest">
+              SHMAP
+            </Text>
 
-      {errorMessage && (
-        <Text className="text-destructive text-sm mb-4">{errorMessage}</Text>
-      )}
-
-      <View className="flex-row w-full gap-4 mb-4">
-        <Input
-          textContentType="givenName"
-          autoComplete="given-name"
-          placeholder="First name"
-          value={firstname}
-          onChangeText={setFirstname}
-          editable={!isDisabled}
-          className="flex-1 rounded-full h-[60px]"
-        />
-        <Input
-          textContentType="familyName"
-          autoComplete="family-name"
-          placeholder="Last name"
-          value={lastname}
-          onChangeText={setLastname}
-          editable={!isDisabled}
-          className="flex-1 rounded-full h-[60px]"
-        />
-      </View>
-
-      <Input
-        textContentType="username"
-        autoComplete="username"
-        autoCapitalize="none"
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-        editable={!isDisabled}
-        className="mb-4 rounded-full h-[60px]"
-      />
-      <Input
-        keyboardType="email-address"
-        textContentType="emailAddress"
-        autoComplete="email"
-        autoCapitalize="none"
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        editable={!isDisabled}
-        className="mb-4 rounded-full h-[60px]"
-      />
-      <Input
-        keyboardType="default"
-        textContentType="newPassword"
-        secureTextEntry
-        autoComplete="new-password"
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        editable={!isDisabled}
-        className="mb-4 rounded-full h-[60px]"
-      />
-      <Input
-        keyboardType="default"
-        textContentType="newPassword"
-        secureTextEntry
-        autoComplete="new-password"
-        placeholder="Confirm password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        editable={!isDisabled}
-        className="rounded-full h-[60px]"
-      />
-
-      <View className="flex-row items-center w-full mt-4 gap-4">
-        <Button
-          className="flex-1 bg-primary active:bg-primary/80 rounded-full h-[60px]"
-          onPress={() =>
-            registerMutation.mutate({
-              firstname,
-              lastname,
-              username,
-              email,
-              password,
-            })
-          }
-          disabled={isDisabled || !canSubmit}
-        >
-          {registerMutation.isPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-secondary font-semibold text-lg">
+            <Text className="text-5xl font-bold mb-16 text-foreground p-6">
               Register
             </Text>
-          )}
-        </Button>
-        <Button className="bg-secondary active:bg-secondary/80 rounded-full h-[60px] w-[60px] justify-center items-center">
-          <Image
-            source={require("@/assets/images/google-logo.png")}
-            style={{ width: 32, height: 32 }}
-            contentFit="contain"
-          />
-        </Button>
-      </View>
 
-      <View className="flex-row items-center justify-center w-full mt-2 flex-wrap">
-        <Text className="text-secondary text-sm">Already have an account?</Text>
-        <Link href="/login" asChild>
-          <Button variant="ghost" className="px-1 h-auto active:bg-transparent">
-            <Text className="text-secondary text-sm underline">Log In</Text>
-          </Button>
-        </Link>
-      </View>
-    </View>
+            {errorMessage && (
+              <Text className="text-destructive text-sm mb-4">
+                {errorMessage}
+              </Text>
+            )}
+
+            <View className="flex-row w-full gap-4 mb-4">
+              <Input
+                textContentType="givenName"
+                autoComplete="given-name"
+                placeholder="First name"
+                value={firstname}
+                onChangeText={setFirstname}
+                editable={!isDisabled}
+                className="flex-1 rounded-full h-[60px]"
+              />
+              <Input
+                textContentType="familyName"
+                autoComplete="family-name"
+                placeholder="Last name"
+                value={lastname}
+                onChangeText={setLastname}
+                editable={!isDisabled}
+                className="flex-1 rounded-full h-[60px]"
+              />
+            </View>
+
+            <Input
+              textContentType="username"
+              autoComplete="username"
+              autoCapitalize="none"
+              placeholder="Username"
+              value={username}
+              onChangeText={setUsername}
+              editable={!isDisabled}
+              className="mb-4 rounded-full h-[60px]"
+            />
+            <Input
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
+              autoCapitalize="none"
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              editable={!isDisabled}
+              className="mb-4 rounded-full h-[60px]"
+            />
+            <Input
+              keyboardType="default"
+              textContentType="newPassword"
+              secureTextEntry
+              autoComplete="new-password"
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              editable={!isDisabled}
+              className="mb-4 rounded-full h-[60px]"
+            />
+            <Input
+              keyboardType="default"
+              textContentType="newPassword"
+              secureTextEntry
+              autoComplete="new-password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              editable={!isDisabled}
+              className="rounded-full h-[60px]"
+            />
+
+            <View className="flex-row items-center w-full mt-4 gap-4">
+              <Button
+                className="flex-1 bg-primary active:bg-primary/80 rounded-full h-[60px]"
+                onPress={() =>
+                  registerMutation.mutate({
+                    firstname,
+                    lastname,
+                    username,
+                    email,
+                    password,
+                  })
+                }
+                disabled={isDisabled || !canSubmit}
+              >
+                {registerMutation.isPending ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text className="text-secondary font-semibold text-lg">
+                    Register
+                  </Text>
+                )}
+              </Button>
+              <Button className="bg-secondary active:bg-secondary/80 rounded-full h-[60px] w-[60px] justify-center items-center">
+                <Image
+                  source={require("@/assets/images/google-logo.png")}
+                  style={{ width: 32, height: 32 }}
+                  contentFit="contain"
+                />
+              </Button>
+            </View>
+
+            <View className="flex-row items-center justify-center w-full mt-2 flex-wrap">
+              <Text className="text-secondary text-sm">
+                Already have an account?
+              </Text>
+              <Link href="/login" asChild>
+                <Button
+                  variant="ghost"
+                  className="px-1 h-auto active:bg-transparent"
+                >
+                  <Text className="text-secondary text-sm underline">
+                    Log In
+                  </Text>
+                </Button>
+              </Link>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

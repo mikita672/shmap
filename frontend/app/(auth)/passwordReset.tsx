@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { ActivityIndicator, Text, View, Pressable } from "react-native";
+import { ActivityIndicator,
+  Text,
+  View,
+  Pressable,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -64,21 +73,30 @@ export default function PasswordResetScreen() {
     confirmPassword.length > 0 && newPassword !== confirmPassword;
 
   return (
-    <View className="flex-1 justify-center items-center bg-background p-6">
-      <Pressable
-        className="absolute top-16 left-6 active:opacity-50"
-        onPress={() => router.back()}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+    >
+      <ScrollView
+        contentContainerClassName="flex-grow"
+        keyboardShouldPersistTaps="handled"
       >
-        <MaterialIcons
-          name="keyboard-arrow-left"
-          size={52}
-          className="text-secondary"
-        />
-      </Pressable>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View className="flex-1 justify-center items-center bg-background p-6">
+            <Pressable
+              className="absolute top-16 left-6 active:opacity-50"
+              onPress={() => router.back()}
+            >
+              <MaterialIcons
+                name="keyboard-arrow-left"
+                size={52}
+                className="text-secondary"
+              />
+            </Pressable>
 
-      <Text className="absolute top-16 right-8 text-brand font-black text-xl tracking-widest">
-        SHMAP
-      </Text>
+            <Text className="absolute top-16 right-8 text-brand font-black text-xl tracking-widest">
+              SHMAP
+            </Text>
 
       <Text className="text-4xl font-bold text-foreground">Reset password</Text>
 
@@ -193,6 +211,9 @@ export default function PasswordResetScreen() {
           </Button>
         </>
       )}
-    </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
