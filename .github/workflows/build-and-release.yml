@@ -268,26 +268,26 @@ jobs:
           mkdir -p build/Payload
           cp -R build/shmap.xcarchive/Products/Applications/shmap.app build/Payload/
           
-          # Extract the entitlements plist that expo prebuild generated.
-          # This contains keychain-access-groups needed by expo-secure-store.
-          ENTITLEMENTS_FILE=$(find ios/shmap -name '*.entitlements' -print -quit)
-          if [ -z "$ENTITLEMENTS_FILE" ]; then
-            echo "⚠️  No .entitlements file found from prebuild, creating minimal entitlements"
-            cat > build/entitlements.plist << 'PLIST'
+          # Create a dummy entitlements file with keychain access.
+          # We must do this unconditionally because the prebuild entitlements are empty.
+          # Sideloaders will read this dummy file and replace the TEAMID with your actual Apple ID Team ID.
+          cat > build/entitlements.plist << 'PLIST'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
+            <key>application-identifier</key>
+            <string>TEAMID.com.mdzvtt.shmap</string>
             <key>keychain-access-groups</key>
             <array>
-              <string>$(AppIdentifierPrefix)com.mdzvtt.shmap</string>
+              <string>TEAMID.com.mdzvtt.shmap</string>
             </array>
           </dict>
           </plist>
           PLIST
-            ENTITLEMENTS_FILE="build/entitlements.plist"
-          fi
-          echo "📋 Using entitlements from: $ENTITLEMENTS_FILE"
+          
+          ENTITLEMENTS_FILE="build/entitlements.plist"
+          echo "📋 Using entitlements:"
           cat "$ENTITLEMENTS_FILE"
           
           # Find all Mach-O binaries and sign them with ldid.
