@@ -1,4 +1,5 @@
-import {
+import { useState } from "react";
+import { ActivityIndicator,
   Text,
   View,
   Pressable,
@@ -8,13 +9,69 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import React from "react";
+import { router } from "expo-router";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link, router } from "expo-router";
 import { MaterialIcons } from "@/lib/icons";
+import { forgotPassword, verifyOtp, resetPassword } from "@/lib/api/auth";
+
+type Step = "email" | "otp" | "newPassword";
 
 export default function PasswordResetScreen() {
+  const [step, setStep] = useState<Step>("email");
+
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const forgotMutation = useMutation({
+    mutationFn: forgotPassword,
+    onSuccess: () => setStep("otp"),
+  });
+
+  const verifyMutation = useMutation({
+    mutationFn: verifyOtp,
+    onSuccess: () => setStep("newPassword"),
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: resetPassword,
+    onSuccess: () => router.replace("/login"),
+  });
+
+  function getError(
+    mutation:
+      typeof forgotMutation | typeof verifyMutation | typeof resetMutation,
+  ): string | undefined {
+    if (!mutation.error) return undefined;
+
+    if (mutation.error instanceof AxiosError) {
+      return (
+        mutation.error.response?.data?.error ??
+        mutation.error.response?.data?.message ??
+        "Something went wrong"
+      );
+    }
+    return mutation.error.message;
+  }
+
+  const isPending =
+    forgotMutation.isPending ||
+    verifyMutation.isPending ||
+    resetMutation.isPending;
+
+  const errorMessage =
+    getError(forgotMutation) ??
+    getError(verifyMutation) ??
+    getError(resetMutation);
+
+  const passwordsMismatch =
+    confirmPassword.length > 0 && newPassword !== confirmPassword;
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -41,41 +98,119 @@ export default function PasswordResetScreen() {
               SHMAP
             </Text>
 
-            <Text className="text-4xl font-bold text-foreground">
-              Reset the password
-            </Text>
-            <Text className="mb-16 text-lg text-foreground">
-              Reset link will be sent to your email
-            </Text>
-            <Input
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoComplete="email"
-              placeholder="Email"
-              className="rounded-full h-[60px]"
-            />
-            <View className="flex-row items-center w-full mt-4 gap-4">
-              <Button className="flex-1 bg-primary active:bg-primary/80 rounded-full h-[60px]">
-                <Text className="text-secondary font-semibold text-lg">
-                  Register
-                </Text>
-              </Button>
-            </View>
-            <View className="flex-row items-center justify-center w-full mt-2 flex-wrap">
-              <Text className="text-secondary text-sm">
-                Already have an account?
+      <Text className="text-4xl font-bold text-foreground">Reset password</Text>
+
+      <Text className="mb-16 text-lg text-foreground text-center">
+        {step === "email" && "Enter your e-mail to receive a one-time code"}
+        {step === "otp" && `Enter the 6-digit code sent to ${email}`}
+        {step === "newPassword" && "Choose a strong new password"}
+      </Text>
+
+      {errorMessage && (
+        <Text className="text-destructive text-sm mb-4">{errorMessage}</Text>
+      )}
+
+      {step === "email" && (
+        <>
+          <Input
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            autoComplete="email"
+            autoCapitalize="none"
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            editable={!isPending}
+            className="rounded-full h-[60px]"
+          />
+          <Button
+            className="w-full mt-4 bg-primary active:bg-primary/80 rounded-full h-[60px]"
+            disabled={!email || isPending}
+            onPress={() => forgotMutation.mutate({ email })}
+          >
+            {forgotMutation.isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-secondary font-semibold text-lg">
+                Send code
               </Text>
-              <Link href="/login" asChild>
-                <Button
-                  variant="ghost"
-                  className="px-1 h-auto active:bg-transparent"
-                >
-                  <Text className="text-secondary text-sm underline">
-                    Log In
-                  </Text>
-                </Button>
-              </Link>
-            </View>
+            )}
+          </Button>
+        </>
+      )}
+
+      {step === "otp" && (
+        <>
+          <Input
+            keyboardType="numeric"
+            placeholder="6-digit code"
+            value={otp}
+            onChangeText={setOtp}
+            editable={!isPending}
+            className="rounded-full h-[60px]"
+          />
+          <Button
+            className="w-full mt-4 bg-primary active:bg-primary/80 rounded-full h-[60px]"
+            disabled={otp.length < 6 || isPending}
+            onPress={() => verifyMutation.mutate({ email, otp })}
+          >
+            {verifyMutation.isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-secondary font-semibold text-lg">
+                Verify
+              </Text>
+            )}
+          </Button>
+        </>
+      )}
+
+      {step === "newPassword" && (
+        <>
+          <Input
+            textContentType="newPassword"
+            secureTextEntry
+            placeholder="New password"
+            value={newPassword}
+            onChangeText={setNewPassword}
+            editable={!isPending}
+            className="mb-4 rounded-full h-[60px]"
+          />
+          <Input
+            textContentType="newPassword"
+            secureTextEntry
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            editable={!isPending}
+            className="rounded-full h-[60px]"
+          />
+          {passwordsMismatch && (
+            <Text className="text-destructive text-sm mt-2">
+              Passwords do not match
+            </Text>
+          )}
+          <Button
+            className="w-full mt-4 bg-primary active:bg-primary/80 rounded-full h-[60px]"
+            disabled={
+              !email ||
+              !newPassword ||
+              !confirmPassword ||
+              passwordsMismatch ||
+              isPending
+            }
+            onPress={() => resetMutation.mutate({ email, otp, newPassword })}
+          >
+            {resetMutation.isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-secondary font-semibold text-lg">
+                Reset password
+              </Text>
+            )}
+          </Button>
+        </>
+      )}
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>
