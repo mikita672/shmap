@@ -8,11 +8,11 @@ export default function IndexScreen() {
 
   return (
     <View className="flex-1 justify-center items-center bg-background p-6">
-      <Text className="text-3xl font-bold mb-8 text-textPrimary">
+      <Text className="text-3xl font-bold mb-8 text-foreground">
         Welcome to SHMAP!
       </Text>
-      
-      <Button 
+
+      <Button
         variant="destructive"
         className="rounded-full h-[60px] px-12"
         onPress={() => signOut()}

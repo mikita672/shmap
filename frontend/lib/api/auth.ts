@@ -3,6 +3,9 @@ import type {
   AuthenticationRequest,
   AuthenticationResponse,
   RegisterRequest,
+  ForgotPasswordRequest,
+  VerifyOtpRequest,
+  ResetPasswordRequest,
 } from "@/lib/types/api";
 
 export const loginUser = (data: AuthenticationRequest) =>
@@ -12,3 +15,12 @@ export const registerUser = (data: RegisterRequest) =>
   apiClient.post<AuthenticationResponse>("/api/v1/auth/register", data);
 
 export const logoutUser = () => apiClient.post("/api/v1/auth/logout");
+
+export const forgotPassword = (data: ForgotPasswordRequest) =>
+  apiClient.post("/api/v1/auth/forgot-password", data);
+
+export const verifyOtp = (data: VerifyOtpRequest) =>
+  apiClient.post("/api/v1/auth/verify-otp", data);
+
+export const resetPassword = (data: ResetPasswordRequest) =>
+  apiClient.post("/api/v1/auth/reset-password", data);
