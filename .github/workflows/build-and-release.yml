@@ -255,7 +255,6 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            CODE_SIGN_ENTITLEMENTS="" \
             -quiet
 
       - name: Install ldid
@@ -267,13 +266,41 @@ jobs:
           mkdir -p build/Payload
           cp -R build/shmap.xcarchive/Products/Applications/shmap.app build/Payload/
           
-          # Find all Mach-O binaries (main app + frameworks) and ad-hoc sign them with ldid
-          # ldid recalculates the __LINKEDIT vmsize, avoiding the dyld crash caused by macOS codesign
+          # Extract the entitlements plist that expo prebuild generated.
+          # This contains keychain-access-groups needed by expo-secure-store.
+          ENTITLEMENTS_FILE=$(find ios/shmap -name '*.entitlements' -print -quit)
+          if [ -z "$ENTITLEMENTS_FILE" ]; then
+            echo "⚠️  No .entitlements file found from prebuild, creating minimal entitlements"
+            cat > build/entitlements.plist << 'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>keychain-access-groups</key>
+            <array>
+              <string>$(AppIdentifierPrefix)com.mdzvtt.shmap</string>
+            </array>
+          </dict>
+          </plist>
+          PLIST
+            ENTITLEMENTS_FILE="build/entitlements.plist"
+          fi
+          echo "📋 Using entitlements from: $ENTITLEMENTS_FILE"
+          cat "$ENTITLEMENTS_FILE"
+          
+          # Find all Mach-O binaries and sign them with ldid.
+          # The main app binary gets entitlements; frameworks get bare signatures.
+          APP_BINARY="build/Payload/shmap.app/shmap"
           found_macho=false
           while IFS= read -r -d '' file; do
             if file "$file" | grep -q "Mach-O"; then
               found_macho=true
-              ldid -S "$file"
+              if [ "$file" = "$APP_BINARY" ]; then
+                ldid -S"$ENTITLEMENTS_FILE" "$file"
+                echo "✅ Signed main binary with entitlements"
+              else
+                ldid -S "$file"
+              fi
             fi
           done < <(find build/Payload/shmap.app -type f -print0)
           
