@@ -1,6 +1,5 @@
 package com.mdzvtt.shmap.auth;
 
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;

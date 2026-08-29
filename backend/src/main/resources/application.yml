@@ -29,3 +29,6 @@ application:
         expiration: 604800000
 resend:
   api-key: ${RESEND_API_KEY}
+app:
+  gooogle:
+    client-id: ${GOOGLE_CLIENT_ID}
