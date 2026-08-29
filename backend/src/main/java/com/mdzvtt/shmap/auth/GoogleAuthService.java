@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mdzvtt.shmap.configuration.JwtService;
 import com.mdzvtt.shmap.token.Token;
@@ -52,19 +53,19 @@ public class GoogleAuthService {
                 throw new IllegalArgumentException("Invalid Google token");
             }
 
-            @SuppressWarnings("unchecked")
-            Map<String, Object> payload = objectMapper.readValue(response.body().string(), Map.class);
+            JsonNode payload = objectMapper.readTree(response.body().string());
 
-            if (googleClientId != null && !googleClientId.isEmpty() && !googleClientId.equals(payload.get("aud"))) {
+            if (googleClientId != null && !googleClientId.isEmpty()
+                    && !googleClientId.equals(payload.get("aud").asText())) {
                 throw new IllegalArgumentException("Audience mismatch. Expected: " + googleClientId);
             }
 
-            String email = (String) payload.get("email");
-            String firstName = (String) payload.get("given_name");
-            String lastName = (String) payload.get("family_name");
+            String email = payload.path("email").asText();
+            String firstName = payload.path("given_name").asText(null);
+            String lastName = payload.path("family_name").asText("");
 
             if (firstName == null) {
-                String name = (String) payload.get("name");
+                String name = payload.path("name").asText(null);
                 if (name != null) {
                     String[] parts = name.split(" ", 2);
                     firstName = parts[0];
