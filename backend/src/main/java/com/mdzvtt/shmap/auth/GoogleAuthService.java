@@ -1,10 +1,20 @@
 package com.mdzvtt.shmap.auth;
 
 import java.util.Map;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mdzvtt.shmap.configuration.JwtService;
+import com.mdzvtt.shmap.token.Token;
+import com.mdzvtt.shmap.token.TokenRepository;
+import com.mdzvtt.shmap.token.TokenType;
+import com.mdzvtt.shmap.user.Role;
+import com.mdzvtt.shmap.user.UserRepository;
+import com.mdzvtt.shmap.user.User;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -14,14 +24,25 @@ import okhttp3.Response;
 public class GoogleAuthService {
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private final String GOOGLE_CLIENT_ID = ""; // TODO: add key
+    private final UserRepository userRepository;
+    private final TokenRepository tokenRepository;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
-    public GoogleAuthService(OkHttpClient httpClient, ObjectMapper objectMapper) {
+    @Value("${app.google.client-id:}")
+    private String googleClientId;
+
+    public GoogleAuthService(OkHttpClient httpClient, ObjectMapper objectMapper, UserRepository userRepository,
+            TokenRepository tokenRepository, JwtService jwtService, PasswordEncoder passwordEncoder) {
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
+        this.userRepository = userRepository;
+        this.tokenRepository = tokenRepository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public String verifyAndLogin(String idTokenString) throws Exception {
+    public AuthenticationResponse verifyAndLogin(String idTokenString) throws Exception {
         Request request = new Request.Builder()
                 .url("http://oauth2.googleapis.com/tokeninfo?id_token=" + idTokenString)
                 .build();
@@ -31,26 +52,82 @@ public class GoogleAuthService {
                 throw new IllegalArgumentException("Invalid Google token");
             }
 
+            @SuppressWarnings("unchecked")
             Map<String, Object> payload = objectMapper.readValue(response.body().string(), Map.class);
 
-            if (!GOOGLE_CLIENT_ID.equals(payload.get("aud"))) {
-                throw new IllegalArgumentException("Audience mismatch");
+            if (googleClientId != null && !googleClientId.isEmpty() && !googleClientId.equals(payload.get("aud"))) {
+                throw new IllegalArgumentException("Audience mismatch. Expected: " + googleClientId);
             }
 
             String email = (String) payload.get("email");
-            String name = (String) payload.get("name");
-            String picture = (String) payload.get("picture");
+            String firstName = (String) payload.get("given_name");
+            String lastName = (String) payload.get("family_name");
 
-            // TODO: Creation of the user in DB
+            if (firstName == null) {
+                String name = (String) payload.get("name");
+                if (name != null) {
+                    String[] parts = name.split(" ", 2);
+                    firstName = parts[0];
+                    lastName = parts.length > 1 ? parts[1] : "";
+                } else {
+                    firstName = "";
+                    lastName = "";
+                }
+            }
 
-            // TODO: Generate and return JWT
+            final String finalFirstName = firstName;
+            final String finalLastName = lastName;
 
-            return generateCustomJwt(email);
+            User user = userRepository.findByEmail(email).orElseGet(() -> {
+                User newUser = User.builder()
+                        .firstName(finalFirstName)
+                        .lastName(finalLastName)
+                        .email(email)
+                        .username(email)
+                        .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                        .role(Role.USER)
+                        .build();
+
+                return userRepository.save(newUser);
+            });
+
+            var jwtToken = jwtService.generateToken(user);
+            var refreshToken = jwtService.generateRefreshToken(user);
+
+            revokeAllUserTokens(user);
+            saveUserToken(user, refreshToken, TokenType.REFRESH);
+
+            return AuthenticationResponse.builder()
+                    .accessToken(jwtToken)
+                    .refreshToken(refreshToken)
+                    .build();
         }
-
     }
 
-    private String generateCustomJwt(String email) {
-        return "your.generated.jwt";
+    private void saveUserToken(User user, String jwtToken, TokenType tokenType) {
+        var token = Token.builder()
+                .user(user)
+                .token(jwtToken)
+                .tokenType(tokenType)
+                .expired(false)
+                .revoked(false)
+                .build();
+
+        tokenRepository.save(token);
+    }
+
+    private void revokeAllUserTokens(User user) {
+        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+
+        if (validUserTokens.isEmpty()) {
+            return;
+        }
+
+        validUserTokens.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+
+        tokenRepository.saveAll(validUserTokens);
     }
 }
