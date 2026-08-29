@@ -176,6 +176,8 @@ jobs:
           "
 
       - name: Build iOS Simulator App
+        env:
+          EXPO_PUBLIC_IOS_URL_SCHEME: ${{ secrets.EXPO_PUBLIC_IOS_URL_SCHEME }}
         id: build_ios
         run: |
           BUILD_JSON=$(eas build --platform ios --profile release --non-interactive --wait --json)
