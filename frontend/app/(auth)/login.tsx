@@ -34,6 +34,8 @@ export default function LoginScreen() {
   const isGoogleConfigured = Boolean(webClientId);
   const [googleConfigError, setGoogleConfigError] = useState<string | null>(null);
 
+  const [isNativeGooglePending, setIsNativeGooglePending] = useState(false);
+
   useEffect(() => {
     if (webClientId) {
       GoogleSignin.configure({
@@ -65,6 +67,7 @@ export default function LoginScreen() {
       return;
     }
     setGoogleConfigError(null);
+    setIsNativeGooglePending(true);
 
     try {
       await GoogleSignin.hasPlayServices();
@@ -86,6 +89,8 @@ export default function LoginScreen() {
         console.error("Google Sign-In Error:", error);
         setGoogleConfigError(error?.message ?? "Google Sign-In failed.");
       }
+    } finally {
+      setIsNativeGooglePending(false);
     }
   };
 
@@ -96,7 +101,8 @@ export default function LoginScreen() {
       ? (activeError.response?.data?.error ?? "Login failed")
       : activeError?.message);
 
-  const isPending = loginMutation.isPending || googleLoginMutation.isPending;
+  const isGooglePending = isNativeGooglePending || googleLoginMutation.isPending;
+  const isPending = loginMutation.isPending || isGooglePending;
 
   return (
     <KeyboardAvoidingView
@@ -170,7 +176,7 @@ export default function LoginScreen() {
                 disabled={isPending || !isGoogleConfigured}
                 className="bg-secondary active:bg-secondary/80 rounded-full h-[60px] w-[60px] justify-center items-center"
               >
-                {googleLoginMutation.isPending ? (
+                {isGooglePending ? (
                   <ActivityIndicator color="#000" />
                 ) : (
                   <Image
