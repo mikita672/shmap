@@ -77,11 +77,12 @@ export default function LoginScreen() {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log("User cancelled Google Sign-In");
       } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log("Sign-in already in progress");
+        setGoogleConfigError("Google Sign-In is already in progress.");
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        console.log("Play Services not available");
+        setGoogleConfigError("Google Play Services is not available on this device.");
       } else {
         console.error("Google Sign-In Error:", error);
+        setGoogleConfigError(error?.message ?? "Google Sign-In failed.");
       }
     }
   };
@@ -146,7 +147,10 @@ export default function LoginScreen() {
             <View className="flex-row items-center w-full mt-4 gap-4">
               <Button
                 className="flex-1 bg-primary active:bg-primary/80 rounded-full h-[60px]"
-                onPress={() => loginMutation.mutate({ email, password })}
+                onPress={() => {
+                  setGoogleConfigError(null);
+                  loginMutation.mutate({ email, password });
+                }}
                 disabled={isPending || !email || !password}
               >
                 {loginMutation.isPending ? (
