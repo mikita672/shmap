@@ -69,6 +69,7 @@ apiClient.interceptors.response.use(
     const isAuthEndpoint =
       originalRequest.url?.includes("/authenticate") ||
       originalRequest.url?.includes("/register") ||
+      originalRequest.url?.includes("/verify-google") ||
       originalRequest.url?.includes("/logout") ||
       originalRequest.url?.includes("/forgot-password") ||
       originalRequest.url?.includes("/verify-otp") ||

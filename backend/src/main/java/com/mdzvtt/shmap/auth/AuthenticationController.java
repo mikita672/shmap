@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.auth;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
@@ -22,8 +23,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationController {
     private final AuthenticationService service;
+    private final GoogleAuthService googleAuthService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
@@ -41,6 +44,29 @@ public class AuthenticationController {
             HttpServletResponse response) throws IOException {
         service.refreshToken(request, response);
 
+    }
+
+    @PostMapping("/verify-google")
+    public ResponseEntity<?> googleAuthenticate(@RequestBody Map<String, String> request) {
+        try {
+            String idToken = request.get("idToken");
+
+            if (idToken == null || idToken.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            AuthenticationResponse response = googleAuthService.verifyAndLogin(idToken);
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Google authentication failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid Google authentication token"));
+        } catch (Exception e) {
+            log.error("Google authentication error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Google authentication failed"));
+        }
     }
 
     @ExceptionHandler(IllegalStateException.class)

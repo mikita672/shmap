@@ -14,6 +14,11 @@ export const loginUser = (data: AuthenticationRequest) =>
 export const registerUser = (data: RegisterRequest) =>
   apiClient.post<AuthenticationResponse>("/api/v1/auth/register", data);
 
+export const verifyGoogleToken = (idToken: string) =>
+  apiClient.post<AuthenticationResponse>("/api/v1/auth/verify-google", {
+    idToken,
+  });
+
 export const logoutUser = () => apiClient.post("/api/v1/auth/logout");
 
 export const forgotPassword = (data: ForgotPasswordRequest) =>
