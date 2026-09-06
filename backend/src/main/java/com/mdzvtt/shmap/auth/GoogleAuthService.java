@@ -16,6 +16,8 @@ import com.mdzvtt.shmap.user.Role;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.User;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -42,6 +44,7 @@ public class GoogleAuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public AuthenticationResponse verifyAndLogin(String idTokenString) throws Exception {
         Request request = new Request.Builder()
                 .url("https://oauth2.googleapis.com/tokeninfo?id_token=" + idTokenString)
