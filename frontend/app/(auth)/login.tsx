@@ -58,6 +58,8 @@ export default function LoginScreen() {
   });
 
   const handleGoogleSignIn = async () => {
+    loginMutation.reset();
+    googleLoginMutation.reset();
     if (!webClientId) {
       setGoogleConfigError("Google login is not configured.");
       return;
@@ -87,7 +89,7 @@ export default function LoginScreen() {
     }
   };
 
-  const activeError = loginMutation.error || googleLoginMutation.error;
+  const activeError = googleLoginMutation.error || loginMutation.error;
   const errorMessage =
     googleConfigError ??
     (activeError instanceof AxiosError
@@ -148,6 +150,8 @@ export default function LoginScreen() {
               <Button
                 className="flex-1 bg-primary active:bg-primary/80 rounded-full h-[60px]"
                 onPress={() => {
+                  googleLoginMutation.reset();
+                  loginMutation.reset();
                   setGoogleConfigError(null);
                   loginMutation.mutate({ email, password });
                 }}
