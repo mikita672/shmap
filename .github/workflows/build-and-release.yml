@@ -116,23 +116,17 @@ jobs:
         id: build_android
         run: |
           BUILD_JSON=$(eas build --platform android --profile release --non-interactive --wait --json)
-          BUILD_ID=$(echo "$BUILD_JSON" | node -e "
+          BUILD_URL=$(echo "$BUILD_JSON" | node -e "
             let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
               const builds = JSON.parse(d);
-              console.log(builds[0].id);
+              console.log(builds[0].artifacts.buildUrl);
             });
           ")
-          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+          echo "build_url=$BUILD_URL" >> "$GITHUB_OUTPUT"
 
       - name: Download build artifact
         run: |
-          BUILD_URL=$(eas build:view ${{ steps.build_android.outputs.build_id }} --json | node -e "
-            let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
-              const build = JSON.parse(d);
-              console.log(build.artifacts.buildUrl);
-            });
-          ")
-          curl -fL -o shmap-android.apk "$BUILD_URL"
+          curl -fL -o shmap-android.apk "${{ steps.build_android.outputs.build_url }}"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -189,23 +183,17 @@ jobs:
         id: build_ios
         run: |
           BUILD_JSON=$(eas build --platform ios --profile release --non-interactive --wait --json)
-          BUILD_ID=$(echo "$BUILD_JSON" | node -e "
+          BUILD_URL=$(echo "$BUILD_JSON" | node -e "
             let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
               const builds = JSON.parse(d);
-              console.log(builds[0].id);
+              console.log(builds[0].artifacts.buildUrl);
             });
           ")
-          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+          echo "build_url=$BUILD_URL" >> "$GITHUB_OUTPUT"
 
       - name: Download build artifact
         run: |
-          BUILD_URL=$(eas build:view ${{ steps.build_ios.outputs.build_id }} --json | node -e "
-            let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
-              const build = JSON.parse(d);
-              console.log(build.artifacts.buildUrl);
-            });
-          ")
-          curl -fL -o shmap-ios-simulator.tar.gz "$BUILD_URL"
+          curl -fL -o shmap-ios-simulator.tar.gz "${{ steps.build_ios.outputs.build_url }}"
 
       - name: Upload iOS artifact
         uses: actions/upload-artifact@v4
