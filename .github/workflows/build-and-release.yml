@@ -212,6 +212,7 @@ jobs:
     runs-on: macos-latest
     env:
       EXPO_PUBLIC_API_URL: "https://shmap-backend-761707913997.europe-central2.run.app"
+      EXPO_PUBLIC_IOS_URL_SCHEME: ${{ secrets.EXPO_PUBLIC_IOS_URL_SCHEME }}
     defaults:
       run:
         working-directory: frontend

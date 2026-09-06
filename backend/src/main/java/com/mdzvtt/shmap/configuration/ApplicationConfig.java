@@ -1,7 +1,9 @@
 package com.mdzvtt.shmap.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mdzvtt.shmap.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +19,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class ApplicationConfig {
     private final UserRepository repository;
+
+    @Bean
+    public OkHttpClient okHttpClient() {
+        return new OkHttpClient();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {
