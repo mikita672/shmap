@@ -44,7 +44,7 @@ public class GoogleAuthService {
 
     public AuthenticationResponse verifyAndLogin(String idTokenString) throws Exception {
         Request request = new Request.Builder()
-                .url("http://oauth2.googleapis.com/tokeninfo?id_token=" + idTokenString)
+                .url("https://oauth2.googleapis.com/tokeninfo?id_token=" + idTokenString)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {

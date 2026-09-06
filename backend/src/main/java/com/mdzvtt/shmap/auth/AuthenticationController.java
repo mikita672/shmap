@@ -45,7 +45,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/verify-google")
-    public ResponseEntity<AuthenticationResponse> googleAuthenticate(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> googleAuthenticate(@RequestBody Map<String, String> request) {
         try {
             String idToken = request.get("idToken");
 
@@ -57,9 +57,10 @@ public class AuthenticationController {
 
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
     }
 
