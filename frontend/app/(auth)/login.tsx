@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -13,10 +13,14 @@ import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { loginUser } from "@/lib/api/auth";
+import { loginUser, verifyGoogleToken } from "@/lib/api/auth";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginScreen() {
@@ -25,6 +29,13 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    });
+  }, []);
+
   const loginMutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (response) => {
@@ -32,10 +43,41 @@ export default function LoginScreen() {
     },
   });
 
+  const googleLoginMutation = useMutation({
+    mutationFn: verifyGoogleToken,
+    onSuccess: (response) => {
+      signIn(response.data);
+    },
+  });
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+
+      if (response.data?.idToken) {
+        googleLoginMutation.mutate(response.data.idToken);
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log("User cancelled Google Sign-In");
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log("Sign-in already in progress");
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        console.log("Play Services not available");
+      } else {
+        console.error("Google Sign-In Error:", error);
+      }
+    }
+  };
+
+  const activeError = loginMutation.error || googleLoginMutation.error;
   const errorMessage =
-    loginMutation.error instanceof AxiosError
-      ? (loginMutation.error.response?.data?.error ?? "Login failed")
-      : loginMutation.error?.message;
+    activeError instanceof AxiosError
+      ? (activeError.response?.data?.error ?? "Login failed")
+      : activeError?.message;
+
+  const isPending = loginMutation.isPending || googleLoginMutation.isPending;
 
   return (
     <KeyboardAvoidingView
@@ -70,7 +112,7 @@ export default function LoginScreen() {
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
-              editable={!loginMutation.isPending}
+              editable={!isPending}
               className="mb-4 rounded-full h-[60px]"
             />
             <Input
@@ -81,7 +123,7 @@ export default function LoginScreen() {
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
-              editable={!loginMutation.isPending}
+              editable={!isPending}
               className="rounded-full h-[60px]"
             />
 
@@ -89,7 +131,7 @@ export default function LoginScreen() {
               <Button
                 className="flex-1 bg-primary active:bg-primary/80 rounded-full h-[60px]"
                 onPress={() => loginMutation.mutate({ email, password })}
-                disabled={loginMutation.isPending || !email || !password}
+                disabled={isPending || !email || !password}
               >
                 {loginMutation.isPending ? (
                   <ActivityIndicator color="#fff" />
@@ -99,12 +141,20 @@ export default function LoginScreen() {
                   </Text>
                 )}
               </Button>
-              <Button className="bg-secondary active:bg-secondary/80 rounded-full h-[60px] w-[60px] justify-center items-center">
-                <Image
-                  source={require("@/assets/images/google-logo.png")}
-                  style={{ width: 32, height: 32 }}
-                  contentFit="contain"
-                />
+              <Button
+                onPress={handleGoogleSignIn}
+                disabled={isPending}
+                className="bg-secondary active:bg-secondary/80 rounded-full h-[60px] w-[60px] justify-center items-center"
+              >
+                {googleLoginMutation.isPending ? (
+                  <ActivityIndicator color="#000" />
+                ) : (
+                  <Image
+                    source={require("@/assets/images/google-logo.png")}
+                    style={{ width: 32, height: 32 }}
+                    contentFit="contain"
+                  />
+                )}
               </Button>
             </View>
 
