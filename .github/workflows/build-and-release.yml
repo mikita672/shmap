@@ -108,6 +108,10 @@ jobs:
           "
 
       - name: Build Android APK
+        env:
+          EXPO_PUBLIC_IOS_URL_SCHEME: ${{ secrets.EXPO_PUBLIC_IOS_URL_SCHEME }}
+          EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID }}
+          EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
         id: build_android
         run: |
           BUILD_JSON=$(eas build --platform android --profile release --non-interactive --wait --json)
@@ -178,6 +182,8 @@ jobs:
       - name: Build iOS Simulator App
         env:
           EXPO_PUBLIC_IOS_URL_SCHEME: ${{ secrets.EXPO_PUBLIC_IOS_URL_SCHEME }}
+          EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID }}
+          EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
         id: build_ios
         run: |
           BUILD_JSON=$(eas build --platform ios --profile release --non-interactive --wait --json)
@@ -213,6 +219,8 @@ jobs:
     env:
       EXPO_PUBLIC_API_URL: "https://shmap-backend-761707913997.europe-central2.run.app"
       EXPO_PUBLIC_IOS_URL_SCHEME: ${{ secrets.EXPO_PUBLIC_IOS_URL_SCHEME }}
+      EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
     defaults:
       run:
         working-directory: frontend
@@ -270,7 +278,7 @@ jobs:
           set -euo pipefail
           mkdir -p build/Payload
           cp -R build/shmap.xcarchive/Products/Applications/shmap.app build/Payload/
-          
+
           # Create a dummy entitlements file with keychain access.
           # We must do this unconditionally because the prebuild entitlements are empty.
           # Sideloaders will read this dummy file and replace the TEAMID with your actual Apple ID Team ID.
@@ -288,11 +296,11 @@ jobs:
           </dict>
           </plist>
           PLIST
-          
+
           ENTITLEMENTS_FILE="build/entitlements.plist"
           echo "📋 Using entitlements:"
           cat "$ENTITLEMENTS_FILE"
-          
+
           # Find all Mach-O binaries and sign them with ldid.
           # The main app binary gets entitlements; frameworks get bare signatures.
           APP_BINARY="build/Payload/shmap.app/shmap"
@@ -308,12 +316,12 @@ jobs:
               fi
             fi
           done < <(find build/Payload/shmap.app -type f -print0)
-          
+
           if [ "$found_macho" = false ]; then
             echo "Error: No Mach-O binaries found"
             exit 1
           fi
-          
+
           cd build
           zip -r -q ../shmap-ios-unsigned.ipa Payload
 
@@ -330,16 +338,16 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: "read"
+      id-token: "write"
     steps:
       - uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: 'projects/761707913997/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-          service_account: '761707913997-compute@developer.gserviceaccount.com'
+          workload_identity_provider: "projects/761707913997/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "761707913997-compute@developer.gserviceaccount.com"
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -349,11 +357,13 @@ jobs:
           IMAGE_TAG="europe-central2-docker.pkg.dev/shmap-505120/shmap-repo/shmap-backend:${GITHUB_SHA}"
           gcloud builds submit ./backend --tag "$IMAGE_TAG" --project shmap-505120
           gcloud run deploy shmap-backend --image "$IMAGE_TAG" --region europe-central2 --project shmap-505120 \
+            --update-env-vars "GOOGLE_CLIENT_ID=761707913997-vnqsvcfranhri32css64rdqbc399qrel.apps.googleusercontent.com" \
             --update-secrets "RESEND_API_KEY=RESEND_API_KEY:latest"
 
   release:
     name: Create Release
-    needs: [version, build_android, build_ios, build_ios_unsigned, deploy_backend]
+    needs:
+      [version, build_android, build_ios, build_ios_unsigned, deploy_backend]
     runs-on: ubuntu-latest
     permissions:
       contents: write
