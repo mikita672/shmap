@@ -29,12 +29,19 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
+  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim();
+  const isGoogleConfigured = Boolean(webClientId);
+  const [googleConfigError, setGoogleConfigError] = useState<string | null>(null);
+
   useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim(),
-      iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim(),
-    });
-  }, []);
+    if (webClientId) {
+      GoogleSignin.configure({
+        webClientId,
+        iosClientId,
+      });
+    }
+  }, [webClientId, iosClientId]);
 
   const loginMutation = useMutation({
     mutationFn: loginUser,
@@ -51,12 +58,20 @@ export default function LoginScreen() {
   });
 
   const handleGoogleSignIn = async () => {
+    if (!webClientId) {
+      setGoogleConfigError("Google login is not configured.");
+      return;
+    }
+    setGoogleConfigError(null);
+
     try {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
 
       if (response.data?.idToken) {
         googleLoginMutation.mutate(response.data.idToken);
+      } else {
+        setGoogleConfigError("Failed to obtain ID token from Google.");
       }
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -73,9 +88,10 @@ export default function LoginScreen() {
 
   const activeError = loginMutation.error || googleLoginMutation.error;
   const errorMessage =
-    activeError instanceof AxiosError
+    googleConfigError ??
+    (activeError instanceof AxiosError
       ? (activeError.response?.data?.error ?? "Login failed")
-      : activeError?.message;
+      : activeError?.message);
 
   const isPending = loginMutation.isPending || googleLoginMutation.isPending;
 
@@ -99,7 +115,7 @@ export default function LoginScreen() {
             </Text>
 
             {errorMessage && (
-              <Text className="text-destructive text-sm mb-4">
+              <Text className="text-destructive text-sm mb-4 text-center">
                 {errorMessage}
               </Text>
             )}
@@ -143,7 +159,7 @@ export default function LoginScreen() {
               </Button>
               <Button
                 onPress={handleGoogleSignIn}
-                disabled={isPending}
+                disabled={isPending || !isGoogleConfigured}
                 className="bg-secondary active:bg-secondary/80 rounded-full h-[60px] w-[60px] justify-center items-center"
               >
                 {googleLoginMutation.isPending ? (
