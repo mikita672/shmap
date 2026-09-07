@@ -78,7 +78,10 @@ export default function LoginScreen() {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
 
-      if (response.data?.idToken) {
+      if (response.type === "cancelled") {
+        return;
+      }
+      if (response.data.idToken) {
         googleLoginMutation.mutate(response.data.idToken);
       } else {
         setGoogleConfigError("Failed to obtain ID token from Google.");

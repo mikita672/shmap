@@ -18,10 +18,28 @@ const IS_EXPO_GO = Constants.appOwnership === "expo";
 // Types (subset of what we actually use)
 // ---------------------------------------------------------------------------
 
+/** Mirrors SignInSuccessResponse from @react-native-google-signin/google-signin */
+export type SignInSuccessResponse = {
+  type: "success";
+  data: {
+    idToken: string | null;
+    [key: string]: unknown;
+  };
+};
+
+/** Mirrors CancelledResponse from @react-native-google-signin/google-signin */
+export type SignInCancelledResponse = {
+  type: "cancelled";
+  data: null;
+};
+
+/** Mirrors SignInResponse from @react-native-google-signin/google-signin */
+export type SignInResponse = SignInSuccessResponse | SignInCancelledResponse;
+
 export type GoogleSigninType = {
   configure: (options: { webClientId?: string; iosClientId?: string }) => void;
   hasPlayServices: () => Promise<void>;
-  signIn: () => Promise<{ data?: { idToken?: string | null } | null }>;
+  signIn: () => Promise<SignInResponse>;
 };
 
 export type StatusCodesType = {
