@@ -1,6 +1,6 @@
-import "dotenv/config";
+require("dotenv/config");
 
-export default ({ config }) => {
+module.exports = ({ config }) => {
   return {
     ...config,
     plugins: [

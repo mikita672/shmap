@@ -16,7 +16,8 @@ import { AxiosError } from "axios";
 import {
   GoogleSignin,
   statusCodes,
-} from "@react-native-google-signin/google-signin";
+  isGoogleSigninUnavailable,
+} from "@/lib/google-signin";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -31,8 +32,12 @@ export default function LoginScreen() {
 
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
   const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim();
-  const isGoogleConfigured = Boolean(webClientId);
-  const [googleConfigError, setGoogleConfigError] = useState<string | null>(null);
+  const isGoogleConfigured = Boolean(webClientId) && !isGoogleSigninUnavailable;
+  const [googleConfigError, setGoogleConfigError] = useState<string | null>(
+    isGoogleSigninUnavailable
+      ? "Google Sign-In is not available in Expo Go. Use a development build."
+      : null,
+  );
 
   const [isNativeGooglePending, setIsNativeGooglePending] = useState(false);
 
@@ -73,7 +78,10 @@ export default function LoginScreen() {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
 
-      if (response.data?.idToken) {
+      if (response.type === "cancelled") {
+        return;
+      }
+      if (response.data.idToken) {
         googleLoginMutation.mutate(response.data.idToken);
       } else {
         setGoogleConfigError("Failed to obtain ID token from Google.");
@@ -84,7 +92,9 @@ export default function LoginScreen() {
       } else if (error.code === statusCodes.IN_PROGRESS) {
         setGoogleConfigError("Google Sign-In is already in progress.");
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        setGoogleConfigError("Google Play Services is not available on this device.");
+        setGoogleConfigError(
+          "Google Play Services is not available on this device.",
+        );
       } else {
         console.error("Google Sign-In Error:", error);
         setGoogleConfigError(error?.message ?? "Google Sign-In failed.");
@@ -101,7 +111,8 @@ export default function LoginScreen() {
       ? (activeError.response?.data?.error ?? "Login failed")
       : activeError?.message);
 
-  const isGooglePending = isNativeGooglePending || googleLoginMutation.isPending;
+  const isGooglePending =
+    isNativeGooglePending || googleLoginMutation.isPending;
   const isPending = loginMutation.isPending || isGooglePending;
 
   return (
