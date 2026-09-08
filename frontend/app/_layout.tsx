@@ -10,6 +10,8 @@ import "../global.css";
 import { PortalHost } from "@rn-primitives/portal";
 import { View } from "react-native";
 
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthProvider } from "@/providers/AuthProvider";
@@ -44,8 +46,10 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootNavigator />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

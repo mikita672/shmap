@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTabColors } from "@/hooks/useTabColors";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -47,6 +48,10 @@ function PillIcon({
 
 export default function TabsLayout() {
   const colors = useTabColors();
+  const insets = useSafeAreaInsets();
+
+  const bottomPadding = Math.max(insets.bottom, 8);
+  const tabBarHeight = 54 + bottomPadding;
 
   return (
     <Tabs
@@ -58,9 +63,9 @@ export default function TabsLayout() {
           backgroundColor: colors.background,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 64,
-          paddingBottom: 8,
-          paddingTop: 4,
+          height: tabBarHeight,
+          paddingBottom: bottomPadding,
+          paddingTop: 6,
         },
         tabBarLabelStyle: {
           fontSize: 12,
