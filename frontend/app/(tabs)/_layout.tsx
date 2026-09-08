@@ -1,32 +1,62 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useUnstableNativeVariable } from "nativewind";
+import { View } from "react-native";
+import { useTabColors } from "@/hooks/useTabColors";
+
+type IconName = React.ComponentProps<typeof Ionicons>["name"];
+
+function PillIcon({
+  name,
+  size,
+  focused,
+  tintColor,
+  activeIconColor,
+  pillColor,
+}: {
+  name: IconName;
+  size: number;
+  focused: boolean;
+  tintColor: string;
+  activeIconColor: string;
+  pillColor: string;
+}) {
+  return (
+    <View
+      style={{
+        backgroundColor: focused ? pillColor : "transparent",
+        borderRadius: 999,
+        paddingHorizontal: 20,
+        paddingVertical: 4,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {/* When focused: Russet icon. When unfocused: Lemon Meringue icon. */}
+      <Ionicons
+        name={name}
+        size={size}
+        color={focused ? activeIconColor : tintColor}
+      />
+    </View>
+  );
+}
 
 export default function TabsLayout() {
-  const backgroundRaw = useUnstableNativeVariable("--background");
-  const borderRaw = useUnstableNativeVariable("--border");
-  const primaryRaw = useUnstableNativeVariable("--primary");
-  const mutedForegroundRaw = useUnstableNativeVariable("--muted-foreground");
-
-  const background = backgroundRaw ? `hsl(${backgroundRaw})` : undefined;
-  const border = borderRaw ? `hsl(${borderRaw})` : undefined;
-  const primary = primaryRaw ? `hsl(${primaryRaw})` : undefined;
-  const mutedForeground = mutedForegroundRaw
-    ? `hsl(${mutedForegroundRaw})`
-    : undefined;
+  const colors = useTabColors();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: primary,
-        tabBarInactiveTintColor: mutedForeground,
+        tabBarActiveTintColor: colors.label,
+        tabBarInactiveTintColor: colors.label,
         tabBarStyle: {
-          backgroundColor: background,
-          borderTopColor: border,
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 60,
+          height: 64,
           paddingBottom: 8,
+          paddingTop: 4,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -38,8 +68,15 @@ export default function TabsLayout() {
         name="map"
         options={{
           title: "Map",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="map-outline" size={size} color={color} />
+          tabBarIcon: ({ size, focused }) => (
+            <PillIcon
+              name="map-outline"
+              size={size}
+              focused={focused}
+              tintColor={colors.icon}
+              activeIconColor={colors.iconActive}
+              pillColor={colors.bubble}
+            />
           ),
         }}
       />
@@ -47,8 +84,15 @@ export default function TabsLayout() {
         name="chats"
         options={{
           title: "Chats",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-outline" size={size} color={color} />
+          tabBarIcon: ({ size, focused }) => (
+            <PillIcon
+              name="chatbubble-outline"
+              size={size}
+              focused={focused}
+              tintColor={colors.icon}
+              activeIconColor={colors.iconActive}
+              pillColor={colors.bubble}
+            />
           ),
         }}
       />
@@ -56,8 +100,15 @@ export default function TabsLayout() {
         name="friends"
         options={{
           title: "Friends",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+          tabBarIcon: ({ size, focused }) => (
+            <PillIcon
+              name="people-outline"
+              size={size}
+              focused={focused}
+              tintColor={colors.icon}
+              activeIconColor={colors.iconActive}
+              pillColor={colors.bubble}
+            />
           ),
         }}
       />
