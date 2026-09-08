@@ -1,17 +1,30 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useUnstableNativeVariable } from "nativewind";
 
 export default function TabsLayout() {
+  const backgroundRaw = useUnstableNativeVariable("--background");
+  const borderRaw = useUnstableNativeVariable("--border");
+  const primaryRaw = useUnstableNativeVariable("--primary");
+  const mutedForegroundRaw = useUnstableNativeVariable("--muted-foreground");
+
+  const background = backgroundRaw ? `hsl(${backgroundRaw})` : undefined;
+  const border = borderRaw ? `hsl(${borderRaw})` : undefined;
+  const primary = primaryRaw ? `hsl(${primaryRaw})` : undefined;
+  const mutedForeground = mutedForegroundRaw
+    ? `hsl(${mutedForegroundRaw})`
+    : undefined;
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#6366f1",
-        tabBarInactiveTintColor: "#9ca3af",
+        tabBarActiveTintColor: primary,
+        tabBarInactiveTintColor: mutedForeground,
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
+          backgroundColor: background,
+          borderTopColor: border,
           borderTopWidth: 1,
-          borderTopColor: "#e5e7eb",
           height: 60,
           paddingBottom: 8,
         },
@@ -26,7 +39,7 @@ export default function TabsLayout() {
         options={{
           title: "Map",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="map-outline" isze={size} color={color} />
+            <Ionicons name="map-outline" size={size} color={color} />
           ),
         }}
       />
