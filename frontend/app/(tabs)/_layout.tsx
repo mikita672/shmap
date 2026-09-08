@@ -25,7 +25,6 @@ function PillIcon({
 
   return (
     <View style={{ alignItems: "center", justifyContent: "center" }}>
-      {/* Bubble is absolute so it never changes the icon's layout size */}
       {focused && (
         <View
           style={{
@@ -91,7 +90,7 @@ export default function TabsLayout() {
           title: "Chats",
           tabBarIcon: ({ size, focused }) => (
             <PillIcon
-              name="chatbubble-outline"
+              name="chatbox-ellipses-outline"
               size={size}
               focused={focused}
               tintColor={colors.icon}
