@@ -21,8 +21,8 @@ function PillIcon({
   activeIconColor: string;
   pillColor: string;
 }) {
-  const bubbleWidth = size + 40;
-  const bubbleHeight = size + 8;
+  const bubbleWidth = size + 30;
+  const bubbleHeight = size + 5;
 
   return (
     <View style={{ alignItems: "center", justifyContent: "center" }}>
