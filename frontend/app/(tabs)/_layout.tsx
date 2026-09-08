@@ -20,18 +20,23 @@ function PillIcon({
   activeIconColor: string;
   pillColor: string;
 }) {
+  const bubbleWidth = size + 40;
+  const bubbleHeight = size + 8;
+
   return (
-    <View
-      style={{
-        backgroundColor: focused ? pillColor : "transparent",
-        borderRadius: 999,
-        paddingHorizontal: 20,
-        paddingVertical: 4,
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {/* When focused: Russet icon. When unfocused: Lemon Meringue icon. */}
+    <View style={{ alignItems: "center", justifyContent: "center" }}>
+      {/* Bubble is absolute so it never changes the icon's layout size */}
+      {focused && (
+        <View
+          style={{
+            position: "absolute",
+            width: bubbleWidth,
+            height: bubbleHeight,
+            borderRadius: 999,
+            backgroundColor: pillColor,
+          }}
+        />
+      )}
       <Ionicons
         name={name}
         size={size}
