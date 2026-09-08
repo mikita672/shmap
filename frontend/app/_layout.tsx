@@ -24,13 +24,11 @@ function RootNavigator() {
   }
 
   return (
-    // The 'dark' class on this View activates .dark:root CSS variables in global.css.
-    // Without it, darkMode: "class" in tailwind.config.js has no effect on native.
     <View className={`flex-1 ${isDark ? "dark" : ""}`}>
       <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={isAuthenticated}>
-            <Stack.Screen name="index" />
+            <Stack.Screen name="(tabs)" />
           </Stack.Protected>
 
           <Stack.Protected guard={!isAuthenticated}>
