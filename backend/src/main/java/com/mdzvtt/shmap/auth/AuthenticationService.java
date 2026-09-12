@@ -1,8 +1,11 @@
 package com.mdzvtt.shmap.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mdzvtt.shmap.configuration.JwtService;
+import com.mdzvtt.shmap.exception.ApiErrorResponse;
 import com.mdzvtt.shmap.exception.DuplicateEmailException;
 import com.mdzvtt.shmap.exception.DuplicateUsernameException;
+import com.mdzvtt.shmap.exception.ErrorCode;
 import com.mdzvtt.shmap.user.Role;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -13,9 +16,9 @@ import com.mdzvtt.shmap.token.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.time.Instant;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -111,7 +114,8 @@ public class AuthenticationService {
         final String userEmail;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Missing or invalid Authorization header");
+            writeErrorResponse(response, request.getRequestURI(), HttpServletResponse.SC_UNAUTHORIZED,
+                    ErrorCode.UNAUTHORIZED, "Missing or invalid Authorization header");
             return;
         }
 
@@ -119,25 +123,29 @@ public class AuthenticationService {
         try {
             userEmail = jwtService.extractUserEmail(refreshToken);
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or expired refresh token");
+            writeErrorResponse(response, request.getRequestURI(), HttpServletResponse.SC_UNAUTHORIZED,
+                    ErrorCode.INVALID_REFRESH_TOKEN, "Invalid or expired refresh token");
             return;
         }
 
         if (userEmail != null) {
             var user = this.repository.findByEmail(userEmail).orElse(null);
             if (user == null) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "User not found");
+                writeErrorResponse(response, request.getRequestURI(), HttpServletResponse.SC_UNAUTHORIZED,
+                        ErrorCode.USER_NOT_FOUND, "User not found");
                 return;
             }
 
             var storedToken = tokenRepository.findByToken(refreshToken).orElse(null);
             if (storedToken == null || storedToken.isExpired() || storedToken.isRevoked()) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Refresh token is invalid or revoked");
+                writeErrorResponse(response, request.getRequestURI(), HttpServletResponse.SC_UNAUTHORIZED,
+                        ErrorCode.INVALID_REFRESH_TOKEN, "Refresh token is invalid or revoked");
                 return;
             }
 
             if (storedToken.getTokenType() != TokenType.REFRESH) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Provided token is not a refresh token");
+                writeErrorResponse(response, request.getRequestURI(), HttpServletResponse.SC_BAD_REQUEST,
+                        ErrorCode.VALIDATION_FAILED, "Provided token is not a refresh token");
                 return;
             }
 
@@ -158,10 +166,26 @@ public class AuthenticationService {
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 objectMapper.writeValue(response.getOutputStream(), authResponse);
             } else {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Refresh token is invalid");
+                writeErrorResponse(response, request.getRequestURI(), HttpServletResponse.SC_UNAUTHORIZED,
+                        ErrorCode.INVALID_REFRESH_TOKEN, "Refresh token is invalid");
             }
         } else {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Could not extract user from token");
+            writeErrorResponse(response, request.getRequestURI(), HttpServletResponse.SC_UNAUTHORIZED,
+                    ErrorCode.INVALID_REFRESH_TOKEN, "Could not extract user from token");
         }
+    }
+
+    private void writeErrorResponse(HttpServletResponse response, String path, int status, ErrorCode code, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        ApiErrorResponse errorResponse = ApiErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(status)
+                .code(code)
+                .message(message)
+                .error(message)
+                .path(path)
+                .build();
+        objectMapper.writeValue(response.getOutputStream(), errorResponse);
     }
 }
