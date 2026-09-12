@@ -9,6 +9,8 @@ import "react-native-reanimated";
 import "../global.css";
 import { PortalHost } from "@rn-primitives/portal";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Toaster } from "sonner-native";
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -39,6 +41,7 @@ function RootNavigator() {
         </Stack>
         <StatusBar style="auto" />
         <PortalHost />
+        <Toaster position="bottom-center" />
       </ThemeProvider>
     </View>
   );
@@ -47,9 +50,11 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
