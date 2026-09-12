@@ -1,6 +1,28 @@
 import { AxiosError } from "axios";
 import { AuthErrorCode, type ApiErrorResponse } from "@/lib/types/api";
 
+const ALLOWED_FIELD_KEYS = new Set([
+  "email",
+  "password",
+  "otp",
+  "newPassword",
+  "firstname",
+  "lastname",
+  "username",
+]);
+
+function sanitizeFieldErrors(
+  raw: Record<string, unknown>,
+): Record<string, string> | undefined {
+  const result: Record<string, string> = {};
+  for (const key of Object.keys(raw)) {
+    if (ALLOWED_FIELD_KEYS.has(key) && typeof raw[key] === "string") {
+      result[key] = raw[key] as string;
+    }
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 export function extractApiError(error: unknown): ApiErrorResponse | null {
   if (!error) return null;
 
@@ -45,7 +67,7 @@ export function extractApiError(error: unknown): ApiErrorResponse | null {
         path: data.path,
         fieldErrors:
           data.fieldErrors && typeof data.fieldErrors === "object"
-            ? data.fieldErrors
+            ? sanitizeFieldErrors(data.fieldErrors)
             : undefined,
       };
     }
