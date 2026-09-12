@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -26,6 +26,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { MaterialIcons } from "@/lib/icons";
 import { extractApiError } from "@/lib/utils/error";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner-native";
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -39,13 +40,16 @@ export default function RegisterScreen() {
 
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
   const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim();
-  const [googleConfigError, setGoogleConfigError] = useState<string | null>(
-    isGoogleSigninUnavailable
-      ? "Google Sign-In is not available in Expo Go. Use a development build."
-      : null,
-  );
 
   const [isNativeGooglePending, setIsNativeGooglePending] = useState(false);
+
+  useEffect(() => {
+    if (isGoogleSigninUnavailable) {
+      toast.error(
+        "Google Sign-In is not available in Expo Go. Use a development build.",
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (webClientId) {
@@ -74,10 +78,9 @@ export default function RegisterScreen() {
     registerMutation.reset();
     googleLoginMutation.reset();
     if (!webClientId) {
-      setGoogleConfigError("Google login is not configured.");
+      toast.error("Google login is not configured.");
       return;
     }
-    setGoogleConfigError(null);
     setIsNativeGooglePending(true);
 
     try {
@@ -90,20 +93,18 @@ export default function RegisterScreen() {
       if (response.data.idToken) {
         googleLoginMutation.mutate(response.data.idToken);
       } else {
-        setGoogleConfigError("Failed to obtain ID token from Google.");
+        toast.error("Failed to obtain ID token from Google.");
       }
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log("User cancelled Google Sign-In");
       } else if (error.code === statusCodes.IN_PROGRESS) {
-        setGoogleConfigError("Google Sign-In is already in progress.");
+        toast.error("Google Sign-In is already in progress.");
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        setGoogleConfigError(
-          "Google Play Services is not available on this device.",
-        );
+        toast.error("Google Play Services is not available on this device.");
       } else {
         console.error("Google Sign-In Error:", error);
-        setGoogleConfigError(error?.message ?? "Google Sign-In failed.");
+        toast.error(error?.message ?? "Google Sign-In failed.");
       }
     } finally {
       setIsNativeGooglePending(false);
@@ -113,7 +114,6 @@ export default function RegisterScreen() {
   const clearErrors = () => {
     if (registerMutation.error) registerMutation.reset();
     if (googleLoginMutation.error) googleLoginMutation.reset();
-    if (googleConfigError) setGoogleConfigError(null);
   };
 
   const passwordsMatch = password === confirmPassword;
@@ -125,11 +125,20 @@ export default function RegisterScreen() {
   const apiError = activeError ? extractApiError(activeError) : null;
   const fieldErrors = apiError?.fieldErrors || {};
 
-  const bannerError =
-    googleConfigError ??
-    (apiError && Object.keys(fieldErrors).length === 0
-      ? apiError.message
-      : null);
+  const lastToastedError = useRef<string | null>(null);
+  useEffect(() => {
+    const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+    if (
+      apiError?.message &&
+      !hasFieldErrors &&
+      apiError.message !== lastToastedError.current
+    ) {
+      lastToastedError.current = apiError.message;
+      toast.error(apiError.message);
+    } else if (!apiError) {
+      lastToastedError.current = null;
+    }
+  }, [apiError, fieldErrors]);
 
   const isGooglePending =
     isNativeGooglePending || googleLoginMutation.isPending;
@@ -164,12 +173,6 @@ export default function RegisterScreen() {
             <Text className="text-5xl font-bold mb-16 text-foreground p-6">
               Register
             </Text>
-
-            {bannerError && (
-              <Text className="text-destructive text-sm mb-4 text-center">
-                {bannerError}
-              </Text>
-            )}
 
             <View className="flex-row w-full gap-4 mb-4">
               <View className="flex-1">
