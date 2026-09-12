@@ -259,9 +259,11 @@ export default function PasswordResetScreen() {
                       "border-destructive border-2",
                   )}
                 />
-                {isInvalidOtp && (
+                {(isInvalidOtp || apiError?.fieldErrors?.otp) && (
                   <Text className="text-destructive text-xs mt-1 text-center">
-                    {apiError?.message || "Invalid verification code"}
+                    {apiError?.fieldErrors?.otp ||
+                      apiError?.message ||
+                      "Invalid verification code"}
                   </Text>
                 )}
                 <Button
