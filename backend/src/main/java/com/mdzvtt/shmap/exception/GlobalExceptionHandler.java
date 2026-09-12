@@ -134,6 +134,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadable(
+            org.springframework.http.converter.HttpMessageNotReadableException ex, HttpServletRequest request) {
+        log.warn("Malformed request body at {}: {}", request.getRequestURI(), ex.getMessage());
+
+        String message = "Malformed request body";
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .code(ErrorCode.VALIDATION_FAILED)
+                .message(message)
+                .error(message)
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception at {}: ", request.getRequestURI(), ex);
