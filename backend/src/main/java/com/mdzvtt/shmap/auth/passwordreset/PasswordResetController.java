@@ -69,7 +69,7 @@ public class PasswordResetController {
         }
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidOtpException.class, OtpMaxAttemptsException.class})
     @PostMapping("/verify-otp")
     public ResponseEntity<MessageResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
@@ -102,7 +102,7 @@ public class PasswordResetController {
         return ResponseEntity.ok(MessageResponse.of("Verification code verified successfully"));
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidOtpException.class, OtpMaxAttemptsException.class})
     @PostMapping("/reset-password")
     public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
