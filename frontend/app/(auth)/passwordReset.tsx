@@ -131,7 +131,7 @@ export default function PasswordResetScreen() {
                 if (step === "newPassword") {
                   setStep("otp");
                 } else if (step === "otp") {
-                  setStep("email");
+                  handleRequestNewCode();
                 } else {
                   router.back();
                 }
