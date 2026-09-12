@@ -1,6 +1,8 @@
 package com.mdzvtt.shmap.auth;
 
 import com.mdzvtt.shmap.configuration.JwtService;
+import com.mdzvtt.shmap.exception.DuplicateEmailException;
+import com.mdzvtt.shmap.exception.DuplicateUsernameException;
 import com.mdzvtt.shmap.user.Role;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -34,7 +36,10 @@ public class AuthenticationService {
 
     public AuthenticationResponse register(RegisterRequest request) {
         if (repository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalStateException("Email already registered");
+            throw new DuplicateEmailException("An account with this email already exists");
+        }
+        if (repository.findByUsername(request.getUsername()).isPresent()) {
+            throw new DuplicateUsernameException("This username is already taken");
         }
 
         var user = User.builder()

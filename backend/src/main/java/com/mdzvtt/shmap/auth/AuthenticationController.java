@@ -1,15 +1,13 @@
 package com.mdzvtt.shmap.auth;
 
+import com.mdzvtt.shmap.exception.GoogleAuthException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,12 +28,13 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
-            @jakarta.validation.Valid @RequestBody RegisterRequest request) {
+            @Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<AuthenticationResponse> authenticate(
+            @Valid @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(service.authenticate(request));
     }
 
@@ -43,39 +42,26 @@ public class AuthenticationController {
     public void refreshToken(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         service.refreshToken(request, response);
-
     }
 
     @PostMapping("/verify-google")
-    public ResponseEntity<?> googleAuthenticate(@RequestBody Map<String, String> request) {
+    public ResponseEntity<AuthenticationResponse> googleAuthenticate(@RequestBody Map<String, String> request) {
+        String idToken = request.get("idToken");
+
+        if (idToken == null || idToken.trim().isEmpty()) {
+            throw GoogleAuthException.invalidToken("Google ID token is required");
+        }
+
         try {
-            String idToken = request.get("idToken");
-
-            if (idToken == null || idToken.isEmpty()) {
-                return ResponseEntity.badRequest().build();
-            }
-
             AuthenticationResponse response = googleAuthService.verifyAndLogin(idToken);
-
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             log.warn("Google authentication failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid Google authentication token"));
+            throw GoogleAuthException.invalidToken("Invalid Google authentication token");
         } catch (Exception e) {
             log.error("Google authentication error", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Google authentication failed"));
+            throw GoogleAuthException.failed("Google authentication failed");
         }
     }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalStateException(IllegalStateException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
-    }
-
-    @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
-    public ResponseEntity<Map<String, String>> handleAuthenticationException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid email or password"));
-    }
 }
+
