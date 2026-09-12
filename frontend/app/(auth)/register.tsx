@@ -13,13 +13,14 @@ import {
 import { Image } from "expo-image";
 import { Link, router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { registerUser } from "@/lib/api/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { MaterialIcons } from "@/lib/icons";
+import { extractApiError } from "@/lib/utils/error";
+import { cn } from "@/lib/utils";
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -38,15 +39,22 @@ export default function RegisterScreen() {
     },
   });
 
+  const clearErrors = () => {
+    if (registerMutation.error) registerMutation.reset();
+  };
+
   const passwordsMatch = password === confirmPassword;
+  const confirmPasswordMismatch = confirmPassword.length > 0 && !passwordsMatch;
   const canSubmit =
     firstname && lastname && username && email && password && passwordsMatch;
 
-  const errorMessage = !passwordsMatch
-    ? "Passwords do not match"
-    : registerMutation.error instanceof AxiosError
-      ? (registerMutation.error.response?.data?.error ?? "Registration failed")
-      : registerMutation.error?.message;
+  const apiError = registerMutation.error
+    ? extractApiError(registerMutation.error)
+    : null;
+  const fieldErrors = apiError?.fieldErrors || {};
+
+  const bannerError =
+    apiError && Object.keys(fieldErrors).length === 0 ? apiError.message : null;
 
   const isDisabled = registerMutation.isPending;
 
@@ -80,76 +88,158 @@ export default function RegisterScreen() {
               Register
             </Text>
 
-            {errorMessage && (
-              <Text className="text-destructive text-sm mb-4">
-                {errorMessage}
+            {bannerError && (
+              <Text className="text-destructive text-sm mb-4 text-center">
+                {bannerError}
               </Text>
             )}
 
             <View className="flex-row w-full gap-4 mb-4">
-              <Input
-                textContentType="givenName"
-                autoComplete="given-name"
-                placeholder="First name"
-                value={firstname}
-                onChangeText={setFirstname}
-                editable={!isDisabled}
-                className="flex-1 rounded-full h-[60px]"
-              />
-              <Input
-                textContentType="familyName"
-                autoComplete="family-name"
-                placeholder="Last name"
-                value={lastname}
-                onChangeText={setLastname}
-                editable={!isDisabled}
-                className="flex-1 rounded-full h-[60px]"
-              />
+              <View className="flex-1">
+                <Input
+                  textContentType="givenName"
+                  autoComplete="given-name"
+                  placeholder="First name"
+                  value={firstname}
+                  onChangeText={(t) => {
+                    setFirstname(t);
+                    clearErrors();
+                  }}
+                  editable={!isDisabled}
+                  className={cn(
+                    "rounded-full h-[60px]",
+                    fieldErrors.firstname && "border-destructive border-2",
+                  )}
+                />
+                {fieldErrors.firstname && (
+                  <Text className="text-destructive text-xs mt-1 ml-4">
+                    {fieldErrors.firstname}
+                  </Text>
+                )}
+              </View>
+
+              <View className="flex-1">
+                <Input
+                  textContentType="familyName"
+                  autoComplete="family-name"
+                  placeholder="Last name"
+                  value={lastname}
+                  onChangeText={(t) => {
+                    setLastname(t);
+                    clearErrors();
+                  }}
+                  editable={!isDisabled}
+                  className={cn(
+                    "rounded-full h-[60px]",
+                    fieldErrors.lastname && "border-destructive border-2",
+                  )}
+                />
+                {fieldErrors.lastname && (
+                  <Text className="text-destructive text-xs mt-1 ml-4">
+                    {fieldErrors.lastname}
+                  </Text>
+                )}
+              </View>
             </View>
 
-            <Input
-              textContentType="username"
-              autoComplete="username"
-              autoCapitalize="none"
-              placeholder="Username"
-              value={username}
-              onChangeText={setUsername}
-              editable={!isDisabled}
-              className="mb-4 rounded-full h-[60px]"
-            />
-            <Input
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoComplete="email"
-              autoCapitalize="none"
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              editable={!isDisabled}
-              className="mb-4 rounded-full h-[60px]"
-            />
-            <Input
-              keyboardType="default"
-              textContentType="newPassword"
-              secureTextEntry
-              autoComplete="new-password"
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              editable={!isDisabled}
-              className="mb-4 rounded-full h-[60px]"
-            />
-            <Input
-              keyboardType="default"
-              textContentType="newPassword"
-              secureTextEntry
-              autoComplete="new-password"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              editable={!isDisabled}
-              className="rounded-full h-[60px]"
-            />
+            <View className="w-full mb-4">
+              <Input
+                textContentType="username"
+                autoComplete="username"
+                autoCapitalize="none"
+                placeholder="Username"
+                value={username}
+                onChangeText={(t) => {
+                  setUsername(t);
+                  clearErrors();
+                }}
+                editable={!isDisabled}
+                className={cn(
+                  "rounded-full h-[60px]",
+                  fieldErrors.username && "border-destructive border-2",
+                )}
+              />
+              {fieldErrors.username && (
+                <Text className="text-destructive text-xs mt-1 ml-4">
+                  {fieldErrors.username}
+                </Text>
+              )}
+            </View>
+
+            <View className="w-full mb-4">
+              <Input
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                autoComplete="email"
+                autoCapitalize="none"
+                placeholder="Email"
+                value={email}
+                onChangeText={(t) => {
+                  setEmail(t);
+                  clearErrors();
+                }}
+                editable={!isDisabled}
+                className={cn(
+                  "rounded-full h-[60px]",
+                  fieldErrors.email && "border-destructive border-2",
+                )}
+              />
+              {fieldErrors.email && (
+                <Text className="text-destructive text-xs mt-1 ml-4">
+                  {fieldErrors.email}
+                </Text>
+              )}
+            </View>
+
+            <View className="w-full mb-4">
+              <Input
+                keyboardType="default"
+                textContentType="newPassword"
+                secureTextEntry
+                autoComplete="new-password"
+                placeholder="Password"
+                value={password}
+                onChangeText={(t) => {
+                  setPassword(t);
+                  clearErrors();
+                }}
+                editable={!isDisabled}
+                className={cn(
+                  "rounded-full h-[60px]",
+                  fieldErrors.password && "border-destructive border-2",
+                )}
+              />
+              {fieldErrors.password && (
+                <Text className="text-destructive text-xs mt-1 ml-4">
+                  {fieldErrors.password}
+                </Text>
+              )}
+            </View>
+
+            <View className="w-full mb-4">
+              <Input
+                keyboardType="default"
+                textContentType="newPassword"
+                secureTextEntry
+                autoComplete="new-password"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChangeText={(t) => {
+                  setConfirmPassword(t);
+                  clearErrors();
+                }}
+                editable={!isDisabled}
+                className={cn(
+                  "rounded-full h-[60px]",
+                  confirmPasswordMismatch && "border-destructive border-2",
+                )}
+              />
+              {confirmPasswordMismatch && (
+                <Text className="text-destructive text-xs mt-1 ml-4">
+                  Passwords do not match
+                </Text>
+              )}
+            </View>
 
             <View className="flex-row items-center w-full mt-4 gap-4">
               <Button

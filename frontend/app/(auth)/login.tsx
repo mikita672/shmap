@@ -12,7 +12,6 @@ import {
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import {
   GoogleSignin,
   statusCodes,
@@ -23,6 +22,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { loginUser, verifyGoogleToken } from "@/lib/api/auth";
 import { useAuth } from "@/hooks/useAuth";
+import { extractApiError } from "@/lib/utils/error";
+import { AuthErrorCode } from "@/lib/types/api";
+import { cn } from "@/lib/utils";
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -105,11 +107,22 @@ export default function LoginScreen() {
   };
 
   const activeError = googleLoginMutation.error || loginMutation.error;
-  const errorMessage =
-    googleConfigError ??
-    (activeError instanceof AxiosError
-      ? (activeError.response?.data?.error ?? "Login failed")
-      : activeError?.message);
+  const apiError = activeError ? extractApiError(activeError) : null;
+  const errorMessage = googleConfigError ?? apiError?.message;
+  const isInvalidCredentials =
+    apiError?.code === AuthErrorCode.INVALID_CREDENTIALS;
+  const emailFieldError = apiError?.fieldErrors?.email;
+  const passwordFieldError = apiError?.fieldErrors?.password;
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (loginMutation.error) loginMutation.reset();
+  };
+
+  const handlePasswordChange = (text: string) => {
+    setPassword(text);
+    if (loginMutation.error) loginMutation.reset();
+  };
 
   const isGooglePending =
     isNativeGooglePending || googleLoginMutation.isPending;
@@ -140,28 +153,51 @@ export default function LoginScreen() {
               </Text>
             )}
 
-            <Input
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoComplete="email"
-              autoCapitalize="none"
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              editable={!isPending}
-              className="mb-4 rounded-full h-[60px]"
-            />
-            <Input
-              keyboardType="default"
-              textContentType="password"
-              secureTextEntry
-              autoComplete="password"
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              editable={!isPending}
-              className="rounded-full h-[60px]"
-            />
+            <View className="w-full mb-4">
+              <Input
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                autoComplete="email"
+                autoCapitalize="none"
+                placeholder="Email"
+                value={email}
+                onChangeText={handleEmailChange}
+                editable={!isPending}
+                className={cn(
+                  "rounded-full h-[60px]",
+                  (isInvalidCredentials || emailFieldError) &&
+                    "border-destructive border-2",
+                )}
+              />
+              {emailFieldError && (
+                <Text className="text-destructive text-xs mt-1 ml-4">
+                  {emailFieldError}
+                </Text>
+              )}
+            </View>
+
+            <View className="w-full mb-4">
+              <Input
+                keyboardType="default"
+                textContentType="password"
+                secureTextEntry
+                autoComplete="password"
+                placeholder="Password"
+                value={password}
+                onChangeText={handlePasswordChange}
+                editable={!isPending}
+                className={cn(
+                  "rounded-full h-[60px]",
+                  (isInvalidCredentials || passwordFieldError) &&
+                    "border-destructive border-2",
+                )}
+              />
+              {passwordFieldError && (
+                <Text className="text-destructive text-xs mt-1 ml-4">
+                  {passwordFieldError}
+                </Text>
+              )}
+            </View>
 
             <View className="flex-row items-center w-full mt-4 gap-4">
               <Button
