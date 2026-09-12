@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -13,10 +13,15 @@ import {
 import { Image } from "expo-image";
 import { Link, router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
+import {
+  GoogleSignin,
+  statusCodes,
+  isGoogleSigninUnavailable,
+} from "@/lib/google-signin";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { registerUser } from "@/lib/api/auth";
+import { registerUser, verifyGoogleToken } from "@/lib/api/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { MaterialIcons } from "@/lib/icons";
 import { extractApiError } from "@/lib/utils/error";
@@ -32,6 +37,25 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
+  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim();
+  const [googleConfigError, setGoogleConfigError] = useState<string | null>(
+    isGoogleSigninUnavailable
+      ? "Google Sign-In is not available in Expo Go. Use a development build."
+      : null,
+  );
+
+  const [isNativeGooglePending, setIsNativeGooglePending] = useState(false);
+
+  useEffect(() => {
+    if (webClientId) {
+      GoogleSignin.configure({
+        webClientId,
+        iosClientId,
+      });
+    }
+  }, [webClientId, iosClientId]);
+
   const registerMutation = useMutation({
     mutationFn: registerUser,
     onSuccess: (response) => {
@@ -39,8 +63,57 @@ export default function RegisterScreen() {
     },
   });
 
+  const googleLoginMutation = useMutation({
+    mutationFn: verifyGoogleToken,
+    onSuccess: (response) => {
+      signUp(response.data);
+    },
+  });
+
+  const handleGoogleSignIn = async () => {
+    registerMutation.reset();
+    googleLoginMutation.reset();
+    if (!webClientId) {
+      setGoogleConfigError("Google login is not configured.");
+      return;
+    }
+    setGoogleConfigError(null);
+    setIsNativeGooglePending(true);
+
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+
+      if (response.type === "cancelled") {
+        return;
+      }
+      if (response.data.idToken) {
+        googleLoginMutation.mutate(response.data.idToken);
+      } else {
+        setGoogleConfigError("Failed to obtain ID token from Google.");
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log("User cancelled Google Sign-In");
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        setGoogleConfigError("Google Sign-In is already in progress.");
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        setGoogleConfigError(
+          "Google Play Services is not available on this device.",
+        );
+      } else {
+        console.error("Google Sign-In Error:", error);
+        setGoogleConfigError(error?.message ?? "Google Sign-In failed.");
+      }
+    } finally {
+      setIsNativeGooglePending(false);
+    }
+  };
+
   const clearErrors = () => {
     if (registerMutation.error) registerMutation.reset();
+    if (googleLoginMutation.error) googleLoginMutation.reset();
+    if (googleConfigError) setGoogleConfigError(null);
   };
 
   const passwordsMatch = password === confirmPassword;
@@ -48,15 +121,19 @@ export default function RegisterScreen() {
   const canSubmit =
     firstname && lastname && username && email && password && passwordsMatch;
 
-  const apiError = registerMutation.error
-    ? extractApiError(registerMutation.error)
-    : null;
+  const activeError = googleLoginMutation.error || registerMutation.error;
+  const apiError = activeError ? extractApiError(activeError) : null;
   const fieldErrors = apiError?.fieldErrors || {};
 
   const bannerError =
-    apiError && Object.keys(fieldErrors).length === 0 ? apiError.message : null;
+    googleConfigError ??
+    (apiError && Object.keys(fieldErrors).length === 0
+      ? apiError.message
+      : null);
 
-  const isDisabled = registerMutation.isPending;
+  const isGooglePending =
+    isNativeGooglePending || googleLoginMutation.isPending;
+  const isDisabled = registerMutation.isPending || isGooglePending;
 
   return (
     <KeyboardAvoidingView
@@ -263,12 +340,20 @@ export default function RegisterScreen() {
                   </Text>
                 )}
               </Button>
-              <Button className="bg-secondary active:bg-secondary/80 rounded-full h-[60px] w-[60px] justify-center items-center">
-                <Image
-                  source={require("@/assets/images/google-logo.png")}
-                  style={{ width: 32, height: 32 }}
-                  contentFit="contain"
-                />
+              <Button
+                className="bg-secondary active:bg-secondary/80 rounded-full h-[60px] w-[60px] justify-center items-center"
+                onPress={handleGoogleSignIn}
+                disabled={isDisabled}
+              >
+                {isGooglePending ? (
+                  <ActivityIndicator color="#000" />
+                ) : (
+                  <Image
+                    source={require("@/assets/images/google-logo.png")}
+                    style={{ width: 32, height: 32 }}
+                    contentFit="contain"
+                  />
+                )}
               </Button>
             </View>
 
