@@ -58,9 +58,12 @@ export default function PasswordResetScreen() {
         ? verifyMutation
         : resetMutation;
 
-  const apiError = activeMutation.error
-    ? extractApiError(activeMutation.error)
-    : null;
+  const activeError =
+    step === "otp"
+      ? (verifyMutation.error ?? forgotMutation.error)
+      : activeMutation.error;
+
+  const apiError = activeError ? extractApiError(activeError) : null;
 
   const isMaxAttempts =
     apiError?.code === AuthErrorCode.OTP_MAX_ATTEMPTS_EXCEEDED;
