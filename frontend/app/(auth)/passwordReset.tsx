@@ -100,6 +100,7 @@ export default function PasswordResetScreen() {
     forgotMutation.reset();
     setOtp("");
     setStep("email");
+    forgotMutation.mutate({ email });
   };
 
   const handleResendCode = () => {

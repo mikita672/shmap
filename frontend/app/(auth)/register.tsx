@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -123,7 +123,10 @@ export default function RegisterScreen() {
 
   const activeError = googleLoginMutation.error || registerMutation.error;
   const apiError = activeError ? extractApiError(activeError) : null;
-  const fieldErrors = apiError?.fieldErrors || {};
+  const fieldErrors = useMemo(
+    () => apiError?.fieldErrors || {},
+    [apiError?.fieldErrors],
+  );
 
   const lastToastedError = useRef<string | null>(null);
   useEffect(() => {
