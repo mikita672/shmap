@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -20,6 +20,7 @@ import { forgotPassword, verifyOtp, resetPassword } from "@/lib/api/auth";
 import { extractApiError } from "@/lib/utils/error";
 import { AuthErrorCode } from "@/lib/types/api";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner-native";
 
 type Step = "email" | "otp" | "newPassword";
 
@@ -65,6 +66,22 @@ export default function PasswordResetScreen() {
     apiError?.code === AuthErrorCode.OTP_MAX_ATTEMPTS_EXCEEDED;
   const isOtpExpired = apiError?.code === AuthErrorCode.OTP_EXPIRED;
   const isInvalidOtp = apiError?.code === AuthErrorCode.INVALID_OTP;
+
+  const lastToastedError = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      apiError?.message &&
+      !isInvalidOtp &&
+      !isMaxAttempts &&
+      !isOtpExpired &&
+      apiError.message !== lastToastedError.current
+    ) {
+      lastToastedError.current = apiError.message;
+      toast.error(apiError.message);
+    } else if (!apiError) {
+      lastToastedError.current = null;
+    }
+  }, [apiError, isInvalidOtp, isMaxAttempts, isOtpExpired]);
 
   const isPending =
     forgotMutation.isPending ||
@@ -138,13 +155,6 @@ export default function PasswordResetScreen() {
               {step === "otp" && `Enter the 6-digit code sent to ${email}`}
               {step === "newPassword" && "Choose a strong new password"}
             </Text>
-
-            {/* General Banner Error */}
-            {apiError && !isInvalidOtp && !isMaxAttempts && !isOtpExpired && (
-              <Text className="text-destructive text-sm mb-4 text-center">
-                {apiError.message}
-              </Text>
-            )}
 
             {/* OTP Max Attempts Alert & Recovery */}
             {isMaxAttempts && (
