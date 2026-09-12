@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { extractApiError } from "@/lib/utils/error";
 import { AuthErrorCode } from "@/lib/types/api";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner-native";
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -35,13 +36,16 @@ export default function LoginScreen() {
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
   const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim();
   const isGoogleConfigured = Boolean(webClientId) && !isGoogleSigninUnavailable;
-  const [googleConfigError, setGoogleConfigError] = useState<string | null>(
-    isGoogleSigninUnavailable
-      ? "Google Sign-In is not available in Expo Go. Use a development build."
-      : null,
-  );
 
   const [isNativeGooglePending, setIsNativeGooglePending] = useState(false);
+
+  useEffect(() => {
+    if (isGoogleSigninUnavailable) {
+      toast.error(
+        "Google Sign-In is not available in Expo Go. Use a development build.",
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (webClientId) {
@@ -70,10 +74,9 @@ export default function LoginScreen() {
     loginMutation.reset();
     googleLoginMutation.reset();
     if (!webClientId) {
-      setGoogleConfigError("Google login is not configured.");
+      toast.error("Google login is not configured.");
       return;
     }
-    setGoogleConfigError(null);
     setIsNativeGooglePending(true);
 
     try {
@@ -86,20 +89,18 @@ export default function LoginScreen() {
       if (response.data.idToken) {
         googleLoginMutation.mutate(response.data.idToken);
       } else {
-        setGoogleConfigError("Failed to obtain ID token from Google.");
+        toast.error("Failed to obtain ID token from Google.");
       }
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log("User cancelled Google Sign-In");
       } else if (error.code === statusCodes.IN_PROGRESS) {
-        setGoogleConfigError("Google Sign-In is already in progress.");
+        toast.error("Google Sign-In is already in progress.");
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        setGoogleConfigError(
-          "Google Play Services is not available on this device.",
-        );
+        toast.error("Google Play Services is not available on this device.");
       } else {
         console.error("Google Sign-In Error:", error);
-        setGoogleConfigError(error?.message ?? "Google Sign-In failed.");
+        toast.error(error?.message ?? "Google Sign-In failed.");
       }
     } finally {
       setIsNativeGooglePending(false);
@@ -108,11 +109,20 @@ export default function LoginScreen() {
 
   const activeError = googleLoginMutation.error || loginMutation.error;
   const apiError = activeError ? extractApiError(activeError) : null;
-  const errorMessage = googleConfigError ?? apiError?.message;
   const isInvalidCredentials =
     apiError?.code === AuthErrorCode.INVALID_CREDENTIALS;
   const emailFieldError = apiError?.fieldErrors?.email;
   const passwordFieldError = apiError?.fieldErrors?.password;
+
+  const lastToastedError = useRef<string | null>(null);
+  useEffect(() => {
+    if (apiError?.message && apiError.message !== lastToastedError.current) {
+      lastToastedError.current = apiError.message;
+      toast.error(apiError.message);
+    } else if (!apiError) {
+      lastToastedError.current = null;
+    }
+  }, [apiError]);
 
   const handleEmailChange = (text: string) => {
     setEmail(text);
@@ -146,12 +156,6 @@ export default function LoginScreen() {
             <Text className="text-5xl font-bold mb-16 text-foreground p-6">
               Log In
             </Text>
-
-            {errorMessage && (
-              <Text className="text-destructive text-sm mb-4 text-center">
-                {errorMessage}
-              </Text>
-            )}
 
             <View className="w-full mb-4">
               <Input
@@ -205,7 +209,6 @@ export default function LoginScreen() {
                 onPress={() => {
                   googleLoginMutation.reset();
                   loginMutation.reset();
-                  setGoogleConfigError(null);
                   loginMutation.mutate({ email, password });
                 }}
                 disabled={isPending || !email || !password}
