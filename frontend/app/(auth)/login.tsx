@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -12,7 +12,6 @@ import {
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import {
   GoogleSignin,
   statusCodes,
@@ -23,6 +22,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { loginUser, verifyGoogleToken } from "@/lib/api/auth";
 import { useAuth } from "@/hooks/useAuth";
+import { extractApiError } from "@/lib/utils/error";
+import { AuthErrorCode } from "@/lib/types/api";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner-native";
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -33,13 +36,16 @@ export default function LoginScreen() {
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
   const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim();
   const isGoogleConfigured = Boolean(webClientId) && !isGoogleSigninUnavailable;
-  const [googleConfigError, setGoogleConfigError] = useState<string | null>(
-    isGoogleSigninUnavailable
-      ? "Google Sign-In is not available in Expo Go. Use a development build."
-      : null,
-  );
 
   const [isNativeGooglePending, setIsNativeGooglePending] = useState(false);
+
+  useEffect(() => {
+    if (isGoogleSigninUnavailable) {
+      toast.error(
+        "Google Sign-In is not available in Expo Go. Use a development build.",
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (webClientId) {
@@ -68,10 +74,9 @@ export default function LoginScreen() {
     loginMutation.reset();
     googleLoginMutation.reset();
     if (!webClientId) {
-      setGoogleConfigError("Google login is not configured.");
+      toast.error("Google login is not configured.");
       return;
     }
-    setGoogleConfigError(null);
     setIsNativeGooglePending(true);
 
     try {
@@ -84,20 +89,18 @@ export default function LoginScreen() {
       if (response.data.idToken) {
         googleLoginMutation.mutate(response.data.idToken);
       } else {
-        setGoogleConfigError("Failed to obtain ID token from Google.");
+        toast.error("Failed to obtain ID token from Google.");
       }
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log("User cancelled Google Sign-In");
       } else if (error.code === statusCodes.IN_PROGRESS) {
-        setGoogleConfigError("Google Sign-In is already in progress.");
+        toast.error("Google Sign-In is already in progress.");
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        setGoogleConfigError(
-          "Google Play Services is not available on this device.",
-        );
+        toast.error("Google Play Services is not available on this device.");
       } else {
         console.error("Google Sign-In Error:", error);
-        setGoogleConfigError(error?.message ?? "Google Sign-In failed.");
+        toast.error(error?.message ?? "Google Sign-In failed.");
       }
     } finally {
       setIsNativeGooglePending(false);
@@ -105,11 +108,31 @@ export default function LoginScreen() {
   };
 
   const activeError = googleLoginMutation.error || loginMutation.error;
-  const errorMessage =
-    googleConfigError ??
-    (activeError instanceof AxiosError
-      ? (activeError.response?.data?.error ?? "Login failed")
-      : activeError?.message);
+  const apiError = activeError ? extractApiError(activeError) : null;
+  const isInvalidCredentials =
+    apiError?.code === AuthErrorCode.INVALID_CREDENTIALS;
+  const emailFieldError = apiError?.fieldErrors?.email;
+  const passwordFieldError = apiError?.fieldErrors?.password;
+
+  const lastToastedError = useRef<string | null>(null);
+  useEffect(() => {
+    if (apiError?.message && apiError.message !== lastToastedError.current) {
+      lastToastedError.current = apiError.message;
+      toast.error(apiError.message);
+    } else if (!apiError) {
+      lastToastedError.current = null;
+    }
+  }, [apiError]);
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (loginMutation.error) loginMutation.reset();
+  };
+
+  const handlePasswordChange = (text: string) => {
+    setPassword(text);
+    if (loginMutation.error) loginMutation.reset();
+  };
 
   const isGooglePending =
     isNativeGooglePending || googleLoginMutation.isPending;
@@ -134,34 +157,51 @@ export default function LoginScreen() {
               Log In
             </Text>
 
-            {errorMessage && (
-              <Text className="text-destructive text-sm mb-4 text-center">
-                {errorMessage}
-              </Text>
-            )}
+            <View className="w-full mb-4">
+              <Input
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                autoComplete="email"
+                autoCapitalize="none"
+                placeholder="Email"
+                value={email}
+                onChangeText={handleEmailChange}
+                editable={!isPending}
+                className={cn(
+                  "rounded-full h-[60px]",
+                  (isInvalidCredentials || emailFieldError) &&
+                    "border-destructive border-2",
+                )}
+              />
+              {emailFieldError && (
+                <Text className="text-destructive text-xs mt-1 ml-4">
+                  {emailFieldError}
+                </Text>
+              )}
+            </View>
 
-            <Input
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoComplete="email"
-              autoCapitalize="none"
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              editable={!isPending}
-              className="mb-4 rounded-full h-[60px]"
-            />
-            <Input
-              keyboardType="default"
-              textContentType="password"
-              secureTextEntry
-              autoComplete="password"
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              editable={!isPending}
-              className="rounded-full h-[60px]"
-            />
+            <View className="w-full mb-4">
+              <Input
+                keyboardType="default"
+                textContentType="password"
+                secureTextEntry
+                autoComplete="password"
+                placeholder="Password"
+                value={password}
+                onChangeText={handlePasswordChange}
+                editable={!isPending}
+                className={cn(
+                  "rounded-full h-[60px]",
+                  (isInvalidCredentials || passwordFieldError) &&
+                    "border-destructive border-2",
+                )}
+              />
+              {passwordFieldError && (
+                <Text className="text-destructive text-xs mt-1 ml-4">
+                  {passwordFieldError}
+                </Text>
+              )}
+            </View>
 
             <View className="flex-row items-center w-full mt-4 gap-4">
               <Button
@@ -169,7 +209,6 @@ export default function LoginScreen() {
                 onPress={() => {
                   googleLoginMutation.reset();
                   loginMutation.reset();
-                  setGoogleConfigError(null);
                   loginMutation.mutate({ email, password });
                 }}
                 disabled={isPending || !email || !password}
