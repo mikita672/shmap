@@ -2,16 +2,20 @@ package com.mdzvtt.shmap.auth.passwordreset;
 
 import java.time.LocalDateTime;
 import java.security.SecureRandom;
-
 import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mdzvtt.shmap.auth.passwordreset.PasswordResetDTOs.ForgotPasswordRequest;
+import com.mdzvtt.shmap.auth.passwordreset.PasswordResetDTOs.MessageResponse;
 import com.mdzvtt.shmap.auth.passwordreset.PasswordResetDTOs.ResetPasswordRequest;
 import com.mdzvtt.shmap.auth.passwordreset.PasswordResetDTOs.VerifyOtpRequest;
+import com.mdzvtt.shmap.exception.InvalidOtpException;
+import com.mdzvtt.shmap.exception.OtpExpiredException;
+import com.mdzvtt.shmap.exception.OtpMaxAttemptsException;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 
@@ -36,11 +40,11 @@ public class PasswordResetController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
-            return ResponseEntity.ok("OTP send to your email");
+            return ResponseEntity.ok(MessageResponse.of("Verification code sent to your email"));
         }
 
         User user = userOptional.get();
@@ -57,78 +61,77 @@ public class PasswordResetController {
 
         try {
             emailService.sendOtpEmail(user.getEmail(), otp);
-
-            return ResponseEntity.ok("OTP send to your email");
+            return ResponseEntity.ok(MessageResponse.of("Verification code sent to your email"));
         } catch (Exception e) {
             String redacted = request.getEmail().replaceAll("(^[^@]{0,2})[^@]*", "$1***");
             log.error("Email delivery failed for {}", redacted);
-            return ResponseEntity.ok("OTP send to your email");
+            return ResponseEntity.ok(MessageResponse.of("Verification code sent to your email"));
         }
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidOtpException.class, OtpMaxAttemptsException.class})
     @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOtp(@RequestBody VerifyOtpRequest request) {
+    public ResponseEntity<MessageResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid OTP");
+            throw new InvalidOtpException("Invalid verification code");
         }
 
         Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUserForUpdate(userOptional.get());
         if (tokenOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid OTP");
+            throw new InvalidOtpException("Invalid verification code");
         }
 
         PasswordResetToken token = tokenOptional.get();
         if (token.getFailedAttempts() >= 5) {
             tokenRepository.delete(token);
-            return ResponseEntity.badRequest().body("Too many failed attempts. Please request a new OTP.");
+            throw new OtpMaxAttemptsException("Too many failed attempts. Please request a new verification code.");
         }
 
         if (!passwordEncoder.matches(request.getOtp(), token.getOtp())) {
             token.setFailedAttempts(token.getFailedAttempts() + 1);
             tokenRepository.save(token);
-            return ResponseEntity.badRequest().body("Invalid OTP");
+            throw new InvalidOtpException("Invalid verification code");
         }
 
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body("OTP has expired");
+            throw new OtpExpiredException("Verification code has expired. Please request a new one.");
         }
 
-        return ResponseEntity.ok("OTP verified successfull");
+        return ResponseEntity.ok(MessageResponse.of("Verification code verified successfully"));
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidOtpException.class, OtpMaxAttemptsException.class})
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid OTP");
+            throw new InvalidOtpException("Invalid verification code");
         }
 
         User user = userOptional.get();
         Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUserForUpdate(user);
 
         if (tokenOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid OTP");
+            throw new InvalidOtpException("Invalid verification code");
         }
 
         PasswordResetToken token = tokenOptional.get();
         if (token.getFailedAttempts() >= 5) {
             tokenRepository.delete(token);
-            return ResponseEntity.badRequest().body("Too many failed attempts. Please request a new OTP.");
+            throw new OtpMaxAttemptsException("Too many failed attempts. Please request a new verification code.");
         }
 
         if (!passwordEncoder.matches(request.getOtp(), token.getOtp())) {
             token.setFailedAttempts(token.getFailedAttempts() + 1);
             tokenRepository.save(token);
-            return ResponseEntity.badRequest().body("Invalid OTP");
+            throw new InvalidOtpException("Invalid verification code");
         }
 
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body("OTP has expired");
+            throw new OtpExpiredException("Verification code has expired. Please request a new one.");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -136,6 +139,7 @@ public class PasswordResetController {
 
         tokenRepository.deleteByUser(user);
 
-        return ResponseEntity.ok("Password successfully reset");
+        return ResponseEntity.ok(MessageResponse.of("Password successfully reset"));
     }
 }
+

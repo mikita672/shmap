@@ -6,6 +6,7 @@ import type {
   ForgotPasswordRequest,
   VerifyOtpRequest,
   ResetPasswordRequest,
+  MessageResponse,
 } from "@/lib/types/api";
 
 export const loginUser = (data: AuthenticationRequest) =>
@@ -22,10 +23,10 @@ export const verifyGoogleToken = (idToken: string) =>
 export const logoutUser = () => apiClient.post("/api/v1/auth/logout");
 
 export const forgotPassword = (data: ForgotPasswordRequest) =>
-  apiClient.post("/api/v1/auth/forgot-password", data);
+  apiClient.post<MessageResponse>("/api/v1/auth/forgot-password", data);
 
 export const verifyOtp = (data: VerifyOtpRequest) =>
-  apiClient.post("/api/v1/auth/verify-otp", data);
+  apiClient.post<MessageResponse>("/api/v1/auth/verify-otp", data);
 
 export const resetPassword = (data: ResetPasswordRequest) =>
-  apiClient.post("/api/v1/auth/reset-password", data);
+  apiClient.post<MessageResponse>("/api/v1/auth/reset-password", data);

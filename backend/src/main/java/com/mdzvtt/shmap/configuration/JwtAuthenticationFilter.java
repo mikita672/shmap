@@ -21,16 +21,29 @@ import java.io.IOException;
 
 import com.mdzvtt.shmap.token.TokenRepository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mdzvtt.shmap.exception.ApiErrorResponse;
+import com.mdzvtt.shmap.exception.ErrorCode;
+import org.springframework.http.MediaType;
+
+import java.time.Instant;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final TokenRepository tokenRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         return request.getRequestURI().startsWith("/api/v1/auth/");
+    }
+
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+        return false;
     }
 
     @Override
@@ -68,8 +81,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (JwtException | UsernameNotFoundException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Invalid or expired token\"}");
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            ApiErrorResponse errorResponse = ApiErrorResponse.builder()
+                    .timestamp(Instant.now())
+                    .status(HttpServletResponse.SC_UNAUTHORIZED)
+                    .code(ErrorCode.UNAUTHORIZED)
+                    .message("Invalid or expired token")
+                    .error("Invalid or expired token")
+                    .path(request.getRequestURI())
+                    .build();
+            objectMapper.writeValue(response.getOutputStream(), errorResponse);
             return;
         }
 
