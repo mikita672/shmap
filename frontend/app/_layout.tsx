@@ -35,7 +35,9 @@ function RootNavigator() {
             <Stack.Screen name="(tabs)" />
           </Stack.Protected>
 
-          <Stack.Screen name="(auth)" />
+          <Stack.Protected guard={!isAuthenticated}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
         </Stack>
         <StatusBar style="auto" />
         <PortalHost />
