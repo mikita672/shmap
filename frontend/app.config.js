@@ -12,6 +12,7 @@ module.exports = ({ config }) => {
           iosUrlScheme: process.env.EXPO_PUBLIC_IOS_URL_SCHEME,
         },
       ],
+      ["@maplibre/maplibre-react-native"],
     ],
   };
 };
