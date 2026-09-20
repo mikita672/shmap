@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mdzvtt.shmap"
+      "bundleIdentifier": "com.mdzvtt.shmap",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Shmap needs your location to show where you are on the map."
+      }
     },
     "android": {
       "package": "com.mdzvtt.shmap",
