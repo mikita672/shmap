@@ -62,15 +62,15 @@ export default function RegisterScreen() {
 
   const registerMutation = useMutation({
     mutationFn: registerUser,
-    onSuccess: (response) => {
-      signUp(response.data);
+    onSuccess: async (response) => {
+      await signUp(response.data);
     },
   });
 
   const googleLoginMutation = useMutation({
     mutationFn: verifyGoogleToken,
-    onSuccess: (response) => {
-      signUp(response.data);
+    onSuccess: async (response) => {
+      await signUp(response.data);
     },
   });
 

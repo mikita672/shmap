@@ -58,15 +58,15 @@ export default function LoginScreen() {
 
   const loginMutation = useMutation({
     mutationFn: loginUser,
-    onSuccess: (response) => {
-      signIn(response.data);
+    onSuccess: async (response) => {
+      await signIn(response.data);
     },
   });
 
   const googleLoginMutation = useMutation({
     mutationFn: verifyGoogleToken,
-    onSuccess: (response) => {
-      signIn(response.data);
+    onSuccess: async (response) => {
+      await signIn(response.data);
     },
   });
 
