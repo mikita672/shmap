@@ -17,11 +17,17 @@ export default function MapScreen() {
   useEffect(() => {
     let cancelled = false;
 
-    LocationManager.requestPermissions().then((granted) => {
-      if (!cancelled) {
-        setLocationPermission(granted);
-      }
-    });
+    LocationManager.requestPermissions()
+      .then((granted) => {
+        if (!cancelled) {
+          setLocationPermission(granted);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLocationPermission(false);
+        }
+      });
 
     return () => {
       cancelled = true;
