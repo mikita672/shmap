@@ -19,8 +19,8 @@ export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
   useEffect(() => {
     let isMounted = true;
 
-    LocationManager.getCurrentPosition().then((pos) => {
-      if (isMounted && pos) {
+    LocationManager.getCurrentPosition().finally(() => {
+      if (isMounted) {
         setIsLocating(false);
       }
     });
