@@ -27,9 +27,14 @@ export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
 
   const handleMyLocation = async () => {
     const position = await LocationManager.getCurrentPosition();
-    if (position && cameraRef.current) {
+    if (position && cameraRef.current && mapRef.current) {
+      const currentZoom = await mapRef.current.getZoom();
+
+      const targetZoom = Math.max(currentZoom, 15);
+
       cameraRef.current.flyTo({
         center: [position.coords.longitude, position.coords.latitude],
+        zoom: targetZoom,
         duration: 1000,
       });
     }
