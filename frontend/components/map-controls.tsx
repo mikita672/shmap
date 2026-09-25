@@ -41,27 +41,27 @@ export function MapControls({ cameraRef, mapRef }: MapControlsProps) {
     >
       <Pressable
         onPress={handleCompass}
-        className="bg-surface active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
+        className="bg-tab-bubble active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
         accessibilityLabel="Reset compass to north"
         accessibilityRole="button"
       >
         <Ionicons
           name="compass-outline"
           size={24}
-          className="text-on-surface"
+          className="text-tab-icon-active"
         />
       </Pressable>
 
       <Pressable
         onPress={handleMyLocation}
-        className="bg-surface active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
+        className="bg-tab-bubble active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
         accessibilityLabel="Go to my location"
         accessibilityRole="button"
       >
         <Ionicons
           name="navigate-outline"
           size={22}
-          className="text-on-surface"
+          className="text-tab-icon-active"
         />
       </Pressable>
     </View>
