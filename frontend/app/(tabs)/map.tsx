@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Map,
@@ -20,6 +20,7 @@ export default function MapScreen() {
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
   const insets = useSafeAreaInsets();
+  const bearing = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +58,12 @@ export default function MapScreen() {
         style={{ flex: 1 }}
         compass={false}
         attributionPosition={{ top: Math.max(insets.top, 8) + 8, left: 8 }}
+        onRegionIsChanging={(event) => {
+          bearing.setValue(event.nativeEvent.bearing);
+        }}
+        onRegionDidChange={(event) => {
+          bearing.setValue(event.nativeEvent.bearing);
+        }}
       >
         {locationPermission && (
           <>
@@ -66,7 +73,7 @@ export default function MapScreen() {
         )}
       </Map>
       {locationPermission && (
-        <MapControls cameraRef={cameraRef} mapRef={mapRef} />
+        <MapControls cameraRef={cameraRef} mapRef={mapRef} bearing={bearing} />
       )}
     </View>
   );

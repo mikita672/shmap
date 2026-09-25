@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Pressable } from "react-native";
+import { View, Pressable, Animated } from "react-native";
 import { Ionicons } from "@/lib/icons";
 import {
   type CameraRef,
@@ -10,9 +10,10 @@ import {
 interface MapControlsProps {
   cameraRef: React.RefObject<CameraRef | null>;
   mapRef: React.RefObject<MapRef | null>;
+  bearing: Animated.Value;
 }
 
-export function MapControls({ cameraRef, mapRef }: MapControlsProps) {
+export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
   const handleCompass = async () => {
     if (cameraRef.current && mapRef.current) {
       const center = await mapRef.current.getCenter();
@@ -34,6 +35,11 @@ export function MapControls({ cameraRef, mapRef }: MapControlsProps) {
     }
   };
 
+  const rotate = bearing.interpolate({
+    inputRange: [0, 360],
+    outputRange: ["0deg", "-360deg"],
+  });
+
   return (
     <View
       className="absolute flex-col items-center gap-3 right-4"
@@ -45,11 +51,13 @@ export function MapControls({ cameraRef, mapRef }: MapControlsProps) {
         accessibilityLabel="Reset compass to north"
         accessibilityRole="button"
       >
-        <Ionicons
-          name="compass-outline"
-          size={24}
-          className="text-tab-icon-active"
-        />
+        <Animated.View style={{ transform: [{ rotate }] }}>
+          <Ionicons
+            name="compass-outline"
+            size={24}
+            className="text-tab-icon-active"
+          />
+        </Animated.View>
       </Pressable>
 
       <Pressable
