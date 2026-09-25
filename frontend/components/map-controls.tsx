@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Pressable } from "react-native";
 import { Ionicons } from "@/lib/icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   type CameraRef,
   type MapRef,
@@ -14,8 +13,6 @@ interface MapControlsProps {
 }
 
 export function MapControls({ cameraRef, mapRef }: MapControlsProps) {
-  const insets = useSafeAreaInsets();
-
   const handleCompass = async () => {
     if (cameraRef.current && mapRef.current) {
       const center = await mapRef.current.getCenter();
@@ -40,7 +37,7 @@ export function MapControls({ cameraRef, mapRef }: MapControlsProps) {
   return (
     <View
       className="absolute flex-col items-center gap-3 right-4"
-      style={{ bottom: Math.max(insets.bottom, 8) + 56 }}
+      style={{ bottom: 16 }}
     >
       <Pressable
         onPress={handleCompass}

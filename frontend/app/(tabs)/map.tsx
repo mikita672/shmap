@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Map,
   Camera,
@@ -18,6 +19,7 @@ export default function MapScreen() {
   );
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +56,7 @@ export default function MapScreen() {
         mapStyle={MAP_STYLE}
         style={{ flex: 1 }}
         compass={false}
+        attributionPosition={{ top: Math.max(insets.top, 8) + 8, left: 8 }}
       >
         {locationPermission && (
           <>
