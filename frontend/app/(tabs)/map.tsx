@@ -56,7 +56,7 @@ export default function MapScreen() {
         ref={mapRef}
         mapStyle={MAP_STYLE}
         style={{ flex: 1 }}
-        compass={false}
+        compass={!locationPermission}
         attributionPosition={{ top: Math.max(insets.top, 8) + 8, left: 8 }}
         onRegionIsChanging={(event) => {
           bearing.setValue(event.nativeEvent.bearing);
