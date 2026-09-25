@@ -20,7 +20,7 @@ export default function MapScreen() {
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
   const insets = useSafeAreaInsets();
-  const bearing = useRef(new Animated.Value(0)).current;
+  const [bearing] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     let cancelled = false;
