@@ -1,13 +1,12 @@
 import React from "react";
-import { View, Pressable, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Pressable } from "react-native";
+import { Ionicons } from "@/lib/icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   type CameraRef,
   type MapRef,
   LocationManager,
 } from "@maplibre/maplibre-react-native";
-import { useMapControlColors } from "@/hooks/useMapControlColors";
 
 interface MapControlsProps {
   cameraRef: React.RefObject<CameraRef | null>;
@@ -16,7 +15,6 @@ interface MapControlsProps {
 
 export function MapControls({ cameraRef, mapRef }: MapControlsProps) {
   const insets = useSafeAreaInsets();
-  const colors = useMapControlColors();
 
   const handleCompass = async () => {
     if (cameraRef.current && mapRef.current) {
@@ -39,72 +37,36 @@ export function MapControls({ cameraRef, mapRef }: MapControlsProps) {
     }
   };
 
-  const buttonStyle = [
-    styles.button,
-    { backgroundColor: colors.surface ?? "hsl(52, 93%, 93%)" },
-  ];
-
-  const iconColor = colors.onSurface ?? "hsl(30, 34%, 38%)";
-
   return (
     <View
-      style={[
-        styles.container,
-        {
-          bottom: Math.max(insets.bottom, 8) + 56,
-          right: 16,
-        },
-      ]}
+      className="absolute flex-col items-center gap-3 right-4"
+      style={{ bottom: Math.max(insets.bottom, 8) + 56 }}
     >
       <Pressable
         onPress={handleCompass}
-        style={({ pressed }) => [
-          ...buttonStyle,
-          pressed && styles.buttonPressed,
-        ]}
+        className="bg-surface active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
         accessibilityLabel="Reset compass to north"
         accessibilityRole="button"
       >
-        <Ionicons name="compass-outline" size={24} color={iconColor} />
+        <Ionicons
+          name="compass-outline"
+          size={24}
+          className="text-on-surface"
+        />
       </Pressable>
 
       <Pressable
         onPress={handleMyLocation}
-        style={({ pressed }) => [
-          ...buttonStyle,
-          pressed && styles.buttonPressed,
-        ]}
+        className="bg-surface active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
         accessibilityLabel="Go to my location"
         accessibilityRole="button"
       >
-        <Ionicons name="navigate-outline" size={22} color={iconColor} />
+        <Ionicons
+          name="navigate-outline"
+          size={22}
+          className="text-on-surface"
+        />
       </Pressable>
     </View>
   );
 }
-
-const BUTTON_SIZE = 44;
-
-const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    flexDirection: "column",
-    gap: 12,
-    alignItems: "center",
-  },
-  button: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  buttonPressed: {
-    opacity: 0.7,
-  },
-});
