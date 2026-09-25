@@ -37,7 +37,7 @@ export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
 
   const rotate = bearing.interpolate({
     inputRange: [0, 360],
-    outputRange: ["0deg", "-360deg"],
+    outputRange: ["-45deg", "-405deg"],
   });
 
   return (
