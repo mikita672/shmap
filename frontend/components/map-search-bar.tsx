@@ -127,7 +127,7 @@ export function MapSearchBar({
         className="absolute left-4 right-4 z-10"
         style={{ top: Math.max(insets.top, 8) + 8 }}
       >
-        <View className="flex-row items-center bg-surface rounded-xl shadow-sm shadow-black/10 elevation-3 px-3">
+        <View className="flex-row items-center bg-surface rounded-full shadow-sm shadow-black/10 elevation-3 px-3">
           <Ionicons
             name="search"
             size={20}
@@ -162,7 +162,7 @@ export function MapSearchBar({
         </View>
 
         {showDropdown && (showHistory || showResults) && (
-          <View className="bg-surface rounded-xl mt-1 shadow-sm shadow-black/10 elevation-3 max-h-64 overflow-hidden">
+          <View className="bg-surface rounded-2xl mt-1 shadow-sm shadow-black/10 elevation-3 max-h-64 overflow-hidden">
             {showHistory && (
               <>
                 <View className="flex-row items-center justify-between px-4 pt-3 pb-1">
