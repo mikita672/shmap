@@ -10,6 +10,8 @@ import Animated, {
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import { Ionicons } from "@/lib/icons";
@@ -369,12 +371,26 @@ export function PlaceDetailsSheet({
 }: PlaceDetailsSheetProps) {
   const insets = useSafeAreaInsets();
 
-  const sheetHeight = useSharedValue(0);
+  const MINIMIZED_HEIGHT = 140; // Height to show when minimized
 
-  const progress = useSharedValue(visible ? 0 : 1);
+  const sheetHeight = useSharedValue(0);
+  const translateY = useSharedValue(1000); // Start off-screen
+  const contextY = useSharedValue(0);
+
+  const springConfig = { damping: 20, stiffness: 200, mass: 0.8 };
+
+  const getMinimizedY = (h: number) => {
+    "worklet";
+    return Math.max(0, h - MINIMIZED_HEIGHT);
+  };
+
+  const snapTo = (destination: number) => {
+    "worklet";
+    translateY.set(withSpring(destination, springConfig));
+  };
 
   useAnimatedReaction(
-    () => sheetHeight.value * (1 - progress.value),
+    () => Math.max(0, sheetHeight.value - translateY.value),
     (visibleHeight) => {
       if (animatedBottomOffset) {
         animatedBottomOffset.set(visibleHeight);
@@ -384,49 +400,95 @@ export function PlaceDetailsSheet({
 
   useEffect(() => {
     if (visible) {
-      progress.value = withSpring(0, {
-        damping: 20,
-        stiffness: 200,
-        mass: 0.8,
-      });
+      if (sheetHeight.value > 0) {
+        // When opening an already measured sheet, snap to minimized
+        snapTo(getMinimizedY(sheetHeight.value));
+      }
     } else {
-      progress.value = withTiming(1, { duration: 250 });
+      // Hide the sheet
+      const h = sheetHeight.value > 0 ? sheetHeight.value : 1000;
+      translateY.set(withTiming(h, { duration: 250 }));
     }
-  }, [visible, progress]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  const gesture = Gesture.Pan()
+    .onStart(() => {
+      contextY.set(translateY.value);
+    })
+    .onUpdate((event) => {
+      // Allow dragging up (to 0) and down (to sheet height)
+      const newY = contextY.value + event.translationY;
+      translateY.set(Math.max(0, Math.min(newY, sheetHeight.value)));
+    })
+    .onEnd((event) => {
+      const velocityY = event.velocityY;
+      const currentY = translateY.value;
+      const minimizedY = getMinimizedY(sheetHeight.value);
+
+      const projectedY = currentY + velocityY * 0.2;
+
+      // Three snap points: 0 (maximized), minimizedY (minimized), sheetHeight (hidden)
+      if (projectedY < minimizedY / 2) {
+        snapTo(0);
+      } else if (
+        projectedY >
+        minimizedY + (sheetHeight.value - minimizedY) / 2
+      ) {
+        snapTo(sheetHeight.value);
+        scheduleOnRN(onClose);
+      } else {
+        snapTo(minimizedY);
+      }
+    });
 
   const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: progress.value * sheetHeight.value }],
+    transform: [{ translateY: translateY.value }],
   }));
 
   return (
-    <Animated.View
-      style={[
-        sheetStyle,
-        {
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-        },
-      ]}
-      onLayout={(e) => {
-        sheetHeight.value = e.nativeEvent.layout.height;
-      }}
-    >
-      <View
-        className="bg-surface rounded-t-3xl shadow-xl shadow-black/20 elevation-8"
-        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
-      >
-        <DragHandle />
+    <GestureDetector gesture={gesture}>
+      <Animated.View
+        style={[
+          sheetStyle,
+          {
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+          },
+        ]}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          const isFirstMeasure = sheetHeight.value === 0;
+          sheetHeight.set(h);
 
-        {isLoading && !place ? (
-          <LoadingSkeleton />
-        ) : isError ? (
-          <ErrorState onRetry={onRetry} />
-        ) : place ? (
-          <PlaceContent place={place} onClose={onClose} />
-        ) : null}
-      </View>
-    </Animated.View>
+          if (isFirstMeasure) {
+            if (visible) {
+              // Instantly put it just below screen, then spring it up to minimized
+              translateY.set(h);
+              snapTo(getMinimizedY(h));
+            } else {
+              translateY.set(h);
+            }
+          }
+        }}
+      >
+        <View
+          className="bg-surface rounded-t-3xl shadow-xl shadow-black/20 elevation-8"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+        >
+          <DragHandle />
+
+          {isLoading && !place ? (
+            <LoadingSkeleton />
+          ) : isError ? (
+            <ErrorState onRetry={onRetry} />
+          ) : place ? (
+            <PlaceContent place={place} onClose={onClose} />
+          ) : null}
+        </View>
+      </Animated.View>
+    </GestureDetector>
   );
 }
