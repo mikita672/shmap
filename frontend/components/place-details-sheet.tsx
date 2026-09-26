@@ -225,7 +225,7 @@ function PlaceContent({
 
   const handleCopy = useCallback(async () => {
     try {
-      const Clipboard = require("expo-clipboard");
+      const Clipboard = await import("expo-clipboard");
       await Clipboard.setStringAsync(copyText);
       toast.success("Copied to clipboard");
     } catch (error) {
@@ -377,7 +377,7 @@ export function PlaceDetailsSheet({
     () => sheetHeight.value * (1 - progress.value),
     (visibleHeight) => {
       if (animatedBottomOffset) {
-        animatedBottomOffset.value = visibleHeight;
+        animatedBottomOffset.set(visibleHeight);
       }
     },
   );

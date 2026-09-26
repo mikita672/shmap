@@ -1,6 +1,4 @@
 import { enableFreeze } from "react-native-screens";
-enableFreeze(true);
-
 import {
   DarkTheme,
   DefaultTheme,
@@ -14,12 +12,12 @@ import { PortalHost } from "@rn-primitives/portal";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
-
 import { SafeAreaProvider } from "react-native-safe-area-context";
-
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthProvider } from "@/providers/AuthProvider";
+
+enableFreeze(true);
 
 function RootNavigator() {
   const colorScheme = useColorScheme();
