@@ -46,6 +46,8 @@ export default function MapScreen() {
 
   const animatedBottomOffset = useSharedValue(0);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     place: reversePlace,
     isLoading: reverseLoading,
@@ -105,6 +107,7 @@ export default function MapScreen() {
     setSheetVisible(false);
     setSelectedCoord(null);
     setSearchPlaceOverride(null);
+    setSearchQuery("");
   }, []);
 
   const handleSheetRetry = useCallback(() => {
@@ -183,7 +186,13 @@ export default function MapScreen() {
         )}
       </Map>
 
-      <MapSearchBar mapCenter={mapCenter} onPlaceSelect={handlePlaceSelect} />
+      <MapSearchBar
+        mapCenter={mapCenter}
+        onPlaceSelect={handlePlaceSelect}
+        onClear={handleSheetClose}
+        query={searchQuery}
+        onQueryChange={setSearchQuery}
+      />
 
       {locationPermission && (
         <MapControls

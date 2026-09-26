@@ -20,12 +20,20 @@ import type { SearchPlace } from "@/lib/api/geocoding";
 interface MapSearchBarProps {
   mapCenter?: { lat: number; lon: number };
   onPlaceSelect: (place: SearchPlace) => void;
+  onClear?: () => void;
+  query: string;
+  onQueryChange: (text: string) => void;
 }
 
-export function MapSearchBar({ mapCenter, onPlaceSelect }: MapSearchBarProps) {
+export function MapSearchBar({
+  mapCenter,
+  onPlaceSelect,
+  onClear,
+  query,
+  onQueryChange,
+}: MapSearchBarProps) {
   const insets = useSafeAreaInsets();
   const inputRef = useRef<TextInput>(null);
-  const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
   const { results, isSearching } = useGeocoding(query, mapCenter);
@@ -38,19 +46,20 @@ export function MapSearchBar({ mapCenter, onPlaceSelect }: MapSearchBarProps) {
 
   const handleSelect = useCallback(
     (place: SearchPlace) => {
-      setQuery(place.name);
+      onQueryChange(place.name);
       setIsFocused(false);
       Keyboard.dismiss();
       addPlace(place);
       onPlaceSelect(place);
     },
-    [addPlace, onPlaceSelect],
+    [addPlace, onPlaceSelect, onQueryChange],
   );
 
   const handleClear = useCallback(() => {
-    setQuery("");
+    onQueryChange("");
     inputRef.current?.focus();
-  }, []);
+    onClear?.();
+  }, [onQueryChange, onClear]);
 
   const handleDismiss = useCallback(() => {
     setIsFocused(false);
@@ -127,7 +136,7 @@ export function MapSearchBar({ mapCenter, onPlaceSelect }: MapSearchBarProps) {
           <Input
             ref={inputRef}
             value={query}
-            onChangeText={setQuery}
+            onChangeText={onQueryChange}
             onFocus={() => setIsFocused(true)}
             placeholder="Search places..."
             returnKeyType="search"
