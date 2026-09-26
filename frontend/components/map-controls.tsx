@@ -1,19 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { View, Pressable, Animated, ActivityIndicator } from "react-native";
+import { Pressable, Animated, ActivityIndicator } from "react-native";
 import { Ionicons } from "@/lib/icons";
 import {
   type CameraRef,
   type MapRef,
   LocationManager,
 } from "@maplibre/maplibre-react-native";
+import Reanimated, {
+  useAnimatedStyle,
+  type SharedValue,
+} from "react-native-reanimated";
 
 interface MapControlsProps {
   cameraRef: React.RefObject<CameraRef | null>;
   mapRef: React.RefObject<MapRef | null>;
   bearing: Animated.Value;
+  animatedBottomOffset?: SharedValue<number>;
 }
 
-export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
+export function MapControls({
+  cameraRef,
+  mapRef,
+  bearing,
+  animatedBottomOffset,
+}: MapControlsProps) {
   const [isLocating, setIsLocating] = useState(true);
 
   useEffect(() => {
@@ -76,10 +86,17 @@ export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
     outputRange: ["-45deg", "-405deg"],
   });
 
+  const animatedStyle = useAnimatedStyle(() => {
+    const bottomOffset = animatedBottomOffset?.value ?? 0;
+    return {
+      transform: [{ translateY: -bottomOffset }],
+    };
+  });
+
   return (
-    <View
+    <Reanimated.View
       className="absolute flex-col items-center gap-3 right-4"
-      style={{ bottom: 16 }}
+      style={[{ bottom: 16 }, animatedStyle]}
     >
       <Pressable
         onPress={handleCompass}
@@ -113,6 +130,6 @@ export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
           />
         )}
       </Pressable>
-    </View>
+    </Reanimated.View>
   );
 }

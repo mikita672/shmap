@@ -1,9 +1,10 @@
 import React, { useEffect, useCallback } from "react";
 import { View, Pressable, Share } from "react-native";
-import * as Clipboard from "expo-clipboard";
+
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useAnimatedReaction,
   withSpring,
   withTiming,
   withRepeat,
@@ -223,8 +224,17 @@ function PlaceContent({
     .join("\n");
 
   const handleCopy = useCallback(async () => {
-    await Clipboard.setStringAsync(copyText);
-    toast.success("Copied to clipboard");
+    try {
+      const Clipboard = require("expo-clipboard");
+      await Clipboard.setStringAsync(copyText);
+      toast.success("Copied to clipboard");
+    } catch (error) {
+      toast.error("Clipboard requires app rebuild");
+      console.warn(
+        "expo-clipboard native module missing. Rebuild your app.",
+        error,
+      );
+    }
   }, [copyText]);
 
   const handleShare = useCallback(async () => {
@@ -345,6 +355,7 @@ export interface PlaceDetailsSheetProps {
   isError: boolean;
   onClose: () => void;
   onRetry: () => void;
+  animatedBottomOffset?: import("react-native-reanimated").SharedValue<number>;
 }
 
 export function PlaceDetailsSheet({
@@ -354,12 +365,22 @@ export function PlaceDetailsSheet({
   isError,
   onClose,
   onRetry,
+  animatedBottomOffset,
 }: PlaceDetailsSheetProps) {
   const insets = useSafeAreaInsets();
 
   const sheetHeight = useSharedValue(0);
 
   const progress = useSharedValue(visible ? 0 : 1);
+
+  useAnimatedReaction(
+    () => sheetHeight.value * (1 - progress.value),
+    (visibleHeight) => {
+      if (animatedBottomOffset) {
+        animatedBottomOffset.value = visibleHeight;
+      }
+    },
+  );
 
   useEffect(() => {
     if (visible) {
@@ -377,52 +398,35 @@ export function PlaceDetailsSheet({
     transform: [{ translateY: progress.value * sheetHeight.value }],
   }));
 
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: 1 - progress.value,
-  }));
-
   return (
-    <>
-      <Animated.View
-        style={[backdropStyle, { position: "absolute", inset: 0 }]}
-        pointerEvents={visible ? "auto" : "none"}
+    <Animated.View
+      style={[
+        sheetStyle,
+        {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+        },
+      ]}
+      onLayout={(e) => {
+        sheetHeight.value = e.nativeEvent.layout.height;
+      }}
+    >
+      <View
+        className="bg-surface rounded-t-3xl shadow-xl shadow-black/20 elevation-8"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
-        <Pressable
-          className="flex-1"
-          onPress={onClose}
-          accessibilityLabel="Close place details"
-        />
-      </Animated.View>
+        <DragHandle />
 
-      <Animated.View
-        style={[
-          sheetStyle,
-          {
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-          },
-        ]}
-        onLayout={(e) => {
-          sheetHeight.value = e.nativeEvent.layout.height;
-        }}
-      >
-        <View
-          className="bg-surface rounded-t-3xl shadow-xl shadow-black/20 elevation-8"
-          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
-        >
-          <DragHandle />
-
-          {isLoading && !place ? (
-            <LoadingSkeleton />
-          ) : isError ? (
-            <ErrorState onRetry={onRetry} />
-          ) : place ? (
-            <PlaceContent place={place} onClose={onClose} />
-          ) : null}
-        </View>
-      </Animated.View>
-    </>
+        {isLoading && !place ? (
+          <LoadingSkeleton />
+        ) : isError ? (
+          <ErrorState onRetry={onRetry} />
+        ) : place ? (
+          <PlaceContent place={place} onClose={onClose} />
+        ) : null}
+      </View>
+    </Animated.View>
   );
 }

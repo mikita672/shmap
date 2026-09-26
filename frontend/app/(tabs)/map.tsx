@@ -13,6 +13,7 @@ import {
 import type { NativeSyntheticEvent } from "react-native";
 import { MapControls } from "@/components/map-controls";
 import { MapSearchBar } from "@/components/map-search-bar";
+import { useSharedValue } from "react-native-reanimated";
 import { PlaceDetailsSheet } from "@/components/place-details-sheet";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
@@ -42,6 +43,8 @@ export default function MapScreen() {
 
   const [searchPlaceOverride, setSearchPlaceOverride] =
     useState<PlaceDetails | null>(null);
+
+  const animatedBottomOffset = useSharedValue(0);
 
   const {
     place: reversePlace,
@@ -183,7 +186,12 @@ export default function MapScreen() {
       <MapSearchBar mapCenter={mapCenter} onPlaceSelect={handlePlaceSelect} />
 
       {locationPermission && (
-        <MapControls cameraRef={cameraRef} mapRef={mapRef} bearing={bearing} />
+        <MapControls
+          cameraRef={cameraRef}
+          mapRef={mapRef}
+          bearing={bearing}
+          animatedBottomOffset={animatedBottomOffset}
+        />
       )}
 
       <PlaceDetailsSheet
@@ -193,6 +201,7 @@ export default function MapScreen() {
         isError={reverseError}
         onClose={handleSheetClose}
         onRetry={handleSheetRetry}
+        animatedBottomOffset={animatedBottomOffset}
       />
     </View>
   );
