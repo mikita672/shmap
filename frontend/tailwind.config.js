@@ -50,6 +50,8 @@ module.exports = {
         "tab-bubble": "hsl(var(--tab-bubble))",
         "tab-icon": "hsl(var(--tab-icon))",
         "tab-icon-active": "hsl(var(--tab-icon-active))",
+        searchbar: "hsl(var(--searchbar))",
+        "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
       },
       borderWidth: {
         hairline: "1px",

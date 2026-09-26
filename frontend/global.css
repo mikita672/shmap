@@ -54,11 +54,13 @@
     --tab-bubble: 43 81% 88%; /* Lemon Meringue #F9EBC7 — active pill background */
     --tab-icon-active: 22.74 65.52% 28.43%; /* Russet #783D19 — selected icon */
 
-    /* Card / Popover surfaces (same as main surface for now) */
     --card: 52 93% 93%;
     --card-foreground: 30 34% 38%;
     --popover: 52 93% 93%;
     --popover-foreground: 30 34% 38%;
+
+    --searchbar: 43 81% 88%; /* Lemon Meringue */
+    --searchbar-placeholder: 93.1 15.03% 37.84%; /* Dark Olive Green */
   }
 
   .dark:root {
@@ -113,10 +115,13 @@
     --tab-bubble: 30 34% 58%; /* Camel — active pill background on dark olive */
     --tab-icon-active: 22.74 65.52% 28.43%; /* Russet #783D19 — selected icon */
 
-    /* Card / Popover surfaces (same as main surface for now) */
     --card: 30 34% 58%;
     --card-foreground: 22.74 65.52% 28.43%;
     --popover: 30 34% 58%;
     --popover-foreground: 22.74 65.52% 28.43%;
+
+    /* Search Bar */
+    --searchbar: 30 34% 58%; /* Camel */
+    --searchbar-placeholder: 22.74 65.52% 28.43%; /* Russet */
   }
 }

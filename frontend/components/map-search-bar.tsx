@@ -127,11 +127,11 @@ export function MapSearchBar({
         className="absolute left-4 right-4 z-10"
         style={{ top: Math.max(insets.top, 8) + 8 }}
       >
-        <View className="flex-row items-center bg-surface rounded-full shadow-sm shadow-black/10 elevation-3 px-3">
+        <View className="flex-row items-center bg-searchbar rounded-full shadow-sm shadow-black/10 elevation-3 px-3">
           <Ionicons
             name="search"
             size={20}
-            className="text-on-surface-muted mr-2"
+            className="text-searchbar-placeholder mr-2"
           />
           <Input
             ref={inputRef}
@@ -141,7 +141,7 @@ export function MapSearchBar({
             placeholder="Search places..."
             returnKeyType="search"
             autoCorrect={false}
-            className="flex-1 border-0 bg-transparent shadow-none h-12"
+            className="flex-1 border-0 bg-transparent shadow-none h-12 text-on-surface placeholder:text-searchbar-placeholder"
           />
           {isSearching && <ActivityIndicator size="small" className="mr-2" />}
           {query.length > 0 && !isSearching && (
@@ -155,7 +155,7 @@ export function MapSearchBar({
               <Ionicons
                 name="close-circle"
                 size={20}
-                className="text-on-surface-muted"
+                className="text-searchbar-placeholder"
               />
             </Button>
           )}
