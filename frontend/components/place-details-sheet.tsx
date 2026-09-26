@@ -389,26 +389,37 @@ export function PlaceDetailsSheet({
   };
 
   useAnimatedReaction(
-    () => Math.max(0, sheetHeight.value - translateY.value),
-    (visibleHeight) => {
+    () => {
+      return {
+        h: sheetHeight.value,
+        y: translateY.value,
+      };
+    },
+    (curr, prev) => {
+      const visibleHeight = Math.max(0, curr.h - curr.y);
       if (animatedBottomOffset) {
         animatedBottomOffset.set(visibleHeight);
       }
+
+      if (visible && prev && curr.h !== prev.h && curr.h > 0 && prev.h > 0) {
+        const wasMinimized = Math.abs(prev.y - getMinimizedY(prev.h)) < 1;
+        if (wasMinimized) {
+          snapTo(getMinimizedY(curr.h));
+        }
+      }
     },
+    [visible],
   );
 
   useEffect(() => {
     if (visible) {
       if (sheetHeight.value > 0) {
-        // When opening an already measured sheet, snap to minimized
         snapTo(getMinimizedY(sheetHeight.value));
       }
     } else {
-      // Hide the sheet
       const h = sheetHeight.value > 0 ? sheetHeight.value : 1000;
       translateY.set(withTiming(h, { duration: 250 }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   const gesture = Gesture.Pan()
