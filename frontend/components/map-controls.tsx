@@ -29,14 +29,28 @@ export function MapControls({
   useEffect(() => {
     let isMounted = true;
 
-    LocationManager.getCurrentPosition().finally(() => {
-      if (isMounted) {
-        setIsLocating(false);
-      }
-    });
+    LocationManager.getCurrentPosition()
+      .then((position) => {
+        if (isMounted && position) {
+          const manager = LocationManager as unknown as {
+            handleUpdate?: (position: any) => void;
+          };
+          if (typeof manager.handleUpdate === "function") {
+            manager.handleUpdate(position);
+          }
+        }
+      })
+      .catch((error) => {
+        console.warn("Failed to get initial position:", error);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLocating(false);
+        }
+      });
 
-    const listener = () => {
-      if (isMounted) {
+    const listener = (position: any) => {
+      if (isMounted && position) {
         setIsLocating(false);
       }
     };
@@ -66,6 +80,13 @@ export function MapControls({
       setIsLocating(true);
       const position = await LocationManager.getCurrentPosition();
       if (position && cameraRef.current && mapRef.current) {
+        const manager = LocationManager as unknown as {
+          handleUpdate?: (position: any) => void;
+        };
+        if (typeof manager.handleUpdate === "function") {
+          manager.handleUpdate(position);
+        }
+
         const currentZoom = await mapRef.current.getZoom();
 
         const targetZoom = Math.max(currentZoom, 15);
@@ -76,6 +97,8 @@ export function MapControls({
           duration: 1000,
         });
       }
+    } catch (error) {
+      console.warn("Failed to get current position:", error);
     } finally {
       setIsLocating(false);
     }
