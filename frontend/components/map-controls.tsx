@@ -22,7 +22,6 @@ export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
     LocationManager.getCurrentPosition()
       .then((position) => {
         if (isMounted && position) {
-          setIsLocating(false);
           const manager = LocationManager as unknown as {
             handleUpdate?: (position: any) => void;
           };
@@ -33,6 +32,11 @@ export function MapControls({ cameraRef, mapRef, bearing }: MapControlsProps) {
       })
       .catch((error) => {
         console.warn("Failed to get initial position:", error);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLocating(false);
+        }
       });
 
     const listener = (position: any) => {
