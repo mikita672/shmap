@@ -15,14 +15,18 @@ export async function getSearchHistory(): Promise<SearchPlace[]> {
   }
 }
 
+let updateQueue = Promise.resolve();
+
 export async function addToSearchHistory(place: SearchPlace): Promise<void> {
-  const history = await getSearchHistory();
+  const operation = updateQueue.then(async () => {
+    const history = await getSearchHistory();
+    const filtered = history.filter((item) => item.id !== place.id);
+    const updated = [place, ...filtered].slice(0, MAX_HISTORY_ITEMS);
+    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+  });
 
-  const filtered = history.filter((item) => item.id !== place.id);
-
-  const updated = [place, ...filtered].slice(0, MAX_HISTORY_ITEMS);
-
-  await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+  updateQueue = operation.catch(() => {});
+  return operation;
 }
 
 export async function removeFromSearchHistory(id: string): Promise<void> {
