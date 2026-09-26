@@ -6,7 +6,7 @@ import {
   Camera,
   UserLocation,
   LocationManager,
-  Marker,
+  ViewAnnotation,
   type CameraRef,
   type MapRef,
 } from "@maplibre/maplibre-react-native";
@@ -96,7 +96,7 @@ export default function MapScreen() {
         )}
 
         {selectedPlace && (
-          <Marker
+          <ViewAnnotation
             id="search-result"
             lngLat={[selectedPlace.longitude, selectedPlace.latitude]}
             anchor="bottom"
@@ -108,7 +108,7 @@ export default function MapScreen() {
                 className="text-destructive"
               />
             </View>
-          </Marker>
+          </ViewAnnotation>
         )}
       </Map>
 
