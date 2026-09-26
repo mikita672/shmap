@@ -1,5 +1,5 @@
 import { cssInterop } from "nativewind";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
 cssInterop(MaterialIcons, {
   className: {
@@ -8,4 +8,11 @@ cssInterop(MaterialIcons, {
   },
 });
 
-export { MaterialIcons };
+cssInterop(Ionicons, {
+  className: {
+    target: "style",
+    nativeStyleToProp: { color: true },
+  },
+});
+
+export { MaterialIcons, Ionicons };

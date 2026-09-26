@@ -37,6 +37,7 @@ export function AnimatedTabBar({
 
   const [containerWidth, setContainerWidth] = useState(0);
   const prevIndexRef = useRef(state.index);
+  const prevTabWidthRef = useRef(0);
   const isInitializedRef = useRef(false);
 
   const translateX = useSharedValue(0);
@@ -62,10 +63,19 @@ export function AnimatedTabBar({
       translateX.value = targetX;
       isInitializedRef.current = true;
       prevIndexRef.current = state.index;
+      prevTabWidthRef.current = tabWidth;
       return;
     }
 
     const prevIndex = prevIndexRef.current;
+    const tabWidthChanged = prevTabWidthRef.current !== tabWidth;
+    prevTabWidthRef.current = tabWidth;
+
+    if (tabWidthChanged && prevIndex === state.index) {
+      translateX.value = targetX;
+      return;
+    }
+
     if (prevIndex !== state.index) {
       const distance = Math.abs(state.index - prevIndex);
 
