@@ -370,10 +370,10 @@ export function PlaceDetailsSheet({
 }: PlaceDetailsSheetProps) {
   const insets = useSafeAreaInsets();
 
-  const MINIMIZED_HEIGHT = 140; // Height to show when minimized
+  const MINIMIZED_HEIGHT = 140;
 
   const sheetHeight = useSharedValue(0);
-  const translateY = useSharedValue(1000); // Start off-screen
+  const translateY = useSharedValue(1000);
   const contextY = useSharedValue(0);
 
   const springConfig = { damping: 20, stiffness: 200, mass: 0.8 };
