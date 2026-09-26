@@ -10,7 +10,6 @@ import Animated, {
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
-import { scheduleOnRN } from "react-native-worklets";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
@@ -417,9 +416,16 @@ export function PlaceDetailsSheet({
       contextY.set(translateY.value);
     })
     .onUpdate((event) => {
-      // Allow dragging up (to 0) and down (to sheet height)
+      const minimizedY = getMinimizedY(sheetHeight.value);
       const newY = contextY.value + event.translationY;
-      translateY.set(Math.max(0, Math.min(newY, sheetHeight.value)));
+
+      if (newY > minimizedY) {
+        const overscroll = newY - minimizedY;
+        const frictionY = minimizedY + overscroll * 0.2;
+        translateY.set(Math.max(0, frictionY));
+      } else {
+        translateY.set(Math.max(0, newY));
+      }
     })
     .onEnd((event) => {
       const velocityY = event.velocityY;
@@ -428,15 +434,8 @@ export function PlaceDetailsSheet({
 
       const projectedY = currentY + velocityY * 0.2;
 
-      // Three snap points: 0 (maximized), minimizedY (minimized), sheetHeight (hidden)
       if (projectedY < minimizedY / 2) {
         snapTo(0);
-      } else if (
-        projectedY >
-        minimizedY + (sheetHeight.value - minimizedY) / 2
-      ) {
-        snapTo(sheetHeight.value);
-        scheduleOnRN(onClose);
       } else {
         snapTo(minimizedY);
       }
@@ -465,7 +464,6 @@ export function PlaceDetailsSheet({
 
           if (isFirstMeasure) {
             if (visible) {
-              // Instantly put it just below screen, then spring it up to minimized
               translateY.set(h);
               snapTo(getMinimizedY(h));
             } else {
