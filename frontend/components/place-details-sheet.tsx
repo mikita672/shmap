@@ -359,6 +359,14 @@ export interface PlaceDetailsSheetProps {
   animatedBottomOffset?: import("react-native-reanimated").SharedValue<number>;
 }
 
+const MINIMIZED_HEIGHT = 140;
+const springConfig = { damping: 20, stiffness: 200, mass: 0.8 };
+
+const getMinimizedY = (h: number) => {
+  "worklet";
+  return Math.max(0, h - MINIMIZED_HEIGHT);
+};
+
 export function PlaceDetailsSheet({
   visible,
   place,
@@ -370,23 +378,17 @@ export function PlaceDetailsSheet({
 }: PlaceDetailsSheetProps) {
   const insets = useSafeAreaInsets();
 
-  const MINIMIZED_HEIGHT = 140;
-
   const sheetHeight = useSharedValue(0);
   const translateY = useSharedValue(1000);
   const contextY = useSharedValue(0);
 
-  const springConfig = { damping: 20, stiffness: 200, mass: 0.8 };
-
-  const getMinimizedY = (h: number) => {
-    "worklet";
-    return Math.max(0, h - MINIMIZED_HEIGHT);
-  };
-
-  const snapTo = (destination: number) => {
-    "worklet";
-    translateY.set(withSpring(destination, springConfig));
-  };
+  const snapTo = useCallback(
+    (destination: number) => {
+      "worklet";
+      translateY.set(withSpring(destination, springConfig));
+    },
+    [translateY],
+  );
 
   useAnimatedReaction(
     () => {
@@ -413,14 +415,14 @@ export function PlaceDetailsSheet({
 
   useEffect(() => {
     if (visible) {
-      if (sheetHeight.value > 0) {
-        snapTo(getMinimizedY(sheetHeight.value));
+      if (sheetHeight.get() > 0) {
+        snapTo(getMinimizedY(sheetHeight.get()));
       }
     } else {
-      const h = sheetHeight.value > 0 ? sheetHeight.value : 1000;
+      const h = sheetHeight.get() > 0 ? sheetHeight.get() : 1000;
       translateY.set(withTiming(h, { duration: 250 }));
     }
-  }, [visible]);
+  }, [visible, sheetHeight, snapTo, translateY]);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
