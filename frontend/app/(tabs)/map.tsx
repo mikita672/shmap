@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, ActivityIndicator, Animated } from "react-native";
+import { View, ActivityIndicator, Animated, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Map,
@@ -10,12 +10,20 @@ import {
   type CameraRef,
   type MapRef,
 } from "@maplibre/maplibre-react-native";
+import type { NativeSyntheticEvent } from "react-native";
 import { MapControls } from "@/components/map-controls";
 import { MapSearchBar } from "@/components/map-search-bar";
+import { PlaceDetailsSheet } from "@/components/place-details-sheet";
+import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
-import type { SearchPlace } from "@/lib/api/geocoding";
+import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+
+interface SelectedCoordinate {
+  lat: number;
+  lon: number;
+}
 
 export default function MapScreen() {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(
@@ -25,11 +33,60 @@ export default function MapScreen() {
   const mapRef = useRef<MapRef>(null);
   const insets = useSafeAreaInsets();
   const [bearing] = useState(() => new Animated.Value(0));
-  const [selectedPlace, setSelectedPlace] = useState<SearchPlace | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number }>();
 
+  const [selectedCoord, setSelectedCoord] = useState<SelectedCoordinate | null>(
+    null,
+  );
+  const [sheetVisible, setSheetVisible] = useState(false);
+
+  const [searchPlaceOverride, setSearchPlaceOverride] =
+    useState<PlaceDetails | null>(null);
+
+  const {
+    place: reversePlace,
+    isLoading: reverseLoading,
+    isError: reverseError,
+    refetch: reverseRefetch,
+  } = useReverseGeocoding(selectedCoord);
+
+  const activePlace = reversePlace ?? searchPlaceOverride;
+  const isLoading = reverseLoading && activePlace === null;
+
+  const handleMapPress = useCallback(
+    (event: NativeSyntheticEvent<{ lngLat: [number, number] }>) => {
+      Keyboard.dismiss();
+      const [lon, lat] = event.nativeEvent.lngLat;
+
+      setSelectedCoord({ lat, lon });
+      setSearchPlaceOverride(null);
+      setSheetVisible(true);
+
+      if (cameraRef.current) {
+        cameraRef.current.easeTo({
+          center: [lon, lat],
+          duration: 400,
+        });
+      }
+    },
+    [],
+  );
+
   const handlePlaceSelect = useCallback(async (place: SearchPlace) => {
-    setSelectedPlace(place);
+    Keyboard.dismiss();
+
+    const coord = { lat: place.latitude, lon: place.longitude };
+    setSelectedCoord(coord);
+
+    setSearchPlaceOverride({
+      id: place.id,
+      name: place.name,
+      displayName: place.displayName,
+      category: "Place",
+      latitude: place.latitude,
+      longitude: place.longitude,
+    });
+    setSheetVisible(true);
 
     if (cameraRef.current && mapRef.current) {
       const currentZoom = await mapRef.current.getZoom();
@@ -40,6 +97,16 @@ export default function MapScreen() {
       });
     }
   }, []);
+
+  const handleSheetClose = useCallback(() => {
+    setSheetVisible(false);
+    setSelectedCoord(null);
+    setSearchPlaceOverride(null);
+  }, []);
+
+  const handleSheetRetry = useCallback(() => {
+    reverseRefetch();
+  }, [reverseRefetch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +144,7 @@ export default function MapScreen() {
         style={{ flex: 1 }}
         compass={!locationPermission}
         attributionPosition={{ top: Math.max(insets.top, 8) + 8, left: 8 }}
+        onPress={handleMapPress}
         onRegionIsChanging={(event) => {
           bearing.setValue(event.nativeEvent.bearing);
         }}
@@ -95,10 +163,10 @@ export default function MapScreen() {
           </>
         )}
 
-        {selectedPlace && (
+        {selectedCoord && (
           <ViewAnnotation
-            id="search-result"
-            lngLat={[selectedPlace.longitude, selectedPlace.latitude]}
+            id="selected-place"
+            lngLat={[selectedCoord.lon, selectedCoord.lat]}
             anchor="bottom"
           >
             <View className="items-center">
@@ -117,6 +185,15 @@ export default function MapScreen() {
       {locationPermission && (
         <MapControls cameraRef={cameraRef} mapRef={mapRef} bearing={bearing} />
       )}
+
+      <PlaceDetailsSheet
+        visible={sheetVisible}
+        place={activePlace}
+        isLoading={isLoading}
+        isError={reverseError}
+        onClose={handleSheetClose}
+        onRetry={handleSheetRetry}
+      />
     </View>
   );
 }
