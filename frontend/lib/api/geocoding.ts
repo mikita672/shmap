@@ -411,18 +411,14 @@ export async function reverseGeocode(
 ): Promise<PlaceDetails | null> {
   const { lat, lon, lang = "en" } = options;
 
-  try {
-    const { data } = await photonClient.get<PhotonResponse>("/reverse", {
-      params: { lat, lon, lang, limit: 1 },
-    });
+  const { data } = await photonClient.get<PhotonResponse>("/reverse", {
+    params: { lat, lon, lang, limit: 1 },
+  });
 
-    const feature = data.features?.[0];
-    if (!feature) return null;
+  const feature = data.features?.[0];
+  if (!feature) return null;
 
-    return featureToPlaceDetails(feature, { lat, lon });
-  } catch {
-    return null;
-  }
+  return featureToPlaceDetails(feature, { lat, lon });
 }
 
 export function featureToPlaceDetails(
