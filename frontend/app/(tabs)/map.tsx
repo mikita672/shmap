@@ -55,7 +55,7 @@ export default function MapScreen() {
     refetch: reverseRefetch,
   } = useReverseGeocoding(selectedCoord);
 
-  const activePlace = reversePlace ?? searchPlaceOverride;
+  const activePlace = searchPlaceOverride ?? reversePlace;
   const isLoading = reverseLoading && activePlace === null;
 
   const handleMapPress = useCallback(
