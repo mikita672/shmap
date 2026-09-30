@@ -8,11 +8,15 @@ import {
   type TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { Ionicons } from "@/lib/icons";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Avatar } from "@/components/ui/avatar";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { useGeocoding } from "@/hooks/useGeocoding";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import type { SearchPlace } from "@/lib/api/geocoding";
@@ -23,6 +27,7 @@ interface MapSearchBarProps {
   onClear?: () => void;
   query: string;
   onQueryChange: (text: string) => void;
+  onAvatarPress?: () => void;
 }
 
 export function MapSearchBar({
@@ -31,10 +36,22 @@ export function MapSearchBar({
   onClear,
   query,
   onQueryChange,
+  onAvatarPress,
 }: MapSearchBarProps) {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const inputRef = useRef<TextInput>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const { profile } = useUserProfile();
+
+  const handleAvatarPress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (onAvatarPress) {
+      onAvatarPress();
+    } else {
+      router.push("/profile" as any);
+    }
+  }, [onAvatarPress, router]);
 
   const { results, isSearching } = useGeocoding(query, mapCenter);
   const { history, addPlace, removePlace, clearAll } = useSearchHistory();
@@ -127,38 +144,54 @@ export function MapSearchBar({
         className="absolute left-4 right-4 z-10"
         style={{ top: Math.max(insets.top, 8) + 8 }}
       >
-        <View className="flex-row items-center bg-searchbar rounded-full shadow-sm shadow-black/10 elevation-3 px-3">
-          <Ionicons
-            name="search"
-            size={20}
-            className="text-searchbar-placeholder mr-2"
-          />
-          <Input
-            ref={inputRef}
-            value={query}
-            onChangeText={onQueryChange}
-            onFocus={() => setIsFocused(true)}
-            placeholder="Search places..."
-            returnKeyType="search"
-            autoCorrect={false}
-            className="flex-1 border-0 bg-transparent shadow-none h-12 text-on-surface placeholder:text-searchbar-placeholder"
-          />
-          {isSearching && <ActivityIndicator size="small" className="mr-2" />}
-          {query.length > 0 && !isSearching && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onPress={handleClear}
-              accessibilityLabel="Clear search"
-            >
-              <Ionicons
-                name="close-circle"
-                size={20}
-                className="text-searchbar-placeholder"
-              />
-            </Button>
-          )}
+        <View className="flex-row items-center gap-2.5">
+          <Pressable
+            onPress={handleAvatarPress}
+            className="h-12 w-12 rounded-full overflow-hidden border border-border/40 bg-surface shadow-sm shadow-black/10 elevation-3 items-center justify-center active:scale-95 transition-transform"
+            accessibilityLabel="Open profile and settings"
+            accessibilityRole="button"
+          >
+            <Avatar
+              size="lg"
+              uri={profile.avatarUrl}
+              fallbackText={`${profile.firstName} ${profile.lastName}`}
+              className="h-full w-full border-0"
+            />
+          </Pressable>
+
+          <View className="flex-1 flex-row items-center bg-searchbar rounded-full shadow-sm shadow-black/10 elevation-3 px-3">
+            <Ionicons
+              name="search"
+              size={20}
+              className="text-searchbar-placeholder mr-2"
+            />
+            <Input
+              ref={inputRef}
+              value={query}
+              onChangeText={onQueryChange}
+              onFocus={() => setIsFocused(true)}
+              placeholder="Search places..."
+              returnKeyType="search"
+              autoCorrect={false}
+              className="flex-1 border-0 bg-transparent shadow-none h-12 text-on-surface placeholder:text-searchbar-placeholder"
+            />
+            {isSearching && <ActivityIndicator size="small" className="mr-2" />}
+            {query.length > 0 && !isSearching && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onPress={handleClear}
+                accessibilityLabel="Clear search"
+              >
+                <Ionicons
+                  name="close-circle"
+                  size={20}
+                  className="text-searchbar-placeholder"
+                />
+              </Button>
+            )}
+          </View>
         </View>
 
         {showDropdown && (showHistory || showResults) && (
