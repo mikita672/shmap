@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -29,6 +30,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useState<ThemePreference>("auto");
   const [isLoading, setIsLoading] = useState(true);
 
+  const setColorSchemeRef = useRef(setColorScheme);
+  setColorSchemeRef.current = setColorScheme;
+
+  const hasUserSetThemeRef = useRef(false);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -37,12 +43,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const stored = await AsyncStorage.getItem(THEME_STORAGE_KEY);
         if (
           isMounted &&
+          !hasUserSetThemeRef.current &&
           stored &&
           (stored === "light" || stored === "dark" || stored === "auto")
         ) {
           const pref = stored as ThemePreference;
           setThemePreferenceState(pref);
-          setColorScheme(pref === "auto" ? "system" : pref);
+          setColorSchemeRef.current(pref === "auto" ? "system" : pref);
         }
       } catch (error) {
         console.warn("Failed to load theme preference from storage", error);
@@ -58,12 +65,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [setColorScheme]);
+  }, []);
 
   const setThemePreference = useCallback(
     async (preference: ThemePreference) => {
+      hasUserSetThemeRef.current = true;
       setThemePreferenceState(preference);
-      setColorScheme(preference === "auto" ? "system" : preference);
+      setColorSchemeRef.current(preference === "auto" ? "system" : preference);
 
       try {
         await AsyncStorage.setItem(THEME_STORAGE_KEY, preference);
@@ -71,7 +79,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         console.warn("Failed to save theme preference to storage", error);
       }
     },
-    [setColorScheme],
+    [],
   );
 
   const resolvedScheme: "light" | "dark" =
