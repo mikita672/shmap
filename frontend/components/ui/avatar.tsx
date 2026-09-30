@@ -73,6 +73,7 @@ interface AvatarProps
   iconClassName?: string;
   iconColor?: string;
   iconSize?: number;
+  iconName?: keyof typeof Ionicons.glyphMap;
   alt?: string;
   textClassName?: string;
 }
@@ -95,6 +96,7 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
       iconClassName,
       iconColor,
       iconSize: customIconSize,
+      iconName = "person-circle-outline",
       alt = "User avatar",
       textClassName,
       style,
@@ -152,11 +154,20 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
             />
           ) : fallbackIcon || !initials ? (
             <Ionicons
-              name="person-circle-outline"
+              name={iconName}
               size={effectiveIconSize}
               color={iconColor}
               className={cn("text-avatar-foreground", iconClassName)}
-              style={{ textAlign: "center" }}
+              style={[
+                {
+                  textAlign: "center",
+                  textAlignVertical: "center",
+                  includeFontPadding: false,
+                  lineHeight: effectiveIconSize,
+                  width: effectiveIconSize,
+                  height: effectiveIconSize,
+                },
+              ]}
             />
           ) : (
             <RNText
@@ -164,6 +175,10 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
                 avatarFallbackTextVariants({ size: avatarSize }),
                 textClassName,
               )}
+              style={{
+                includeFontPadding: false,
+                textAlignVertical: "center",
+              }}
             >
               {initials}
             </RNText>
@@ -223,6 +238,10 @@ const AvatarFallback = React.forwardRef<
       {typeof children === "string" ? (
         <RNText
           className={cn(avatarFallbackTextVariants({ size }), textClassName)}
+          style={{
+            includeFontPadding: false,
+            textAlignVertical: "center",
+          }}
         >
           {children}
         </RNText>
