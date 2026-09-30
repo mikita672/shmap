@@ -52,6 +52,10 @@ module.exports = {
         "tab-icon-active": "hsl(var(--tab-icon-active))",
         searchbar: "hsl(var(--searchbar))",
         "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
+        avatar: {
+          DEFAULT: "hsl(var(--avatar))",
+          foreground: "hsl(var(--avatar-foreground))",
+        },
       },
       borderWidth: {
         hairline: "1px",

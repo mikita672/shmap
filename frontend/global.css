@@ -61,6 +61,10 @@
 
     --searchbar: 43 81% 88%; /* Lemon Meringue */
     --searchbar-placeholder: 93.1 15.03% 37.84%; /* Dark Olive Green */
+
+    /* Avatar */
+    --avatar: 43 81% 88%; /* Lemon Meringue */
+    --avatar-foreground: 93.1 15.03% 37.84%; /* Dark Olive Green */
   }
 
   .dark:root {
@@ -123,5 +127,9 @@
     /* Search Bar */
     --searchbar: 30 34% 58%; /* Camel */
     --searchbar-placeholder: 22.74 65.52% 28.43%; /* Russet */
+
+    /* Avatar */
+    --avatar: 93.1 15.03% 37.84%; /* Dark Olive Green */
+    --avatar-foreground: 43 81% 88%; /* Lemon Meringue */
   }
 }
