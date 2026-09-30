@@ -1,16 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackButton } from "@/components/ui/back-button";
+import { EditableAvatar } from "@/components/profile/editable-avatar";
+import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const { profile, updateAvatar } = useUserProfile();
+  const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-background">
       <BackButton
         className="absolute left-6"
         style={{ top: Math.max(insets.top + 8, 48) }}
+      />
+
+      <View style={{ paddingTop: Math.max(insets.top + 8, 48) + 40 }}>
+        <EditableAvatar
+          uri={profile.avatarUrl}
+          fallbackText={`${profile.firstName} ${profile.lastName}`}
+          onEdit={() => setAvatarSheetVisible(true)}
+        />
+      </View>
+
+      <ChangeAvatarSheet
+        visible={avatarSheetVisible}
+        onClose={() => setAvatarSheetVisible(false)}
+        onSelectAvatar={updateAvatar}
+        hasCurrentAvatar={Boolean(profile.avatarUrl)}
       />
     </View>
   );
