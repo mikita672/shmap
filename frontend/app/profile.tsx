@@ -7,7 +7,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1">
       <BackButton
         className="absolute left-6"
         style={{ top: Math.max(insets.top + 8, 48) }}

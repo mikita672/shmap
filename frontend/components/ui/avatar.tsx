@@ -54,6 +54,7 @@ interface AvatarProps
   uri?: string | null;
   fallbackText?: string;
   alt?: string;
+  textClassName?: string;
 }
 
 function getInitials(text?: string): string {
@@ -71,6 +72,7 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
       uri,
       fallbackText,
       alt = "User avatar",
+      textClassName,
       children,
       ...props
     },
@@ -106,7 +108,10 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
             />
           ) : (
             <RNText
-              className={cn(avatarFallbackTextVariants({ size: avatarSize }))}
+              className={cn(
+                avatarFallbackTextVariants({ size: avatarSize }),
+                textClassName,
+              )}
             >
               {initials || "?"}
             </RNText>

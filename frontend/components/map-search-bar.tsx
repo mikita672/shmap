@@ -42,6 +42,7 @@ export function MapSearchBar({
   const insets = useSafeAreaInsets();
   const inputRef = useRef<TextInput>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [searchBarHeight, setSearchBarHeight] = useState<number>(48);
   const { profile } = useUserProfile();
 
   const handleAvatarPress = useCallback(() => {
@@ -147,7 +148,8 @@ export function MapSearchBar({
         <View className="flex-row items-center gap-2.5">
           <Pressable
             onPress={handleAvatarPress}
-            className="h-12 w-12 rounded-full overflow-hidden border border-border/40 bg-surface shadow-sm shadow-black/10 elevation-3 items-center justify-center active:scale-95 transition-transform"
+            style={{ height: searchBarHeight, width: searchBarHeight }}
+            className="rounded-full overflow-hidden bg-searchbar shadow-sm shadow-black/10 elevation-3 items-center justify-center active:scale-95 transition-transform"
             accessibilityLabel="Open profile and settings"
             accessibilityRole="button"
           >
@@ -155,11 +157,20 @@ export function MapSearchBar({
               size="lg"
               uri={profile.avatarUrl}
               fallbackText={`${profile.firstName} ${profile.lastName}`}
-              className="h-full w-full border-0"
+              className="h-full w-full border-0 bg-searchbar"
+              textClassName="text-searchbar-placeholder"
             />
           </Pressable>
 
-          <View className="flex-1 flex-row items-center bg-searchbar rounded-full shadow-sm shadow-black/10 elevation-3 px-3">
+          <View
+            onLayout={(e) => {
+              const h = Math.round(e.nativeEvent.layout.height);
+              if (h > 0 && h !== searchBarHeight) {
+                setSearchBarHeight(h);
+              }
+            }}
+            className="flex-1 h-12 flex-row items-center bg-searchbar rounded-full shadow-sm shadow-black/10 elevation-3 px-3"
+          >
             <Ionicons
               name="search"
               size={20}
@@ -173,7 +184,7 @@ export function MapSearchBar({
               placeholder="Search places..."
               returnKeyType="search"
               autoCorrect={false}
-              className="flex-1 border-0 bg-transparent shadow-none h-12 text-on-surface placeholder:text-searchbar-placeholder"
+              className="flex-1 border-0 bg-transparent shadow-none h-full py-0 text-on-surface placeholder:text-searchbar-placeholder"
             />
             {isSearching && <ActivityIndicator size="small" className="mr-2" />}
             {query.length > 0 && !isSearching && (
