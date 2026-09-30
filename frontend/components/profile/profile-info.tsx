@@ -20,8 +20,8 @@ export function ProfileInfo({ username, email, className }: ProfileInfoProps) {
 
   return (
     <View className={`items-center ${className ?? ""}`}>
-      <View className="flex-row items-center gap-1.5">
-        <Text className="text-tab-icon-active font-bold text-xl">
+      <View className="flex-row items-center gap-2">
+        <Text className="text-tab-icon-active font-bold text-2xl">
           @{username}
         </Text>
         <Pressable
@@ -32,13 +32,13 @@ export function ProfileInfo({ username, email, className }: ProfileInfoProps) {
         >
           <Ionicons
             name="copy-outline"
-            size={18}
+            size={20}
             className="text-tab-icon-active"
           />
         </Pressable>
       </View>
 
-      <Text className="text-tab-icon-active text-sm mt-0.5">{email}</Text>
+      <Text className="text-tab-icon-active text-base mt-1">{email}</Text>
     </View>
   );
 }
