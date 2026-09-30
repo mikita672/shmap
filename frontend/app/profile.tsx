@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackButton } from "@/components/ui/back-button";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
+import { ProfileInfo } from "@/components/profile/profile-info";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
@@ -23,6 +24,12 @@ export default function ProfileScreen() {
           uri={profile.avatarUrl}
           fallbackText={`${profile.firstName} ${profile.lastName}`}
           onEdit={() => setAvatarSheetVisible(true)}
+        />
+
+        <ProfileInfo
+          username={profile.username}
+          email={profile.email}
+          className="mt-4"
         />
       </View>
 
