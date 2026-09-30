@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Text,
   View,
-  Pressable,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
@@ -15,7 +14,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MaterialIcons } from "@/lib/icons";
+import { BackButton } from "@/components/ui/back-button";
 import { forgotPassword, verifyOtp, resetPassword } from "@/lib/api/auth";
 import { extractApiError } from "@/lib/utils/error";
 import { AuthErrorCode } from "@/lib/types/api";
@@ -126,8 +125,7 @@ export default function PasswordResetScreen() {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View className="flex-1 justify-center items-center bg-background p-6">
-            <Pressable
-              className="absolute top-16 left-6 active:opacity-50"
+            <BackButton
               onPress={() => {
                 if (step === "newPassword") {
                   setStep("otp");
@@ -137,13 +135,7 @@ export default function PasswordResetScreen() {
                   router.back();
                 }
               }}
-            >
-              <MaterialIcons
-                name="keyboard-arrow-left"
-                size={52}
-                className="text-secondary"
-              />
-            </Pressable>
+            />
 
             <Text className="absolute top-16 right-8 text-brand font-black text-xl tracking-widest">
               SHMAP
