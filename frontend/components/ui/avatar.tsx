@@ -3,7 +3,6 @@ import { View, Text as RNText, type LayoutChangeEvent } from "react-native";
 import { Image, type ImageProps } from "expo-image";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Ionicons } from "@/lib/icons";
-import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
 const avatarVariants = cva(
@@ -45,25 +44,6 @@ const avatarFallbackTextVariants = cva(
     },
   },
 );
-
-export const AVATAR_COLORS = {
-  light: {
-    bg: "hsl(43, 81%, 88%)", // Lemon Meringue
-    icon: "hsl(93.1, 15.03%, 37.84%)", // Dark Olive Green
-  },
-  dark: {
-    bg: "hsl(93.1, 15.03%, 37.84%)", // Dark Olive Green
-    icon: "hsl(43, 81%, 88%)", // Lemon Meringue
-  },
-} as const;
-
-function useSafeTheme() {
-  try {
-    return useTheme();
-  } catch {
-    return { isDark: false };
-  }
-}
 
 type AvatarVariantProps = VariantProps<typeof avatarVariants>;
 export type AvatarSize = NonNullable<AvatarVariantProps["size"]>;
@@ -128,10 +108,6 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
     const [failedUri, setFailedUri] = React.useState<string | null>(null);
     const [layoutSize, setLayoutSize] = React.useState<number | null>(null);
 
-    const { isDark } = useSafeTheme();
-    const themeColors = isDark ? AVATAR_COLORS.dark : AVATAR_COLORS.light;
-    const resolvedIconColor = iconColor ?? themeColors.icon;
-
     const handleLayout = React.useCallback(
       (e: LayoutChangeEvent) => {
         onLayout?.(e);
@@ -153,12 +129,6 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
       [fallbackText],
     );
 
-    const hasCustomBg =
-      className?.includes("bg-") && !className?.includes("bg-avatar");
-    const resolvedBgStyle = hasCustomBg
-      ? undefined
-      : { backgroundColor: themeColors.bg };
-
     return (
       <AvatarContext.Provider value={{ size: avatarSize }}>
         <View
@@ -167,7 +137,7 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
           accessibilityLabel={alt}
           onLayout={handleLayout}
           className={cn(avatarVariants({ size: avatarSize }), className)}
-          style={[resolvedBgStyle, style]}
+          style={style}
           {...props}
         >
           {children ? (
@@ -184,7 +154,7 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
             <Ionicons
               name="person-circle-outline"
               size={effectiveIconSize}
-              color={resolvedIconColor}
+              color={iconColor}
               className={cn("text-avatar-foreground", iconClassName)}
               style={{ textAlign: "center" }}
             />
@@ -194,7 +164,6 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
                 avatarFallbackTextVariants({ size: avatarSize }),
                 textClassName,
               )}
-              style={{ color: resolvedIconColor }}
             >
               {initials}
             </RNText>
@@ -240,14 +209,6 @@ const AvatarFallback = React.forwardRef<
   AvatarFallbackProps
 >(({ className, textClassName, style, children, ...props }, ref) => {
   const { size } = React.useContext(AvatarContext);
-  const { isDark } = useSafeTheme();
-  const themeColors = isDark ? AVATAR_COLORS.dark : AVATAR_COLORS.light;
-
-  const hasCustomBg =
-    className?.includes("bg-") && !className?.includes("bg-avatar");
-  const resolvedBgStyle = hasCustomBg
-    ? undefined
-    : { backgroundColor: themeColors.bg };
 
   return (
     <View
@@ -256,13 +217,12 @@ const AvatarFallback = React.forwardRef<
         "h-full w-full items-center justify-center bg-avatar",
         className,
       )}
-      style={[resolvedBgStyle, style]}
+      style={style}
       {...props}
     >
       {typeof children === "string" ? (
         <RNText
           className={cn(avatarFallbackTextVariants({ size }), textClassName)}
-          style={{ color: themeColors.icon }}
         >
           {children}
         </RNText>
