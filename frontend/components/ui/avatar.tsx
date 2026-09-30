@@ -2,6 +2,7 @@ import * as React from "react";
 import { View, Text as RNText } from "react-native";
 import { Image, type ImageProps } from "expo-image";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Ionicons } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 const avatarVariants = cva(
@@ -14,6 +15,8 @@ const avatarVariants = cva(
         lg: "h-12 w-12",
         xl: "h-16 w-16",
         "2xl": "h-24 w-24",
+        "3xl": "h-32 w-32",
+        "4xl": "h-36 w-36",
       },
     },
     defaultVariants: {
@@ -32,6 +35,8 @@ const avatarFallbackTextVariants = cva(
         lg: "text-base",
         xl: "text-xl font-bold",
         "2xl": "text-3xl font-bold",
+        "3xl": "text-4xl font-bold",
+        "4xl": "text-5xl font-bold",
       },
     },
     defaultVariants: {
@@ -39,6 +44,16 @@ const avatarFallbackTextVariants = cva(
     },
   },
 );
+
+const avatarIconSizes: Record<AvatarSize, number> = {
+  sm: 16,
+  md: 20,
+  lg: 24,
+  xl: 32,
+  "2xl": 48,
+  "3xl": 64,
+  "4xl": 76,
+};
 
 type AvatarVariantProps = VariantProps<typeof avatarVariants>;
 export type AvatarSize = NonNullable<AvatarVariantProps["size"]>;
@@ -53,6 +68,8 @@ interface AvatarProps
   extends React.ComponentPropsWithoutRef<typeof View>, AvatarVariantProps {
   uri?: string | null;
   fallbackText?: string;
+  fallbackIcon?: boolean;
+  iconClassName?: string;
   alt?: string;
   textClassName?: string;
 }
@@ -71,6 +88,8 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
       size = "md",
       uri,
       fallbackText,
+      fallbackIcon = false,
+      iconClassName,
       alt = "User avatar",
       textClassName,
       children,
@@ -106,6 +125,12 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
               transition={200}
               onError={() => setFailedUri(uri ?? null)}
             />
+          ) : fallbackIcon || !initials ? (
+            <Ionicons
+              name="person"
+              size={avatarIconSizes[avatarSize]}
+              className={cn("text-on-surface-muted", iconClassName)}
+            />
           ) : (
             <RNText
               className={cn(
@@ -113,7 +138,7 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
                 textClassName,
               )}
             >
-              {initials || "?"}
+              {initials}
             </RNText>
           )}
         </View>

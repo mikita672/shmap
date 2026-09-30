@@ -16,7 +16,7 @@ export interface EditableAvatarProps {
 export function EditableAvatar({
   uri,
   fallbackText,
-  size = "2xl",
+  size = "3xl",
   onEdit,
   className,
   style,
@@ -29,16 +29,21 @@ export function EditableAvatar({
         accessibilityRole="button"
         accessibilityLabel="Change avatar"
       >
-        <Avatar size={size} uri={uri} fallbackText={fallbackText} />
+        <Avatar
+          size={size}
+          uri={uri}
+          fallbackText={fallbackText}
+          fallbackIcon={true}
+        />
       </Pressable>
 
       <Pressable
         onPress={onEdit}
-        className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary items-center justify-center shadow-sm active:scale-95 transition-transform"
+        className="absolute bottom-1 right-1 h-11 w-11 rounded-full bg-primary items-center justify-center border-2 border-background shadow-md active:scale-95 transition-transform"
         accessibilityRole="button"
         accessibilityLabel="Edit avatar"
       >
-        <Ionicons name="pencil" size={16} className="text-primary-foreground" />
+        <Ionicons name="pencil" size={20} className="text-primary-foreground" />
       </Pressable>
     </View>
   );
