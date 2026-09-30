@@ -70,6 +70,7 @@ interface AvatarProps
   uri?: string | null;
   fallbackText?: string;
   fallbackIcon?: boolean;
+  fallbackMode?: "icon" | "initials";
   iconClassName?: string;
   iconColor?: string;
   iconSize?: number;
@@ -92,12 +93,13 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
       size = "md",
       uri,
       fallbackText,
-      fallbackIcon = false,
+      fallbackIcon = true,
+      fallbackMode,
       iconClassName,
       iconColor,
       iconSize: customIconSize,
       iconName = "person-circle-outline",
-      alt = "User avatar",
+      alt,
       textClassName,
       style,
       onLayout,
@@ -131,12 +133,16 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
       [fallbackText],
     );
 
+    const shouldShowIcon = fallbackMode
+      ? fallbackMode === "icon"
+      : fallbackIcon || !initials;
+
     return (
       <AvatarContext.Provider value={{ size: avatarSize }}>
         <View
           ref={ref}
           accessibilityRole="image"
-          accessibilityLabel={alt}
+          accessibilityLabel={alt ?? fallbackText ?? "User avatar"}
           onLayout={handleLayout}
           className={cn(avatarVariants({ size: avatarSize }), className)}
           style={style}
@@ -152,12 +158,15 @@ const Avatar = React.forwardRef<React.ElementRef<typeof View>, AvatarProps>(
               transition={200}
               onError={() => setFailedUri(uri ?? null)}
             />
-          ) : fallbackIcon || !initials ? (
+          ) : shouldShowIcon ? (
             <Ionicons
               name={iconName}
               size={effectiveIconSize}
               color={iconColor}
-              className={cn("text-avatar-foreground", iconClassName)}
+              className={cn(
+                "text-avatar-foreground",
+                iconClassName ?? textClassName,
+              )}
               style={[
                 {
                   textAlign: "center",

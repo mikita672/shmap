@@ -157,7 +157,9 @@ export function MapSearchBar({
               size="lg"
               uri={profile.avatarUrl}
               fallbackText={`${profile.firstName} ${profile.lastName}`}
+              fallbackIcon={true}
               className="h-full w-full border-0 bg-searchbar"
+              iconClassName="text-searchbar-placeholder"
               textClassName="text-searchbar-placeholder"
             />
           </Pressable>
