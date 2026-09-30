@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, Platform } from "react-native";
+import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 import * as Haptics from "expo-haptics";
 import { Ionicons } from "@/lib/icons";
 import { useTheme, type ThemePreference } from "@/hooks/useTheme";
@@ -65,12 +65,8 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
             accessibilityRole="button"
             accessibilityState={{ selected: isSelected }}
             accessibilityLabel={`${option.label} theme`}
-            className={cn(
-              "flex-1 flex-row items-center justify-center gap-1.5 rounded-full px-3 py-2.5 transition-all",
-              isSelected
-                ? "bg-primary shadow-sm shadow-black/10"
-                : "bg-transparent active:opacity-70",
-            )}
+            style={({ pressed }) => [styles.option, pressed && styles.pressed]}
+            className={isSelected ? "bg-primary" : "bg-transparent"}
           >
             <Ionicons
               name={isSelected ? option.activeIcon : option.icon}
@@ -95,3 +91,19 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  option: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderRadius: 9999,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+});
