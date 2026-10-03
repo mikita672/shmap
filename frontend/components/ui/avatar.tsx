@@ -1,6 +1,6 @@
 import * as React from "react";
 import { View, Text as RNText, type LayoutChangeEvent } from "react-native";
-import { Image, type ImageProps } from "expo-image";
+import { Image, type ImageProps } from "@/lib/image";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Ionicons } from "@/lib/icons";
 import { cn } from "@/lib/utils";
