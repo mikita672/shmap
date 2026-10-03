@@ -42,6 +42,7 @@ export default function ProfileScreen() {
         className="px-6"
         style={{ paddingBottom: insets.bottom + 24 }}
         onResetPassword={() => router.push("/change-password")}
+        onEditProfile={() => router.push("/edit-profile")}
       />
 
       <ChangeAvatarSheet
