@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -36,6 +37,7 @@ public class User implements UserDetails {
     @Column(length = 160)
     private String bio;
     @CreationTimestamp
+    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(updatable = false)
     private Instant createdAt;
 
@@ -72,5 +74,9 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public String getPublicUsername() {
+        return username;
     }
 }

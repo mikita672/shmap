@@ -1,15 +1,16 @@
 package com.mdzvtt.shmap.user;
 
-import org.springframework.http.ResponseEntity;
+import com.mdzvtt.shmap.user.dto.ProfileResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 public class UserController {
-    @GetMapping
-    public ResponseEntity<String> sayHello() {
-        return ResponseEntity.ok("Hello from secured endpoint");
+    @GetMapping("/me")
+    public ProfileResponse me(@AuthenticationPrincipal User user) {
+        return ProfileResponse.from(user);
     }
 }
