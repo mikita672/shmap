@@ -11,6 +11,8 @@
 
     /* Heading / page foreground text — Cornsilk */
     --foreground: 52 93% 93%;
+    /* Screen title + subtitle — Cornsilk */
+    --heading: 52 93% 93%;
 
     /* Input / card surface — Cornsilk */
     --surface: 52 93% 93%;
@@ -81,6 +83,8 @@
 
     /* Heading / page foreground text — Cornsilk (high contrast on Dark Olive) */
     --foreground: 52 93% 93%;
+    /* Screen title + subtitle — Camel */
+    --heading: 30 34% 58%;
 
     /* Input / card surface — Camel */
     --surface: 30 34% 58%;

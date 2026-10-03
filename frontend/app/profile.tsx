@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import { BackButton } from "@/components/ui/back-button";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileInfo } from "@/components/profile/profile-info";
@@ -40,6 +41,7 @@ export default function ProfileScreen() {
       <ProfileActions
         className="px-6"
         style={{ paddingBottom: insets.bottom + 24 }}
+        onResetPassword={() => router.push("/change-password")}
       />
 
       <ChangeAvatarSheet
