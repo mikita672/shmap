@@ -21,6 +21,8 @@ import { useGeocoding } from "@/hooks/useGeocoding";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import type { SearchPlace } from "@/lib/api/geocoding";
 
+const AVATAR_RING_WIDTH = 3;
+
 interface MapSearchBarProps {
   mapCenter?: { lat: number; lon: number };
   onPlaceSelect: (place: SearchPlace) => void;
@@ -158,7 +160,11 @@ export function MapSearchBar({
               uri={profile.avatarUrl}
               fallbackText={`${profile.firstName} ${profile.lastName}`}
               fallbackIcon={true}
-              className="h-full w-full border-0 bg-searchbar"
+              style={{
+                width: searchBarHeight - AVATAR_RING_WIDTH * 2,
+                height: searchBarHeight - AVATAR_RING_WIDTH * 2,
+              }}
+              className="border-0 bg-searchbar"
               iconClassName="text-searchbar-placeholder"
               textClassName="text-searchbar-placeholder"
             />
