@@ -5,6 +5,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileInfo } from "@/components/profile/profile-info";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
+import { ProfileActions } from "@/components/profile/profile-actions";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function ProfileScreen() {
@@ -19,7 +20,10 @@ export default function ProfileScreen() {
         style={{ top: Math.max(insets.top + 8, 48) }}
       />
 
-      <View style={{ paddingTop: Math.max(insets.top + 8, 48) + 40 }}>
+      <View
+        className="flex-1"
+        style={{ paddingTop: Math.max(insets.top + 8, 48) + 40 }}
+      >
         <EditableAvatar
           uri={profile.avatarUrl}
           fallbackText={`${profile.firstName} ${profile.lastName}`}
@@ -32,6 +36,11 @@ export default function ProfileScreen() {
           className="mt-4"
         />
       </View>
+
+      <ProfileActions
+        className="px-6"
+        style={{ paddingBottom: insets.bottom + 24 }}
+      />
 
       <ChangeAvatarSheet
         visible={avatarSheetVisible}

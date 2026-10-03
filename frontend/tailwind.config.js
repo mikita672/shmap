@@ -56,6 +56,12 @@ module.exports = {
           DEFAULT: "hsl(var(--avatar))",
           foreground: "hsl(var(--avatar-foreground))",
         },
+        action: {
+          DEFAULT: "hsl(var(--action))",
+          foreground: "hsl(var(--action-foreground))",
+          accent: "hsl(var(--action-accent))",
+          "accent-foreground": "hsl(var(--action-accent-foreground))",
+        },
       },
       borderWidth: {
         hairline: "1px",

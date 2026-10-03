@@ -65,6 +65,12 @@
     /* Avatar */
     --avatar: 43 81% 88%; /* Lemon Meringue */
     --avatar-foreground: 93.1 15.03% 37.84%; /* Dark Olive Green */
+
+    /* Profile action buttons */
+    --action: 43 81% 88%; /* Lemon Meringue — pill background */
+    --action-foreground: 22.74 65.52% 28.43%; /* Russet — pill label */
+    --action-accent: 30 34% 58%; /* Camel — QR button background */
+    --action-accent-foreground: 43 81% 88%; /* Lemon Meringue — QR icon */
   }
 
   .dark:root {
@@ -131,5 +137,11 @@
     /* Avatar */
     --avatar: 93.1 15.03% 37.84%; /* Dark Olive Green */
     --avatar-foreground: 43 81% 88%; /* Lemon Meringue */
+
+    /* Profile action buttons */
+    --action: 22.74 65.52% 28.43%; /* Russet — pill background */
+    --action-foreground: 30 34% 58%; /* Camel — pill label */
+    --action-accent: 30 34% 58%; /* Camel — QR button background */
+    --action-accent-foreground: 22.74 65.52% 28.43%; /* Russet — QR icon */
   }
 }
