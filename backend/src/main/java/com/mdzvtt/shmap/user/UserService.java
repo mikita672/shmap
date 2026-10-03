@@ -1,7 +1,11 @@
 package com.mdzvtt.shmap.user;
 
+import com.mdzvtt.shmap.auth.AuthenticationResponse;
+import com.mdzvtt.shmap.auth.AuthenticationService;
+import com.mdzvtt.shmap.exception.DuplicateEmailException;
 import com.mdzvtt.shmap.exception.DuplicateUsernameException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final AuthenticationService authenticationService;
 
     @Transactional(readOnly = true)
     public ProfileResponse getProfile(Integer userId) {
@@ -34,6 +39,20 @@ public class UserService {
         Optional.ofNullable(request.bio()).ifPresent(user::setBio);
 
         return ProfileResponse.from(user);
+    }
+
+    @Transactional
+    public AuthenticationResponse changeEmail(Integer userId, ChangeEmailRequest request) {
+        User user = findUser(userId);
+
+        if (userRepository.existsByEmailAndIdNot(request.email(), userId)) {
+            throw new DuplicateEmailException();
+        }
+
+        // TODO: require OTP confirmation sent to the new address
+        user.setEmail(request.email());
+
+        return authenticationService.issueTokens(user);
     }
 
     private User findUser(Integer userId) {
