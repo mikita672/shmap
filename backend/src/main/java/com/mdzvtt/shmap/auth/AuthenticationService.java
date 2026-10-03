@@ -71,6 +71,11 @@ public class AuthenticationService {
                         request.getPassword()));
 
         var user = repository.findByEmail(request.getEmail()).orElseThrow();
+
+        return issueTokens(user);
+    }
+
+    public AuthenticationResponse issueTokens(User user) {
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 
@@ -150,18 +155,7 @@ public class AuthenticationService {
             }
 
             if (jwtService.isTokenValid(refreshToken, user)) {
-                revokeAllUserTokens(user);
-
-                var newAccessToken = jwtService.generateToken(user);
-                var newRefreshToken = jwtService.generateRefreshToken(user);
-
-                saveUserToken(user, newAccessToken, TokenType.BEARER);
-                saveUserToken(user, newRefreshToken, TokenType.REFRESH);
-
-                var authResponse = AuthenticationResponse.builder()
-                        .accessToken(newAccessToken)
-                        .refreshToken(newRefreshToken)
-                        .build();
+                var authResponse = issueTokens(user);
 
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 objectMapper.writeValue(response.getOutputStream(), authResponse);
