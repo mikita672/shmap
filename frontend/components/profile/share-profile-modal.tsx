@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, View, Text, Pressable, Share } from "react-native";
+import { Modal, View, Text, Pressable } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
@@ -8,7 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner-native";
 import type { UserProfile } from "@/hooks/useUserProfile";
-import { getProfileUrl } from "@/lib/profile-link";
+import { getProfileUrl, shareProfile } from "@/lib/profile-link";
 
 interface ShareProfileModalProps {
   visible: boolean;
@@ -32,11 +32,7 @@ export function ShareProfileModal({
   const handleShare = async () => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await Share.share({
-        title: `Connect with ${profile.firstName} on Shmap`,
-        message: `Add me on Shmap! Check out my profile: ${profileUrl}`,
-        url: profileUrl,
-      });
+      await shareProfile(profile.username);
     } catch (err) {
       console.warn("Error sharing profile:", err);
     }

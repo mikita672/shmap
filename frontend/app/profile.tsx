@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileInfo } from "@/components/profile/profile-info";
@@ -9,12 +11,22 @@ import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { shareProfile } from "@/lib/profile-link";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { profile, updateAvatar } = useUserProfile();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
+
+  const handleShareProfile = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await shareProfile(profile.username);
+    } catch {
+      toast.error("Couldn't open the share dialog");
+    }
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -45,6 +57,7 @@ export default function ProfileScreen() {
         style={{ paddingBottom: insets.bottom + 24 }}
         onResetPassword={() => router.push("/change-password")}
         onEditProfile={() => router.push("/edit-profile")}
+        onShareProfile={handleShareProfile}
         onShowQrCode={() => setQrModalVisible(true)}
       />
 
