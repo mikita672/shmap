@@ -16,6 +16,7 @@ module.exports = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         foreground: "hsl(var(--foreground))",
+        heading: "hsl(var(--heading))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -46,12 +47,28 @@ module.exports = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+          title: "hsl(var(--card-title))",
+          muted: "hsl(var(--card-muted))",
+        },
+        qr: {
+          tile: "hsl(var(--qr-tile))",
+          code: "hsl(var(--qr-code))",
         },
         "tab-bubble": "hsl(var(--tab-bubble))",
         "tab-icon": "hsl(var(--tab-icon))",
         "tab-icon-active": "hsl(var(--tab-icon-active))",
         searchbar: "hsl(var(--searchbar))",
         "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
+        avatar: {
+          DEFAULT: "hsl(var(--avatar))",
+          foreground: "hsl(var(--avatar-foreground))",
+        },
+        action: {
+          DEFAULT: "hsl(var(--action))",
+          foreground: "hsl(var(--action-foreground))",
+          accent: "hsl(var(--action-accent))",
+          "accent-foreground": "hsl(var(--action-accent-foreground))",
+        },
       },
       borderWidth: {
         hairline: "1px",

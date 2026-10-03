@@ -7,11 +7,10 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
-  Pressable,
   ScrollView,
 } from "react-native";
 import { Image } from "expo-image";
-import { Link, router } from "expo-router";
+import { Link } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import {
   GoogleSignin,
@@ -23,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { registerUser, verifyGoogleToken } from "@/lib/api/auth";
 import { useAuth } from "@/hooks/useAuth";
-import { MaterialIcons } from "@/lib/icons";
+import { BackButton } from "@/components/ui/back-button";
 import { extractApiError } from "@/lib/utils/error";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner-native";
@@ -158,16 +157,7 @@ export default function RegisterScreen() {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View className="flex-1 justify-center items-center bg-background p-6">
-            <Pressable
-              className="absolute top-16 left-6 active:opacity-50"
-              onPress={() => router.back()}
-            >
-              <MaterialIcons
-                name="keyboard-arrow-left"
-                size={52}
-                className="text-secondary"
-              />
-            </Pressable>
+            <BackButton />
 
             <Text className="absolute top-16 right-8 text-brand font-black text-xl tracking-widest">
               SHMAP

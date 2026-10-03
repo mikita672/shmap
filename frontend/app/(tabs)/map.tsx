@@ -6,9 +6,11 @@ import {
   Camera,
   UserLocation,
   LocationManager,
+  LogManager,
   ViewAnnotation,
   type CameraRef,
   type MapRef,
+  type TrackUserLocation,
 } from "@maplibre/maplibre-react-native";
 import type { NativeSyntheticEvent } from "react-native";
 import { MapControls } from "@/components/map-controls";
@@ -18,6 +20,17 @@ import { PlaceDetailsSheet } from "@/components/place-details-sheet";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
+
+LogManager.onLog((log) => {
+  const { message, tag } = log;
+  if (
+    tag === "Mbgl-LocationComponent" &&
+    message.includes("Failed to obtain last location update")
+  ) {
+    return true;
+  }
+  return false;
+});
 
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 
@@ -30,6 +43,9 @@ export default function MapScreen() {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(
     null,
   );
+  const [trackUserLocation, setTrackUserLocation] = useState<
+    TrackUserLocation | undefined
+  >("default");
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
   const insets = useSafeAreaInsets();
@@ -61,6 +77,7 @@ export default function MapScreen() {
   const handleMapPress = useCallback(
     (event: NativeSyntheticEvent<{ lngLat: [number, number] }>) => {
       Keyboard.dismiss();
+      setTrackUserLocation(undefined);
       const [lon, lat] = event.nativeEvent.lngLat;
 
       setSelectedCoord({ lat, lon });
@@ -79,6 +96,7 @@ export default function MapScreen() {
 
   const handlePlaceSelect = useCallback(async (place: SearchPlace) => {
     Keyboard.dismiss();
+    setTrackUserLocation(undefined);
 
     const coord = { lat: place.latitude, lon: place.longitude };
     setSelectedCoord(coord);
@@ -114,6 +132,10 @@ export default function MapScreen() {
     reverseRefetch();
   }, [reverseRefetch]);
 
+  const handleMyLocation = useCallback(() => {
+    setTrackUserLocation("default");
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -121,6 +143,9 @@ export default function MapScreen() {
       .then((granted) => {
         if (!cancelled) {
           setLocationPermission(granted);
+          if (granted) {
+            LocationManager.start();
+          }
         }
       })
       .catch(() => {
@@ -131,6 +156,7 @@ export default function MapScreen() {
 
     return () => {
       cancelled = true;
+      LocationManager.stop();
     };
   }, []);
 
@@ -164,7 +190,18 @@ export default function MapScreen() {
       >
         {locationPermission && (
           <>
-            <Camera ref={cameraRef} trackUserLocation="default" zoom={15} />
+            <Camera
+              ref={cameraRef}
+              trackUserLocation={trackUserLocation}
+              onTrackUserLocationChange={(event) => {
+                setTrackUserLocation(
+                  (event.nativeEvent
+                    .trackUserLocation as TrackUserLocation | null) ??
+                    undefined,
+                );
+              }}
+              zoom={15}
+            />
             <UserLocation animated accuracy />
           </>
         )}
@@ -200,6 +237,7 @@ export default function MapScreen() {
           mapRef={mapRef}
           bearing={bearing}
           animatedBottomOffset={animatedBottomOffset}
+          onMyLocation={handleMyLocation}
         />
       )}
 

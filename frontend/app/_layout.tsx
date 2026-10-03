@@ -17,7 +17,19 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ThemeProvider as AppThemeProvider } from "@/providers/ThemeProvider";
+import { LogManager } from "@maplibre/maplibre-react-native";
 import { useTheme } from "@/hooks/useTheme";
+
+LogManager.onLog((log) => {
+  const { message, tag } = log;
+  if (
+    tag === "Mbgl-LocationComponent" &&
+    message.includes("Failed to obtain last location update")
+  ) {
+    return true;
+  }
+  return false;
+});
 
 enableFreeze(true);
 
