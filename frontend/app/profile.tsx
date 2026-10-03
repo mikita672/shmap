@@ -7,12 +7,14 @@ import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileInfo } from "@/components/profile/profile-info";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { ProfileActions } from "@/components/profile/profile-actions";
+import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { profile, updateAvatar } = useUserProfile();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
+  const [qrModalVisible, setQrModalVisible] = useState(false);
 
   return (
     <View className="flex-1 bg-background">
@@ -43,6 +45,13 @@ export default function ProfileScreen() {
         style={{ paddingBottom: insets.bottom + 24 }}
         onResetPassword={() => router.push("/change-password")}
         onEditProfile={() => router.push("/edit-profile")}
+        onShowQrCode={() => setQrModalVisible(true)}
+      />
+
+      <ProfileQrModal
+        visible={qrModalVisible}
+        onClose={() => setQrModalVisible(false)}
+        profile={profile}
       />
 
       <ChangeAvatarSheet

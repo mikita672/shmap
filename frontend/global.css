@@ -58,6 +58,11 @@
 
     --card: 52 93% 93%;
     --card-foreground: 30 34% 38%;
+    --card-title: 22.74 65.52% 28.43%; /* Russet */
+    --card-muted: 93.1 15.03% 37.84%; /* Dark Olive Green */
+    /* QR code — dark-on-light in both modes so codes stay scannable */
+    --qr-tile: 43 81% 88%; /* Lemon Meringue */
+    --qr-code: 22.74 65.52% 28.43%; /* Russet */
     --popover: 52 93% 93%;
     --popover-foreground: 30 34% 38%;
 
@@ -131,6 +136,10 @@
 
     --card: 30 34% 58%;
     --card-foreground: 22.74 65.52% 28.43%;
+    --card-title: 22.74 65.52% 28.43%; /* Russet */
+    --card-muted: 22.74 65.52% 28.43%; /* Russet */
+    --qr-tile: 43 81% 88%; /* Lemon Meringue */
+    --qr-code: 22.74 65.52% 28.43%; /* Russet */
     --popover: 30 34% 58%;
     --popover-foreground: 22.74 65.52% 28.43%;
 

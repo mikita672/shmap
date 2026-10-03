@@ -47,6 +47,12 @@ module.exports = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+          title: "hsl(var(--card-title))",
+          muted: "hsl(var(--card-muted))",
+        },
+        qr: {
+          tile: "hsl(var(--qr-tile))",
+          code: "hsl(var(--qr-code))",
         },
         "tab-bubble": "hsl(var(--tab-bubble))",
         "tab-icon": "hsl(var(--tab-icon))",

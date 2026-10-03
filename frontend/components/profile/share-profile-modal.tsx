@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner-native";
 import type { UserProfile } from "@/hooks/useUserProfile";
+import { getProfileUrl } from "@/lib/profile-link";
 
 interface ShareProfileModalProps {
   visible: boolean;
@@ -20,7 +21,7 @@ export function ShareProfileModal({
   onClose,
   profile,
 }: ShareProfileModalProps) {
-  const profileUrl = `https://shmap.app/u/${profile.username}`;
+  const profileUrl = getProfileUrl(profile.username);
 
   const handleCopyLink = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
