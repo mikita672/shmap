@@ -13,6 +13,7 @@ import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
 import com.mdzvtt.shmap.user.dto.EmailResponse;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
+import com.mdzvtt.shmap.user.dto.UsernameAvailabilityResponse;
 import com.mdzvtt.shmap.user.dto.UsernameResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,6 +47,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public AccountResponse getAccount(Integer userId) {
         return AccountResponse.from(findUser(userId));
+    }
+
+    @Transactional(readOnly = true)
+    public UsernameAvailabilityResponse checkUsernameAvailability(String username) {
+        return new UsernameAvailabilityResponse(username, !userRepository.existsByUsername(username));
     }
 
     @Transactional
