@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.auth.AuthenticationService;
 import com.mdzvtt.shmap.exception.DuplicateEmailException;
 import com.mdzvtt.shmap.exception.DuplicateUsernameException;
 import com.mdzvtt.shmap.exception.InvalidCurrentPasswordException;
+import com.mdzvtt.shmap.exception.PasswordUnchangedException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
 import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
@@ -65,6 +66,10 @@ public class UserService {
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
             throw new InvalidCurrentPasswordException();
+        }
+
+        if (request.newPassword().equals(request.currentPassword())) {
+            throw new PasswordUnchangedException();
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
