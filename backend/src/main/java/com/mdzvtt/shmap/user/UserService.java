@@ -9,6 +9,7 @@ import com.mdzvtt.shmap.exception.PasswordUnchangedException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
 import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
+import com.mdzvtt.shmap.user.dto.EmailResponse;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
 import com.mdzvtt.shmap.user.dto.UsernameResponse;
@@ -34,6 +35,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public UsernameResponse getUsername(Integer userId) {
         return UsernameResponse.from(findUser(userId));
+    }
+
+    @Transactional(readOnly = true)
+    public EmailResponse getEmail(Integer userId) {
+        return EmailResponse.from(findUser(userId));
     }
 
     @Transactional
