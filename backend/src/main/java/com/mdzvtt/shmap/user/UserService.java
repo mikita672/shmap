@@ -4,11 +4,15 @@ import com.mdzvtt.shmap.auth.AuthenticationResponse;
 import com.mdzvtt.shmap.auth.AuthenticationService;
 import com.mdzvtt.shmap.exception.DuplicateEmailException;
 import com.mdzvtt.shmap.exception.DuplicateUsernameException;
+import com.mdzvtt.shmap.exception.InvalidCurrentPasswordException;
+import com.mdzvtt.shmap.exception.PasswordUnchangedException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
+import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +23,7 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public ProfileResponse getProfile(Integer userId) {
@@ -51,6 +56,23 @@ public class UserService {
 
         // TODO: require OTP confirmation sent to the new address
         user.setEmail(request.email());
+
+        return authenticationService.issueTokens(user);
+    }
+
+    @Transactional
+    public AuthenticationResponse changePassword(Integer userId, ChangePasswordRequest request) {
+        User user = findUser(userId);
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new InvalidCurrentPasswordException();
+        }
+
+        if (request.newPassword().equals(request.currentPassword())) {
+            throw new PasswordUnchangedException();
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
 
         return authenticationService.issueTokens(user);
     }

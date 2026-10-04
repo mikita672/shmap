@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.user;
 
 import com.mdzvtt.shmap.auth.AuthenticationResponse;
 import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
+import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
 import jakarta.validation.Valid;
@@ -34,5 +35,11 @@ public class UserController {
     public AuthenticationResponse changeEmail(@AuthenticationPrincipal User user,
             @Valid @RequestBody ChangeEmailRequest request) {
         return userService.changeEmail(user.getId(), request);
+    }
+
+    @PatchMapping("/me/password")
+    public AuthenticationResponse changePassword(@AuthenticationPrincipal User user,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        return userService.changePassword(user.getId(), request);
     }
 }

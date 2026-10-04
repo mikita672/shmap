@@ -2,6 +2,8 @@ package com.mdzvtt.shmap.exception;
 
 public enum ErrorCode {
     INVALID_CREDENTIALS,
+    INVALID_CURRENT_PASSWORD,
+    PASSWORD_UNCHANGED,
     EMAIL_ALREADY_EXISTS,
     USERNAME_ALREADY_EXISTS,
     VALIDATION_FAILED,
