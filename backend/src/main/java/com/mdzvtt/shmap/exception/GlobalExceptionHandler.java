@@ -3,11 +3,13 @@ package com.mdzvtt.shmap.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @RestControllerAdvice
 @Slf4j
@@ -22,7 +25,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiErrorResponse> handleAppException(AppException ex, HttpServletRequest request) {
-        log.warn("Application exception [{} - {}] at {}: {}", ex.getErrorCode(), ex.getHttpStatus(), request.getRequestURI(), ex.getMessage());
+        log.warn("Application exception [{} - {}] at {}: {}", ex.getErrorCode(), ex.getHttpStatus(),
+                request.getRequestURI(), ex.getMessage());
 
         Map<String, String> fieldErrors = null;
         if (ex.getField() != null) {
@@ -43,8 +47,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        log.warn("Validation failed for request to {}: {} error(s)", request.getRequestURI(), ex.getBindingResult().getErrorCount());
+    public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
+        log.warn("Validation failed for request to {}: {} error(s)", request.getRequestURI(),
+                ex.getBindingResult().getErrorCount());
 
         Map<String, String> fieldErrors = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
@@ -69,7 +75,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
+    @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
     public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Exception ex, HttpServletRequest request) {
         log.warn("Authentication failed at {}: {}", request.getRequestURI(), ex.getMessage());
 
@@ -87,7 +93,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex,
+            HttpServletRequest request) {
         log.warn("Data integrity violation at {}: {}", request.getRequestURI(), ex.getMessage());
 
         String msgLower = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
@@ -119,7 +126,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiErrorResponse> handleIllegalStateException(IllegalStateException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleIllegalStateException(IllegalStateException ex,
+            HttpServletRequest request) {
         log.warn("Illegal state exception at {}: {}", request.getRequestURI(), ex.getMessage());
 
         ApiErrorResponse response = ApiErrorResponse.builder()
@@ -150,6 +158,27 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiErrorResponse> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        log.warn("Method {} not supported at {}", ex.getMethod(), request.getRequestURI());
+
+        String message = "Method " + ex.getMethod() + " is not supported for this endpoint";
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.METHOD_NOT_ALLOWED.value())
+                .code(ErrorCode.METHOD_NOT_ALLOWED)
+                .message(message)
+                .error(message)
+                .path(request.getRequestURI())
+                .build();
+
+        Set<HttpMethod> supportedMethods = ex.getSupportedHttpMethods();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .allow(supportedMethods != null ? supportedMethods.toArray(HttpMethod[]::new) : new HttpMethod[0])
+                .body(response);
     }
 
     @ExceptionHandler(Exception.class)
