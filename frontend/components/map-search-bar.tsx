@@ -22,6 +22,7 @@ import { useSearchHistory } from "@/hooks/useSearchHistory";
 import type { SearchPlace } from "@/lib/api/geocoding";
 
 const AVATAR_RING_WIDTH = 3;
+const ENTER_KEY_BLUR_DELAY_MS = 300;
 
 interface MapSearchBarProps {
   mapCenter?: { lat: number; lon: number };
@@ -56,8 +57,13 @@ export function MapSearchBar({
     }
   }, [onAvatarPress, router]);
 
-  const { results, isSearching } = useGeocoding(query, mapCenter);
+  const { results, isSearching, searchNow } = useGeocoding(
+    query,
+    mapCenter,
+    isFocused,
+  );
   const { history, addPlace, removePlace, clearAll } = useSearchHistory();
+  const submitIdRef = useRef(0);
 
   const showDropdown = isFocused;
   const showHistory =
@@ -65,15 +71,40 @@ export function MapSearchBar({
   const showResults = isFocused && query.trim().length >= 2;
 
   const handleSelect = useCallback(
-    (place: SearchPlace) => {
+    (place: SearchPlace, { fromEnterKey = false } = {}) => {
       onQueryChange(place.name);
       setIsFocused(false);
-      Keyboard.dismiss();
+      if (fromEnterKey) {
+        setTimeout(Keyboard.dismiss, ENTER_KEY_BLUR_DELAY_MS);
+      } else {
+        Keyboard.dismiss();
+      }
       addPlace(place);
       onPlaceSelect(place);
     },
     [addPlace, onPlaceSelect, onQueryChange],
   );
+
+  const handleChangeText = useCallback(
+    (text: string) => {
+      submitIdRef.current++;
+      onQueryChange(text);
+    },
+    [onQueryChange],
+  );
+
+  const handleSubmit = useCallback(async () => {
+    const submitId = ++submitIdRef.current;
+    let places: SearchPlace[];
+    try {
+      places = await searchNow();
+    } catch {
+      return;
+    }
+    // Ignore if the user edited the text or closed the search in the meantime
+    if (submitId !== submitIdRef.current || places.length === 0) return;
+    handleSelect(places[0], { fromEnterKey: true });
+  }, [searchNow, handleSelect]);
 
   const handleClear = useCallback(() => {
     onQueryChange("");
@@ -82,6 +113,7 @@ export function MapSearchBar({
   }, [onQueryChange, onClear]);
 
   const handleDismiss = useCallback(() => {
+    submitIdRef.current++;
     setIsFocused(false);
     Keyboard.dismiss();
   }, []);
@@ -187,10 +219,12 @@ export function MapSearchBar({
             <Input
               ref={inputRef}
               value={query}
-              onChangeText={onQueryChange}
+              onChangeText={handleChangeText}
               onFocus={() => setIsFocused(true)}
               placeholder="Search places..."
               returnKeyType="search"
+              submitBehavior="submit"
+              onSubmitEditing={handleSubmit}
               autoCorrect={false}
               className="flex-1 border-0 bg-transparent shadow-none h-full py-0 text-on-surface placeholder:text-searchbar-placeholder"
             />
