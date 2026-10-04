@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -40,6 +41,8 @@ public class SecurityConfig {
                                                                 "/v3/api-docs/**",
                                                                 "/v3/api-docs.yaml")
                                                 .permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/v1/users/username-availability")
+                                                .permitAll()
                                                 .anyRequest()
                                                 .authenticated())
                                 .sessionManagement(session -> session
@@ -58,7 +61,8 @@ public class SecurityConfig {
                                                                         .error("Full authentication is required to access this resource")
                                                                         .path(request.getRequestURI())
                                                                         .build();
-                                                        objectMapper.writeValue(response.getOutputStream(), errorResponse);
+                                                        objectMapper.writeValue(response.getOutputStream(),
+                                                                        errorResponse);
                                                 }))
                                 .logout(logout -> logout
                                                 .logoutUrl("/api/v1/auth/logout")
@@ -70,4 +74,3 @@ public class SecurityConfig {
                 return http.build();
         }
 }
-

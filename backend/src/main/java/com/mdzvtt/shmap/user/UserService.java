@@ -7,10 +7,14 @@ import com.mdzvtt.shmap.exception.DuplicateUsernameException;
 import com.mdzvtt.shmap.exception.InvalidCurrentPasswordException;
 import com.mdzvtt.shmap.exception.PasswordUnchangedException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.user.dto.AccountResponse;
 import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
 import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
+import com.mdzvtt.shmap.user.dto.EmailResponse;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
+import com.mdzvtt.shmap.user.dto.UsernameAvailabilityResponse;
+import com.mdzvtt.shmap.user.dto.UsernameResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,31 @@ public class UserService {
     @Transactional(readOnly = true)
     public ProfileResponse getProfile(Integer userId) {
         return ProfileResponse.from(findUser(userId));
+    }
+
+    @Transactional(readOnly = true)
+    public UsernameResponse getUsername(Integer userId) {
+        return UsernameResponse.from(findUser(userId));
+    }
+
+    @Transactional(readOnly = true)
+    public EmailResponse getEmail(Integer userId) {
+        return EmailResponse.from(findUser(userId));
+    }
+
+    @Transactional(readOnly = true)
+    public AccountResponse getAccount(Integer userId) {
+        return AccountResponse.from(findUser(userId));
+    }
+
+    @Transactional(readOnly = true)
+    public UsernameAvailabilityResponse checkUsernameAvailability(String username) {
+        return new UsernameAvailabilityResponse(username, !userRepository.existsByUsername(username));
+    }
+
+    @Transactional(readOnly = true)
+    public UsernameAvailabilityResponse checkUsernameAvailability(Integer userId, String username) {
+        return new UsernameAvailabilityResponse(username, !userRepository.existsByUsernameAndIdNot(username, userId));
     }
 
     @Transactional
