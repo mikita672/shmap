@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.user;
 
 import com.mdzvtt.shmap.auth.AuthenticationResponse;
+import com.mdzvtt.shmap.user.dto.AccountResponse;
 import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
 import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
 import com.mdzvtt.shmap.user.dto.EmailResponse;
@@ -35,6 +36,11 @@ public class UserController {
     @GetMapping("/me/email")
     public EmailResponse email(@AuthenticationPrincipal User user) {
         return userService.getEmail(user.getId());
+    }
+
+    @GetMapping("/me/account")
+    public AccountResponse account(@AuthenticationPrincipal User user) {
+        return userService.getAccount(user.getId());
     }
 
     @PatchMapping("/me")
