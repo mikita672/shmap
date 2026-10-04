@@ -1,4 +1,4 @@
-import { useColorScheme } from "react-native";
+import { useTheme } from "@/hooks/useTheme";
 
 /**
  * Tab bar colors that mirror the CSS variables defined in global.css.
@@ -26,6 +26,6 @@ const TAB_COLORS = {
 };
 
 export function useTabColors() {
-  const scheme = useColorScheme();
-  return scheme === "dark" ? TAB_COLORS.dark : TAB_COLORS.light;
+  const { isDark } = useTheme();
+  return isDark ? TAB_COLORS.dark : TAB_COLORS.light;
 }

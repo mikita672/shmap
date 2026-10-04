@@ -16,6 +16,7 @@ interface MapControlsProps {
   mapRef: React.RefObject<MapRef | null>;
   bearing: Animated.Value;
   animatedBottomOffset?: SharedValue<number>;
+  onMyLocation?: () => void;
 }
 
 export function MapControls({
@@ -23,6 +24,7 @@ export function MapControls({
   mapRef,
   bearing,
   animatedBottomOffset,
+  onMyLocation,
 }: MapControlsProps) {
   const [isLocating, setIsLocating] = useState(true);
 
@@ -32,12 +34,7 @@ export function MapControls({
     LocationManager.getCurrentPosition()
       .then((position) => {
         if (isMounted && position) {
-          const manager = LocationManager as unknown as {
-            handleUpdate?: (position: any) => void;
-          };
-          if (typeof manager.handleUpdate === "function") {
-            manager.handleUpdate(position);
-          }
+          setIsLocating(false);
         }
       })
       .catch((error) => {
@@ -78,15 +75,13 @@ export function MapControls({
     if (isLocating) return;
     try {
       setIsLocating(true);
+      if (onMyLocation) {
+        onMyLocation();
+        return;
+      }
+
       const position = await LocationManager.getCurrentPosition();
       if (position && cameraRef.current && mapRef.current) {
-        const manager = LocationManager as unknown as {
-          handleUpdate?: (position: any) => void;
-        };
-        if (typeof manager.handleUpdate === "function") {
-          manager.handleUpdate(position);
-        }
-
         const currentZoom = await mapRef.current.getZoom();
 
         const targetZoom = Math.max(currentZoom, 15);

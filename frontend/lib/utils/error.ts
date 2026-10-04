@@ -9,6 +9,7 @@ const ALLOWED_FIELD_KEYS = new Set([
   "firstname",
   "lastname",
   "username",
+  "bio",
 ]);
 
 function sanitizeFieldErrors(

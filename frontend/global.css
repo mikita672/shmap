@@ -11,6 +11,8 @@
 
     /* Heading / page foreground text — Cornsilk */
     --foreground: 52 93% 93%;
+    /* Screen title + subtitle — Cornsilk */
+    --heading: 52 93% 93%;
 
     /* Input / card surface — Cornsilk */
     --surface: 52 93% 93%;
@@ -56,11 +58,26 @@
 
     --card: 52 93% 93%;
     --card-foreground: 30 34% 38%;
+    --card-title: 22.74 65.52% 28.43%; /* Russet */
+    --card-muted: 93.1 15.03% 37.84%; /* Dark Olive Green */
+    /* QR code — dark-on-light in both modes so codes stay scannable */
+    --qr-tile: 43 81% 88%; /* Lemon Meringue */
+    --qr-code: 22.74 65.52% 28.43%; /* Russet */
     --popover: 52 93% 93%;
     --popover-foreground: 30 34% 38%;
 
     --searchbar: 43 81% 88%; /* Lemon Meringue */
     --searchbar-placeholder: 93.1 15.03% 37.84%; /* Dark Olive Green */
+
+    /* Avatar */
+    --avatar: 43 81% 88%; /* Lemon Meringue */
+    --avatar-foreground: 93.1 15.03% 37.84%; /* Dark Olive Green */
+
+    /* Profile action buttons */
+    --action: 43 81% 88%; /* Lemon Meringue — pill background */
+    --action-foreground: 22.74 65.52% 28.43%; /* Russet — pill label */
+    --action-accent: 30 34% 58%; /* Camel — QR button background */
+    --action-accent-foreground: 43 81% 88%; /* Lemon Meringue — QR icon */
   }
 
   .dark:root {
@@ -71,6 +88,8 @@
 
     /* Heading / page foreground text — Cornsilk (high contrast on Dark Olive) */
     --foreground: 52 93% 93%;
+    /* Screen title + subtitle — Camel */
+    --heading: 30 34% 58%;
 
     /* Input / card surface — Camel */
     --surface: 30 34% 58%;
@@ -117,11 +136,25 @@
 
     --card: 30 34% 58%;
     --card-foreground: 22.74 65.52% 28.43%;
+    --card-title: 22.74 65.52% 28.43%; /* Russet */
+    --card-muted: 22.74 65.52% 28.43%; /* Russet */
+    --qr-tile: 43 81% 88%; /* Lemon Meringue */
+    --qr-code: 22.74 65.52% 28.43%; /* Russet */
     --popover: 30 34% 58%;
     --popover-foreground: 22.74 65.52% 28.43%;
 
     /* Search Bar */
     --searchbar: 30 34% 58%; /* Camel */
     --searchbar-placeholder: 22.74 65.52% 28.43%; /* Russet */
+
+    /* Avatar */
+    --avatar: 93.1 15.03% 37.84%; /* Dark Olive Green */
+    --avatar-foreground: 43 81% 88%; /* Lemon Meringue */
+
+    /* Profile action buttons */
+    --action: 22.74 65.52% 28.43%; /* Russet — pill background */
+    --action-foreground: 30 34% 58%; /* Camel — pill label */
+    --action-accent: 30 34% 58%; /* Camel — QR button background */
+    --action-accent-foreground: 22.74 65.52% 28.43%; /* Russet — QR icon */
   }
 }
