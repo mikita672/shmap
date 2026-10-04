@@ -7,11 +7,14 @@ import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
 import com.mdzvtt.shmap.user.dto.EmailResponse;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
+import com.mdzvtt.shmap.user.dto.UsernameAvailabilityRequest;
+import com.mdzvtt.shmap.user.dto.UsernameAvailabilityResponse;
 import com.mdzvtt.shmap.user.dto.UsernameResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +44,12 @@ public class UserController {
     @GetMapping("/me/account")
     public AccountResponse account(@AuthenticationPrincipal User user) {
         return userService.getAccount(user.getId());
+    }
+
+    @GetMapping("/username-availability")
+    public UsernameAvailabilityResponse usernameAvailability(
+            @Valid @ModelAttribute UsernameAvailabilityRequest request) {
+        return userService.checkUsernameAvailability(request.username());
     }
 
     @PatchMapping("/me")
