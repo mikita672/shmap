@@ -11,6 +11,7 @@ const DEBOUNCE_MS = 350;
 export function useGeocoding(
   query: string,
   options?: { lat?: number; lon?: number },
+  active = true,
 ) {
   const [debouncedQuery, setDebouncedQuery] = useState(query);
 
@@ -19,7 +20,7 @@ export function useGeocoding(
     return () => clearTimeout(timer);
   }, [query]);
 
-  const enabled = debouncedQuery.trim().length >= 2;
+  const enabled = active && debouncedQuery.trim().length >= 2;
 
   const { data, isFetching, error } = useQuery({
     queryKey: ["geocoding", debouncedQuery, options?.lat, options?.lon],

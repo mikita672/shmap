@@ -56,7 +56,7 @@ export function MapSearchBar({
     }
   }, [onAvatarPress, router]);
 
-  const { results, isSearching } = useGeocoding(query, mapCenter);
+  const { results, isSearching } = useGeocoding(query, mapCenter, isFocused);
   const { history, addPlace, removePlace, clearAll } = useSearchHistory();
 
   const showDropdown = isFocused;
