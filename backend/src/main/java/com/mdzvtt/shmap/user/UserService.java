@@ -66,6 +66,8 @@ public class UserService {
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
             throw new InvalidCurrentPasswordException();
         }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
     }
 
     private User findUser(Integer userId) {
