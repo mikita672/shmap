@@ -60,7 +60,7 @@ public class UserService {
     }
 
     @Transactional
-    public void changePassword(Integer userId, ChangePasswordRequest request) {
+    public AuthenticationResponse changePassword(Integer userId, ChangePasswordRequest request) {
         User user = findUser(userId);
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
@@ -68,6 +68,8 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
+
+        return authenticationService.issueTokens(user);
     }
 
     private User findUser(Integer userId) {
