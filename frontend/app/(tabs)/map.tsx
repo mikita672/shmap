@@ -95,7 +95,6 @@ export default function MapScreen() {
   );
 
   const handlePlaceSelect = useCallback(async (place: SearchPlace) => {
-    Keyboard.dismiss();
     setTrackUserLocation(undefined);
 
     const coord = { lat: place.latitude, lon: place.longitude };

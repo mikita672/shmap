@@ -75,8 +75,6 @@ export function MapSearchBar({
       onQueryChange(place.name);
       setIsFocused(false);
       if (fromEnterKey) {
-        // On Android a hardware Enter submits on key-down. Blurring right away
-        // hands focus to the MapLibre view, which zooms in on the key-up.
         setTimeout(Keyboard.dismiss, ENTER_KEY_BLUR_DELAY_MS);
       } else {
         Keyboard.dismiss();
