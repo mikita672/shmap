@@ -52,6 +52,12 @@ public class UserController {
         return userService.checkUsernameAvailability(request.username());
     }
 
+    @GetMapping("/me/username-availability")
+    public UsernameAvailabilityResponse myUsernameAvailability(@AuthenticationPrincipal User user,
+            @Valid @ModelAttribute UsernameAvailabilityRequest request) {
+        return userService.checkUsernameAvailability(user.getId(), request.username());
+    }
+
     @PatchMapping("/me")
     public ProfileResponse updateMe(@AuthenticationPrincipal User user,
             @Valid @RequestBody UpdateProfileRequest request) {

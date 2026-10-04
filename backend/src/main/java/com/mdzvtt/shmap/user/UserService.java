@@ -54,6 +54,11 @@ public class UserService {
         return new UsernameAvailabilityResponse(username, !userRepository.existsByUsername(username));
     }
 
+    @Transactional(readOnly = true)
+    public UsernameAvailabilityResponse checkUsernameAvailability(Integer userId, String username) {
+        return new UsernameAvailabilityResponse(username, !userRepository.existsByUsernameAndIdNot(username, userId));
+    }
+
     @Transactional
     public ProfileResponse updateProfile(Integer userId, UpdateProfileRequest request) {
         User user = findUser(userId);
