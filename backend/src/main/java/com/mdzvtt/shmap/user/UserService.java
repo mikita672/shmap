@@ -11,6 +11,7 @@ import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
 import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
+import com.mdzvtt.shmap.user.dto.UsernameResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public ProfileResponse getProfile(Integer userId) {
         return ProfileResponse.from(findUser(userId));
+    }
+
+    @Transactional(readOnly = true)
+    public UsernameResponse getUsername(Integer userId) {
+        return UsernameResponse.from(findUser(userId));
     }
 
     @Transactional
