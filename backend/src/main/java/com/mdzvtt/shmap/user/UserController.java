@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
 import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
 import com.mdzvtt.shmap.user.dto.ProfileResponse;
 import com.mdzvtt.shmap.user.dto.UpdateProfileRequest;
+import com.mdzvtt.shmap.user.dto.UsernameResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +24,11 @@ public class UserController {
     @GetMapping("/me")
     public ProfileResponse me(@AuthenticationPrincipal User user) {
         return userService.getProfile(user.getId());
+    }
+
+    @GetMapping("/me/username")
+    public UsernameResponse username(@AuthenticationPrincipal User user) {
+        return userService.getUsername(user.getId());
     }
 
     @PatchMapping("/me")
