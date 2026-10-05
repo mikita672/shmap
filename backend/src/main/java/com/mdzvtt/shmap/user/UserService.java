@@ -7,6 +7,7 @@ import com.mdzvtt.shmap.exception.DuplicateUsernameException;
 import com.mdzvtt.shmap.exception.InvalidCurrentPasswordException;
 import com.mdzvtt.shmap.exception.PasswordUnchangedException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.dto.AccountResponse;
 import com.mdzvtt.shmap.user.dto.ChangeEmailRequest;
 import com.mdzvtt.shmap.user.dto.ChangePasswordRequest;
@@ -28,10 +29,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
+    private final StorageService storageService;
 
     @Transactional(readOnly = true)
     public ProfileResponse getProfile(Integer userId) {
-        return ProfileResponse.from(findUser(userId));
+        return toProfileResponse(findUser(userId));
     }
 
     @Transactional(readOnly = true)
@@ -72,7 +74,7 @@ public class UserService {
         Optional.ofNullable(request.username()).ifPresent(user::setUsername);
         Optional.ofNullable(request.bio()).ifPresent(user::setBio);
 
-        return ProfileResponse.from(user);
+        return toProfileResponse(user);
     }
 
     @Transactional
@@ -104,6 +106,10 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
 
         return authenticationService.issueTokens(user);
+    }
+
+    ProfileResponse toProfileResponse(User user) {
+        return ProfileResponse.from(user, storageService.publicUrl(user.getAvatarKey()));
     }
 
     private User findUser(Integer userId) {
