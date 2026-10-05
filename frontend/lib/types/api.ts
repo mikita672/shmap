@@ -63,3 +63,14 @@ export interface ResetPasswordRequest {
   otp: string;
   newPassword: string;
 }
+
+export interface ProfileResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  bio: string | null;
+  avatarUrl: string | null;
+  createdAt: string;
+}
