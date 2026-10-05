@@ -10,7 +10,6 @@ import {
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import type { ImagePickerAsset } from "expo-image-picker";
 import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
@@ -18,13 +17,9 @@ import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
+import { useAvatarActions } from "@/hooks/useAvatarActions";
 import { useProfile } from "@/hooks/useProfile";
-import {
-  useChangeEmail,
-  useRemoveAvatar,
-  useUpdateProfile,
-  useUploadAvatar,
-} from "@/hooks/useProfileMutations";
+import { useChangeEmail, useUpdateProfile } from "@/hooks/useProfileMutations";
 import { useUsernameAvailability } from "@/hooks/useUsernameAvailability";
 import {
   useEditProfileForm,
@@ -75,8 +70,7 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
   const headerTop = Math.max(insets.top + 8, 48);
   const updateProfile = useUpdateProfile();
   const changeEmail = useChangeEmail();
-  const uploadAvatar = useUploadAvatar();
-  const removeAvatar = useRemoveAvatar();
+  const avatar = useAvatarActions();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
 
   const form = useEditProfileForm({
@@ -104,27 +98,6 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
     if (email !== undefined) {
       await changeEmail.mutateAsync({ email });
     }
-  };
-
-  const handlePickImage = (asset: ImagePickerAsset) => {
-    uploadAvatar.mutate(asset, {
-      onSuccess: () => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        toast.success("Avatar updated");
-      },
-      onError: (error) => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        toast.error(getErrorMessage(error, "Couldn't update your avatar"));
-      },
-    });
-  };
-
-  const handleRemoveAvatar = () => {
-    removeAvatar.mutate(undefined, {
-      onSuccess: () => toast.success("Avatar removed"),
-      onError: (error) =>
-        toast.error(getErrorMessage(error, "Couldn't remove your avatar")),
-    });
   };
 
   const handleSave = async () => {
@@ -170,7 +143,7 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
         <EditableAvatar
           uri={profile.avatarUrl}
           fallbackText={`${values.firstName} ${values.lastName}`}
-          isLoading={uploadAvatar.isPending || removeAvatar.isPending}
+          isLoading={avatar.isPending}
           onEdit={() => setAvatarSheetVisible(true)}
         />
 
@@ -279,8 +252,8 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
       <ChangeAvatarSheet
         visible={avatarSheetVisible}
         onClose={() => setAvatarSheetVisible(false)}
-        onPickImage={handlePickImage}
-        onRemove={handleRemoveAvatar}
+        onPickImage={avatar.pickImage}
+        onRemove={avatar.remove}
         hasCurrentAvatar={Boolean(profile.avatarUrl)}
       />
     </KeyboardAvoidingView>
