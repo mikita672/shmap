@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -16,13 +16,21 @@ import { shareProfile } from "@/lib/profile-link";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { data: profile } = useProfile();
+  const { data: profile, isPending } = useProfile();
   // TODO(step 5.5): replace with the avatar upload mutation
   const { updateAvatar } = useUserProfile();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
 
-  // TODO(step 2.4): show a loading indicator instead of a blank screen
+  if (isPending) {
+    return (
+      <View className="flex-1 justify-center items-center bg-background">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // TODO(step 2.5): show an error message with a Retry button
   if (!profile) {
     return null;
   }
