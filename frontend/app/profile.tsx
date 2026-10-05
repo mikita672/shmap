@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
+import type { ImagePickerAsset } from "expo-image-picker";
 import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
@@ -13,15 +14,15 @@ import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
 import { useProfile } from "@/hooks/useProfile";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useRemoveAvatar, useUploadAvatar } from "@/hooks/useProfileMutations";
 import { shareProfile } from "@/lib/profile-link";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { data: profile, isPending, error, refetch } = useProfile();
-  // TODO(step 5.5): replace with the avatar upload mutation
-  const { updateAvatar } = useUserProfile();
+  const uploadAvatar = useUploadAvatar();
+  const removeAvatar = useRemoveAvatar();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
 
@@ -57,6 +58,27 @@ export default function ProfileScreen() {
     } catch {
       toast.error("Couldn't open the share dialog");
     }
+  };
+
+  const handlePickImage = (asset: ImagePickerAsset) => {
+    uploadAvatar.mutate(asset, {
+      onSuccess: () => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        toast.success("Avatar updated");
+      },
+      onError: (error) => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        toast.error(getErrorMessage(error, "Couldn't update your avatar"));
+      },
+    });
+  };
+
+  const handleRemoveAvatar = () => {
+    removeAvatar.mutate(undefined, {
+      onSuccess: () => toast.success("Avatar removed"),
+      onError: (error) =>
+        toast.error(getErrorMessage(error, "Couldn't remove your avatar")),
+    });
   };
 
   return (
@@ -101,8 +123,8 @@ export default function ProfileScreen() {
       <ChangeAvatarSheet
         visible={avatarSheetVisible}
         onClose={() => setAvatarSheetVisible(false)}
-        onPickImage={(asset) => updateAvatar(asset.uri)}
-        onRemove={() => updateAvatar(null)}
+        onPickImage={handlePickImage}
+        onRemove={handleRemoveAvatar}
         hasCurrentAvatar={Boolean(profile.avatarUrl)}
       />
     </View>
