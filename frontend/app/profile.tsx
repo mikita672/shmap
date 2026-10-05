@@ -10,14 +10,22 @@ import { ProfileInfo } from "@/components/profile/profile-info";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
+import { useProfile } from "@/hooks/useProfile";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { shareProfile } from "@/lib/profile-link";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { profile, updateAvatar } = useUserProfile();
+  const { data: profile } = useProfile();
+  // TODO(step 5.5): replace with the avatar upload mutation
+  const { updateAvatar } = useUserProfile();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
+
+  // TODO(step 2.4): show a loading indicator instead of a blank screen
+  if (!profile) {
+    return null;
+  }
 
   const handleShareProfile = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
