@@ -19,6 +19,7 @@ import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { useProfile } from "@/hooks/useProfile";
 import { useChangeEmail, useUpdateProfile } from "@/hooks/useProfileMutations";
+import { useUsernameAvailability } from "@/hooks/useUsernameAvailability";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   useEditProfileForm,
@@ -82,6 +83,10 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
     avatarUrl: profile.avatarUrl,
   });
   const { values, errors, setField, markTouched } = form;
+  const usernameAvailability = useUsernameAvailability(
+    values.username,
+    profile.username,
+  );
 
   const lastNameRef = useRef<TextInput>(null);
   const usernameRef = useRef<TextInput>(null);
@@ -185,7 +190,12 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
             ref={usernameRef}
             label="Username"
             value={values.username}
-            error={errors.username}
+            error={
+              errors.username ??
+              (usernameAvailability.isTaken
+                ? "This username is already taken"
+                : undefined)
+            }
             onChangeText={(text) => setField("username", text)}
             onBlur={() => markTouched("username")}
             maxLength={PROFILE_LIMITS.usernameMaxLength}
@@ -232,7 +242,12 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
         <Button
           size="xl"
           onPress={handleSave}
-          disabled={!form.isDirty || form.isSubmitting}
+          disabled={
+            !form.isDirty ||
+            form.isSubmitting ||
+            usernameAvailability.isChecking ||
+            usernameAvailability.isTaken
+          }
         >
           <Text className="text-2xl">
             {form.isSubmitting ? "Saving…" : "Save changes"}
