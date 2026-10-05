@@ -74,3 +74,19 @@ export interface ProfileResponse {
   avatarUrl: string | null;
   createdAt: string;
 }
+
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  bio?: string;
+}
+
+export interface ChangeEmailRequest {
+  email: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
