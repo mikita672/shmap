@@ -35,6 +35,7 @@ public class AvatarService {
                         "image/png", "png",
                         "image/webp", "webp");
         private static final int MAX_DIMENSION_PX = 4096;
+        private static final String UPLOAD_PREFIX = "uploads/";
 
         static {
                 ImageIO.scanForPlugins();
@@ -49,7 +50,7 @@ public class AvatarService {
                 String extension = extensionFor(request.contentType());
                 validateSize(request.contentLength());
 
-                String key = keyPrefix(userId) + UUID.randomUUID() + "." + extension;
+                String key = UPLOAD_PREFIX + keyPrefix(userId) + UUID.randomUUID() + "." + extension;
                 PresignedUpload upload = storageService.presignUpload(
                                 key,
                                 request.contentType(),
@@ -59,31 +60,36 @@ public class AvatarService {
                 return new AvatarUploadResponse(upload.url(), key, upload.expiresAt());
         }
 
-        public ProfileResponse confirm(Integer userId, String key) {
-                if (!isOwnAvatarKey(userId, key)) {
+        public ProfileResponse confirm(Integer userId, String uploadKey) {
+                if (!isOwnUploadKey(userId, uploadKey)) {
                         throw new AvatarUploadNotFoundException();
                 }
 
-                StoredObject stored = storageService.findObject(key)
-                                .orElseThrow(AvatarUploadNotFoundException::new);
-                try {
-                        extensionFor(stored.contentType());
-                        validateSize(stored.size());
-                        validateImageContent(storageService.readObject(key), stored.contentType());
-                } catch (InvalidAvatarException ex) {
-                        deleteQuietly(key);
-                        throw ex;
-                }
-
+                String avatarKey = uploadKey.substring(UPLOAD_PREFIX.length());
                 User user = findUser(userId);
                 String oldKey = user.getAvatarKey();
-                if (key.equals(oldKey)) {
+                if (avatarKey.equals(oldKey)) {
                         return userService.toProfileResponse(user);
                 }
 
-                user.setAvatarKey(key);
+                StoredObject stored = storageService.findObject(uploadKey)
+                                .orElseThrow(AvatarUploadNotFoundException::new);
+                byte[] content;
+                try {
+                        extensionFor(stored.contentType());
+                        validateSize(stored.size());
+                        content = storageService.readObject(uploadKey);
+                        validateImageContent(content, stored.contentType());
+                } catch (InvalidAvatarException ex) {
+                        deleteQuietly(uploadKey);
+                        throw ex;
+                }
+
+                storageService.putObject(avatarKey, content, stored.contentType());
+                user.setAvatarKey(avatarKey);
                 userRepository.save(user);
 
+                deleteQuietly(uploadKey);
                 if (oldKey != null) {
                         deleteQuietly(oldKey);
                 }
@@ -150,8 +156,9 @@ public class AvatarService {
                 }
         }
 
-        private boolean isOwnAvatarKey(Integer userId, String key) {
-                String ownKeyPattern = Pattern.quote(keyPrefix(userId)) + "[0-9a-f-]{36}\\.(jpg|png|webp)";
+        private boolean isOwnUploadKey(Integer userId, String key) {
+                String ownKeyPattern = Pattern.quote(UPLOAD_PREFIX + keyPrefix(userId))
+                                + "[0-9a-f-]{36}\\.(jpg|png|webp)";
                 return key.matches(ownKeyPattern);
         }
 

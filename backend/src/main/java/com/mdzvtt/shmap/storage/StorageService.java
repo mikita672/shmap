@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -66,6 +67,16 @@ public class StorageService {
                                 .build();
 
                 return s3Client.getObjectAsBytes(request).asByteArray();
+        }
+
+        public void putObject(String key, byte[] content, String contentType) {
+                PutObjectRequest request = PutObjectRequest.builder()
+                                .bucket(properties.s3().bucket())
+                                .key(key)
+                                .contentType(contentType)
+                                .build();
+
+                s3Client.putObject(request, RequestBody.fromBytes(content));
         }
 
         public void delete(String key) {
