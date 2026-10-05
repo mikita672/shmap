@@ -16,7 +16,7 @@ import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar } from "@/components/ui/avatar";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useProfile } from "@/hooks/useProfile";
 import { useGeocoding } from "@/hooks/useGeocoding";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import type { SearchPlace } from "@/lib/api/geocoding";
@@ -46,7 +46,7 @@ export function MapSearchBar({
   const inputRef = useRef<TextInput>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [searchBarHeight, setSearchBarHeight] = useState<number>(48);
-  const { profile } = useUserProfile();
+  const { data: profile } = useProfile();
 
   const handleAvatarPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -189,8 +189,10 @@ export function MapSearchBar({
           >
             <Avatar
               size="lg"
-              uri={profile.avatarUrl}
-              fallbackText={`${profile.firstName} ${profile.lastName}`}
+              uri={profile?.avatarUrl}
+              fallbackText={
+                profile ? `${profile.firstName} ${profile.lastName}` : undefined
+              }
               fallbackIcon={true}
               style={{
                 width: searchBarHeight - AVATAR_RING_WIDTH * 2,
