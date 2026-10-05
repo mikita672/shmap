@@ -8,6 +8,7 @@ import {
   changeEmail,
   confirmAvatar,
   createAvatarUploadUrl,
+  removeAvatar,
   updateMe,
 } from "@/lib/api/users";
 import { validateAvatar } from "@/lib/validation/avatar";
@@ -60,6 +61,17 @@ export function useUploadAvatar() {
     },
     onSuccess: (profile) => {
       queryClient.setQueryData(profileQueryOptions.queryKey, profile);
+    },
+  });
+}
+
+export function useRemoveAvatar() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: removeAvatar,
+    onSuccess: (response) => {
+      queryClient.setQueryData(profileQueryOptions.queryKey, response.data);
     },
   });
 }
