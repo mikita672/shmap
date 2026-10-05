@@ -1,4 +1,3 @@
-import React from "react";
 import { Modal, View, Text, Pressable, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";

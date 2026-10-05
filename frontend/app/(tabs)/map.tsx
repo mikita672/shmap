@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View, ActivityIndicator, Animated, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {

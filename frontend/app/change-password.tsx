@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -26,7 +26,7 @@ import {
 
 export default function ChangePasswordScreen() {
   const insets = useSafeAreaInsets();
-  const { signIn } = useAuth();
+  const { signIn, signOut } = useAuth();
   const backButtonTop = Math.max(insets.top + 8, 48);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -176,6 +176,7 @@ export default function ChangePasswordScreen() {
           <Button
             variant="ghost"
             className="h-auto px-0 py-0 active:bg-transparent"
+            onPress={() => signOut({ redirectTo: "/passwordReset" })}
           >
             <Text className="text-secondary text-base font-normal tracking-[0.5px] underline">
               Reset it

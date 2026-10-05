@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text, Pressable } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";

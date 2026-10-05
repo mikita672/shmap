@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   View,
   Pressable,
@@ -53,7 +53,7 @@ export function MapSearchBar({
     if (onAvatarPress) {
       onAvatarPress();
     } else {
-      router.push("/profile" as any);
+      router.push("/profile");
     }
   }, [onAvatarPress, router]);
 

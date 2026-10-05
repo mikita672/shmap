@@ -48,7 +48,7 @@ function TextField({
         {...props}
       />
 
-      {(error || hasCounter) && (
+      {error || hasCounter ? (
         <View className="flex-row justify-between gap-3 px-7">
           <Text
             className="flex-1 text-destructive text-xs"
@@ -56,13 +56,13 @@ function TextField({
           >
             {error ?? ""}
           </Text>
-          {hasCounter && (
+          {hasCounter ? (
             <Text className="text-secondary text-xs">
               {value?.length ?? 0}/{maxLength}
             </Text>
-          )}
+          ) : null}
         </View>
-      )}
+      ) : null}
     </View>
   );
 }
