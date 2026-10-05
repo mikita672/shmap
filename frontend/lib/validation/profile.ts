@@ -73,6 +73,8 @@ export function validateProfile(values: EditableProfile): ProfileFieldErrors {
 const SERVER_FIELD_MAP: Record<string, ProfileTextField> = {
   firstname: "firstName",
   lastname: "lastName",
+  firstName: "firstName",
+  lastName: "lastName",
   username: "username",
   email: "email",
   bio: "bio",
