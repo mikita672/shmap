@@ -81,18 +81,18 @@ public class AvatarService {
                         content = storageService.readObject(uploadKey);
                         validateImageContent(content, stored.contentType());
                 } catch (InvalidAvatarException ex) {
-                        deleteQuietly(uploadKey);
+                        deleteUploadQuietly(uploadKey);
                         throw ex;
                 }
 
                 storageService.putObject(avatarKey, content, stored.contentType());
+                if (oldKey != null) {
+                        storageService.delete(oldKey);
+                }
                 user.setAvatarKey(avatarKey);
                 userRepository.save(user);
 
-                deleteQuietly(uploadKey);
-                if (oldKey != null) {
-                        deleteQuietly(oldKey);
-                }
+                deleteUploadQuietly(uploadKey);
                 return userService.toProfileResponse(user);
         }
 
@@ -103,10 +103,10 @@ public class AvatarService {
                         return userService.toProfileResponse(user);
                 }
 
+                storageService.delete(oldKey);
                 user.setAvatarKey(null);
                 userRepository.save(user);
 
-                deleteQuietly(oldKey);
                 return userService.toProfileResponse(user);
         }
 
@@ -162,11 +162,12 @@ public class AvatarService {
                 return key.matches(ownKeyPattern);
         }
 
-        private void deleteQuietly(String key) {
+        // Staging uploads are never served as avatars; leftovers expire via the bucket's "uploads/" lifecycle rule.
+        private void deleteUploadQuietly(String uploadKey) {
                 try {
-                        storageService.delete(key);
+                        storageService.delete(uploadKey);
                 } catch (RuntimeException ex) {
-                        log.warn("Failed to delete avatar object {}: {}", key, ex.getMessage());
+                        log.warn("Failed to delete avatar upload {}: {}", uploadKey, ex.getMessage());
                 }
         }
 
