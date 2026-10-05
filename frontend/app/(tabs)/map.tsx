@@ -139,7 +139,10 @@ export default function MapScreen() {
     let cancelled = false;
 
     LocationManager.requestPermissions()
-      .then((granted) => {
+      .then(async (granted) => {
+        if (granted) {
+          await LocationManager.getCurrentPosition();
+        }
         if (!cancelled) {
           setLocationPermission(granted);
           if (granted) {
