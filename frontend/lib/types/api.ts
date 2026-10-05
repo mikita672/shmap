@@ -90,3 +90,23 @@ export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
 }
+
+export interface AvatarUploadRequest {
+  contentType: string;
+  contentLength: number;
+}
+
+export interface AvatarUploadResponse {
+  uploadUrl: string;
+  key: string;
+  expiresAt: string;
+}
+
+export interface ConfirmAvatarRequest {
+  key: string;
+}
+
+export interface UsernameAvailabilityResponse {
+  username: string;
+  available: boolean;
+}
