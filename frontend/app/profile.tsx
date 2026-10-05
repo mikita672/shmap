@@ -95,6 +95,7 @@ export default function ProfileScreen() {
         <EditableAvatar
           uri={profile.avatarUrl}
           fallbackText={`${profile.firstName} ${profile.lastName}`}
+          isLoading={uploadAvatar.isPending || removeAvatar.isPending}
           onEdit={() => setAvatarSheetVisible(true)}
         />
 
