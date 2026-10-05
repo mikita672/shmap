@@ -33,6 +33,8 @@ LogManager.onLog((log) => {
 });
 
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const DEFAULT_ZOOM = 15;
+const MY_LOCATION_DURATION = 600;
 
 interface SelectedCoordinate {
   lat: number;
@@ -48,6 +50,7 @@ export default function MapScreen() {
   >("default");
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
+  const trackingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const insets = useSafeAreaInsets();
   const [bearing] = useState(() => new Animated.Value(0));
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number }>();
@@ -77,6 +80,7 @@ export default function MapScreen() {
   const handleMapPress = useCallback(
     (event: NativeSyntheticEvent<{ lngLat: [number, number] }>) => {
       Keyboard.dismiss();
+      clearTimeout(trackingTimeoutRef.current);
       setTrackUserLocation(undefined);
       const [lon, lat] = event.nativeEvent.lngLat;
 
@@ -95,6 +99,7 @@ export default function MapScreen() {
   );
 
   const handlePlaceSelect = useCallback(async (place: SearchPlace) => {
+    clearTimeout(trackingTimeoutRef.current);
     setTrackUserLocation(undefined);
 
     const coord = { lat: place.latitude, lon: place.longitude };
@@ -131,9 +136,23 @@ export default function MapScreen() {
     reverseRefetch();
   }, [reverseRefetch]);
 
-  const handleMyLocation = useCallback(() => {
+  const handleMyLocation = useCallback(async () => {
     handleSheetClose();
-    setTrackUserLocation("default");
+    clearTimeout(trackingTimeoutRef.current);
+
+    const position = await LocationManager.getCurrentPosition();
+    if (!position || !cameraRef.current) return;
+
+    setTrackUserLocation(undefined);
+    cameraRef.current.easeTo({
+      center: [position.coords.longitude, position.coords.latitude],
+      zoom: DEFAULT_ZOOM,
+      duration: MY_LOCATION_DURATION,
+    });
+
+    trackingTimeoutRef.current = setTimeout(() => {
+      setTrackUserLocation("default");
+    }, MY_LOCATION_DURATION);
   }, [handleSheetClose]);
 
   useEffect(() => {
@@ -203,7 +222,7 @@ export default function MapScreen() {
                     undefined,
                 );
               }}
-              zoom={15}
+              initialViewState={{ zoom: DEFAULT_ZOOM }}
             />
             <UserLocation animated accuracy />
           </>
