@@ -91,16 +91,19 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
   const emailRef = useRef<TextInput>(null);
   const bioRef = useRef<TextInput>(null);
 
-  const saveProfile = async ({ email, ...fields }: ProfileChanges) => {
-    if (Object.keys(fields).length > 0) {
-      await updateProfile.mutateAsync(fields);
-    }
-    if (email !== undefined) {
-      await changeEmail.mutateAsync({ email });
-    }
-  };
-
   const handleSave = async () => {
+    let profileFieldsSaved = false;
+
+    const saveProfile = async ({ email, ...fields }: ProfileChanges) => {
+      if (Object.keys(fields).length > 0) {
+        await updateProfile.mutateAsync(fields);
+        profileFieldsSaved = true;
+      }
+      if (email !== undefined) {
+        await changeEmail.mutateAsync({ email });
+      }
+    };
+
     try {
       const saved = await form.handleSubmit(saveProfile);
       if (!saved) {
@@ -113,7 +116,13 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
     } catch (error) {
       const apiError = extractApiError(error);
       form.setServerErrors(apiError?.fieldErrors);
-      toast.error(apiError?.message ?? "Could not update your profile");
+      if (profileFieldsSaved) {
+        toast.error("Profile saved, but your email wasn't changed", {
+          description: apiError?.message,
+        });
+      } else {
+        toast.error(apiError?.message ?? "Could not update your profile");
+      }
     }
   };
 
