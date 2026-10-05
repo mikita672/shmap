@@ -3,6 +3,7 @@ package com.mdzvtt.shmap.storage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
@@ -64,5 +65,14 @@ public class StorageService {
                                 .build();
 
                 s3Client.deleteObject(request);
+        }
+
+        public String publicUrl(String key) {
+                if (key == null) {
+                        return null;
+                }
+
+                String baseUrl = StringUtils.trimTrailingCharacter(properties.s3().publicBaseUrl(), '/');
+                return baseUrl + "/" + key;
         }
 }
