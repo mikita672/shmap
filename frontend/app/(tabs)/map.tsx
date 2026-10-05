@@ -20,7 +20,7 @@ import { useSharedValue } from "react-native-reanimated";
 import { PlaceDetailsSheet } from "@/components/place-details-sheet";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
-import { halfScreensAway, midpoint } from "@/lib/map-camera";
+import { halfScreensAway, midpoint, waitForAnimation } from "@/lib/map-camera";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 LogManager.onLog((log) => {
@@ -54,7 +54,7 @@ export default function MapScreen() {
   >("default");
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
-  const trackingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const moveToUserAbortRef = useRef<AbortController>(null);
   const insets = useSafeAreaInsets();
   const [bearing] = useState(() => new Animated.Value(0));
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number }>();
@@ -84,7 +84,7 @@ export default function MapScreen() {
   const handleMapPress = useCallback(
     (event: NativeSyntheticEvent<{ lngLat: [number, number] }>) => {
       Keyboard.dismiss();
-      clearTimeout(trackingTimeoutRef.current);
+      moveToUserAbortRef.current?.abort();
       setTrackUserLocation(undefined);
       const [lon, lat] = event.nativeEvent.lngLat;
 
@@ -103,7 +103,7 @@ export default function MapScreen() {
   );
 
   const handlePlaceSelect = useCallback(async (place: SearchPlace) => {
-    clearTimeout(trackingTimeoutRef.current);
+    moveToUserAbortRef.current?.abort();
     setTrackUserLocation(undefined);
 
     const coord = { lat: place.latitude, lon: place.longitude };
@@ -142,13 +142,18 @@ export default function MapScreen() {
 
   const handleMyLocation = useCallback(async () => {
     handleSheetClose();
-    clearTimeout(trackingTimeoutRef.current);
+    moveToUserAbortRef.current?.abort();
+    const controller = new AbortController();
+    moveToUserAbortRef.current = controller;
+    const { signal } = controller;
 
     const position = await LocationManager.getCurrentPosition();
-    if (!position || !cameraRef.current || !mapRef.current) return;
+    if (signal.aborted || !position || !mapRef.current) return;
 
     const user: LngLat = [position.coords.longitude, position.coords.latitude];
     const view = await mapRef.current.getViewState();
+    if (signal.aborted || !cameraRef.current) return;
+
     const baseZoom = Math.min(view.zoom, DEFAULT_ZOOM);
     const distance = halfScreensAway(view, user, baseZoom);
 
@@ -160,30 +165,26 @@ export default function MapScreen() {
         zoom: DEFAULT_ZOOM,
         duration: MY_LOCATION_DURATION,
       });
+      await waitForAnimation(MY_LOCATION_DURATION, signal);
+    } else {
+      cameraRef.current.easeTo({
+        center: midpoint(view.center, user),
+        zoom: baseZoom - Math.log2(distance),
+        duration: OVERVIEW_DURATION,
+      });
+      await waitForAnimation(OVERVIEW_DURATION, signal);
+      if (signal.aborted) return;
 
-      trackingTimeoutRef.current = setTimeout(() => {
-        setTrackUserLocation("default");
-      }, MY_LOCATION_DURATION);
-      return;
-    }
-
-    cameraRef.current.easeTo({
-      center: midpoint(view.center, user),
-      zoom: baseZoom - Math.log2(distance),
-      duration: OVERVIEW_DURATION,
-    });
-
-    trackingTimeoutRef.current = setTimeout(() => {
       cameraRef.current?.flyTo({
         center: user,
         zoom: DEFAULT_ZOOM,
         duration: FLY_IN_DURATION,
       });
+      await waitForAnimation(FLY_IN_DURATION, signal);
+    }
 
-      trackingTimeoutRef.current = setTimeout(() => {
-        setTrackUserLocation("default");
-      }, FLY_IN_DURATION);
-    }, OVERVIEW_DURATION);
+    if (signal.aborted) return;
+    setTrackUserLocation("default");
   }, [handleSheetClose]);
 
   useEffect(() => {
@@ -230,6 +231,11 @@ export default function MapScreen() {
         compass={!locationPermission}
         attributionPosition={{ top: Math.max(insets.top, 8) + 8, left: 8 }}
         onPress={handleMapPress}
+        onRegionWillChange={(event) => {
+          if (event.nativeEvent.userInteraction) {
+            moveToUserAbortRef.current?.abort();
+          }
+        }}
         onRegionIsChanging={(event) => {
           bearing.setValue(event.nativeEvent.bearing);
         }}

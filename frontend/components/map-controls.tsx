@@ -16,7 +16,7 @@ interface MapControlsProps {
   mapRef: React.RefObject<MapRef | null>;
   bearing: Animated.Value;
   animatedBottomOffset?: SharedValue<number>;
-  onMyLocation?: () => void;
+  onMyLocation: () => Promise<void>;
 }
 
 export function MapControls({
@@ -75,23 +75,7 @@ export function MapControls({
     if (isLocating) return;
     try {
       setIsLocating(true);
-      if (onMyLocation) {
-        onMyLocation();
-        return;
-      }
-
-      const position = await LocationManager.getCurrentPosition();
-      if (position && cameraRef.current && mapRef.current) {
-        const currentZoom = await mapRef.current.getZoom();
-
-        const targetZoom = Math.max(currentZoom, 15);
-
-        cameraRef.current.flyTo({
-          center: [position.coords.longitude, position.coords.latitude],
-          zoom: targetZoom,
-          duration: 1000,
-        });
-      }
+      await onMyLocation();
     } catch (error) {
       console.warn("Failed to get current position:", error);
     } finally {

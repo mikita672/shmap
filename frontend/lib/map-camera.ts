@@ -19,3 +19,16 @@ export function halfScreensAway(
 export function midpoint(a: LngLat, b: LngLat): LngLat {
   return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 }
+
+export function waitForAnimation(
+  duration: number,
+  signal: AbortSignal,
+): Promise<void> {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(resolve, duration);
+    signal.addEventListener("abort", () => {
+      clearTimeout(timeout);
+      resolve();
+    });
+  });
+}
