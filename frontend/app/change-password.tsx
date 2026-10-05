@@ -7,14 +7,21 @@ import {
   type TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Text } from "@/components/ui/text";
+import { useAuth } from "@/hooks/useAuth";
+import { changePassword } from "@/lib/api/users";
 import { validatePasswordChange } from "@/lib/validation/password";
 
 export default function ChangePasswordScreen() {
   const insets = useSafeAreaInsets();
+  const { signIn } = useAuth();
   const backButtonTop = Math.max(insets.top + 8, 48);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -37,10 +44,21 @@ export default function ChangePasswordScreen() {
   const isValid = Object.keys(validationErrors).length === 0;
   const errors = submitAttempted ? validationErrors : {};
 
+  const changePasswordMutation = useMutation({
+    mutationFn: changePassword,
+    onSuccess: async (response) => {
+      await signIn(response.data);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.success("Password updated");
+      router.back();
+    },
+    // TODO(step 3.5): show server errors (e.g. wrong current password)
+  });
+
   const handleSubmit = () => {
     setSubmitAttempted(true);
     if (!isValid) return;
-    // TODO(step 3.4): send the change password request
+    changePasswordMutation.mutate({ currentPassword, newPassword });
   };
 
   return (
