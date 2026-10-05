@@ -1,9 +1,11 @@
-import type { UserProfile } from "@/hooks/useUserProfile";
-
-export type EditableProfile = Pick<
-  UserProfile,
-  "firstName" | "lastName" | "username" | "email" | "bio" | "avatarUrl"
->;
+export interface EditableProfile {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  bio: string;
+  avatarUrl: string | null;
+}
 
 export type ProfileTextField = Exclude<keyof EditableProfile, "avatarUrl">;
 
