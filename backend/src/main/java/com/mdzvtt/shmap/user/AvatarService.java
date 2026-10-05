@@ -14,6 +14,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -26,6 +34,11 @@ public class AvatarService {
                         "image/jpeg", "jpg",
                         "image/png", "png",
                         "image/webp", "webp");
+        private static final int MAX_DIMENSION_PX = 4096;
+
+        static {
+                ImageIO.scanForPlugins();
+        }
 
         private final StorageService storageService;
         private final StorageProperties storageProperties;
@@ -56,6 +69,7 @@ public class AvatarService {
                 try {
                         extensionFor(stored.contentType());
                         validateSize(stored.size());
+                        validateImageContent(storageService.readObject(key), stored.contentType());
                 } catch (InvalidAvatarException ex) {
                         deleteQuietly(key);
                         throw ex;
@@ -103,6 +117,36 @@ public class AvatarService {
                 if (sizeBytes > maxSizeBytes) {
                         throw new InvalidAvatarException(
                                         "Avatar must be at most " + maxSizeBytes / (1024 * 1024) + " MB");
+                }
+        }
+
+        private void validateImageContent(byte[] bytes, String contentType) {
+                try (ImageInputStream input = new MemoryCacheImageInputStream(new ByteArrayInputStream(bytes))) {
+                        Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+                        if (!readers.hasNext()) {
+                                throw new InvalidAvatarException("Avatar is not a valid image");
+                        }
+
+                        ImageReader reader = readers.next();
+                        try {
+                                List<String> actualTypes = List.of(reader.getOriginatingProvider().getMIMETypes());
+                                if (!actualTypes.contains(contentType)) {
+                                        throw new InvalidAvatarException("Avatar content does not match its type");
+                                }
+
+                                reader.setInput(input, true, true);
+                                if (reader.getWidth(0) > MAX_DIMENSION_PX || reader.getHeight(0) > MAX_DIMENSION_PX) {
+                                        throw new InvalidAvatarException("Avatar must be at most "
+                                                        + MAX_DIMENSION_PX + "x" + MAX_DIMENSION_PX + " pixels");
+                                }
+                                reader.read(0);
+                        } finally {
+                                reader.dispose();
+                        }
+                } catch (InvalidAvatarException ex) {
+                        throw ex;
+                } catch (IOException | RuntimeException ex) {
+                        throw new InvalidAvatarException("Avatar is not a valid image");
                 }
         }
 

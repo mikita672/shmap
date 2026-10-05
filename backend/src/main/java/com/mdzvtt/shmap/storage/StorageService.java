@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -56,6 +57,15 @@ public class StorageService {
                         }
                         throw ex;
                 }
+        }
+
+        public byte[] readObject(String key) {
+                GetObjectRequest request = GetObjectRequest.builder()
+                                .bucket(properties.s3().bucket())
+                                .key(key)
+                                .build();
+
+                return s3Client.getObjectAsBytes(request).asByteArray();
         }
 
         public void delete(String key) {
