@@ -277,6 +277,7 @@ export default function MapScreen() {
           bearing={bearing}
           animatedBottomOffset={animatedBottomOffset}
           onMyLocation={handleMyLocation}
+          onCompass={() => moveToUserAbortRef.current?.abort()}
         />
       )}
 

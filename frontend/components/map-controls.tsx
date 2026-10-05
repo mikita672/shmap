@@ -17,6 +17,7 @@ interface MapControlsProps {
   bearing: Animated.Value;
   animatedBottomOffset?: SharedValue<number>;
   onMyLocation: () => Promise<void>;
+  onCompass: () => void;
 }
 
 export function MapControls({
@@ -25,6 +26,7 @@ export function MapControls({
   bearing,
   animatedBottomOffset,
   onMyLocation,
+  onCompass,
 }: MapControlsProps) {
   const [isLocating, setIsLocating] = useState(true);
 
@@ -61,6 +63,7 @@ export function MapControls({
   }, []);
 
   const handleCompass = async () => {
+    onCompass();
     if (cameraRef.current && mapRef.current) {
       const center = await mapRef.current.getCenter();
       cameraRef.current.easeTo({
