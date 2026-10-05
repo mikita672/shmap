@@ -9,6 +9,7 @@ import {
   LogManager,
   ViewAnnotation,
   type CameraRef,
+  type LngLat,
   type MapRef,
   type TrackUserLocation,
 } from "@maplibre/maplibre-react-native";
@@ -19,6 +20,7 @@ import { useSharedValue } from "react-native-reanimated";
 import { PlaceDetailsSheet } from "@/components/place-details-sheet";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
+import { getFlyDuration, waitForAnimation } from "@/lib/map-camera";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 LogManager.onLog((log) => {
@@ -33,6 +35,8 @@ LogManager.onLog((log) => {
 });
 
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const DEFAULT_ZOOM = 15;
+const FOLLOW_DELAY = 150;
 
 interface SelectedCoordinate {
   lat: number;
@@ -48,6 +52,7 @@ export default function MapScreen() {
   >("default");
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
+  const moveToUserAbortRef = useRef<AbortController>(null);
   const insets = useSafeAreaInsets();
   const [bearing] = useState(() => new Animated.Value(0));
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number }>();
@@ -77,6 +82,7 @@ export default function MapScreen() {
   const handleMapPress = useCallback(
     (event: NativeSyntheticEvent<{ lngLat: [number, number] }>) => {
       Keyboard.dismiss();
+      moveToUserAbortRef.current?.abort();
       setTrackUserLocation(undefined);
       const [lon, lat] = event.nativeEvent.lngLat;
 
@@ -95,6 +101,7 @@ export default function MapScreen() {
   );
 
   const handlePlaceSelect = useCallback(async (place: SearchPlace) => {
+    moveToUserAbortRef.current?.abort();
     setTrackUserLocation(undefined);
 
     const coord = { lat: place.latitude, lon: place.longitude };
@@ -131,9 +138,34 @@ export default function MapScreen() {
     reverseRefetch();
   }, [reverseRefetch]);
 
-  const handleMyLocation = useCallback(() => {
+  const handleMyLocation = useCallback(async () => {
+    handleSheetClose();
+    moveToUserAbortRef.current?.abort();
+    const controller = new AbortController();
+    moveToUserAbortRef.current = controller;
+    const { signal } = controller;
+
+    const position = await LocationManager.getCurrentPosition();
+    if (signal.aborted || !mapRef.current) return;
+
+    if (!position) {
+      setTrackUserLocation("default");
+      return;
+    }
+
+    const user: LngLat = [position.coords.longitude, position.coords.latitude];
+    const view = await mapRef.current.getViewState();
+    if (signal.aborted || !cameraRef.current) return;
+
+    const duration = getFlyDuration(view, user, DEFAULT_ZOOM);
+
+    setTrackUserLocation(undefined);
+    cameraRef.current.flyTo({ center: user, zoom: DEFAULT_ZOOM, duration });
+    await waitForAnimation(duration + FOLLOW_DELAY, signal);
+
+    if (signal.aborted) return;
     setTrackUserLocation("default");
-  }, []);
+  }, [handleSheetClose]);
 
   useEffect(() => {
     let cancelled = false;
@@ -179,6 +211,11 @@ export default function MapScreen() {
         compass={!locationPermission}
         attributionPosition={{ top: Math.max(insets.top, 8) + 8, left: 8 }}
         onPress={handleMapPress}
+        onRegionWillChange={(event) => {
+          if (event.nativeEvent.userInteraction) {
+            moveToUserAbortRef.current?.abort();
+          }
+        }}
         onRegionIsChanging={(event) => {
           bearing.setValue(event.nativeEvent.bearing);
         }}
@@ -202,7 +239,7 @@ export default function MapScreen() {
                     undefined,
                 );
               }}
-              zoom={15}
+              initialViewState={{ zoom: DEFAULT_ZOOM }}
             />
             <UserLocation animated accuracy />
           </>
@@ -240,6 +277,7 @@ export default function MapScreen() {
           bearing={bearing}
           animatedBottomOffset={animatedBottomOffset}
           onMyLocation={handleMyLocation}
+          onCompass={() => moveToUserAbortRef.current?.abort()}
         />
       )}
 
