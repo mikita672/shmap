@@ -347,8 +347,8 @@ jobs:
           IMAGE_TAG="europe-central2-docker.pkg.dev/shmap-505120/shmap-repo/shmap-backend:${GITHUB_SHA}"
           gcloud builds submit ./backend --tag "$IMAGE_TAG" --project shmap-505120
           gcloud run deploy shmap-backend --image "$IMAGE_TAG" --region europe-central2 --project shmap-505120 \
-            --update-env-vars "GOOGLE_CLIENT_ID=761707913997-vnqsvcfranhri32css64rdqbc399qrel.apps.googleusercontent.com" \
-            --update-secrets "RESEND_API_KEY=RESEND_API_KEY:latest"
+            --update-env-vars "GOOGLE_CLIENT_ID=761707913997-vnqsvcfranhri32css64rdqbc399qrel.apps.googleusercontent.com,STORAGE_ENDPOINT=${{ secrets.STORAGE_ENDPOINT }},STORAGE_BUCKET=${{ secrets.STORAGE_BUCKET }},STORAGE_PUBLIC_BASE_URL=${{ secrets.STORAGE_PUBLIC_BASE_URL }}" \
+            --update-secrets "RESEND_API_KEY=RESEND_API_KEY:latest,STORAGE_ACCESS_KEY_ID=STORAGE_ACCESS_KEY_ID:latest,STORAGE_SECRET_ACCESS_KEY=STORAGE_SECRET_ACCESS_KEY:latest"
 
   release:
     name: Create Release

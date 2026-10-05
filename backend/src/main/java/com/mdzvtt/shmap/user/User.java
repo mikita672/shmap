@@ -36,6 +36,7 @@ public class User implements UserDetails {
     private Role role;
     @Column(length = 160)
     private String bio;
+    private String avatarKey;
     @CreationTimestamp
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(updatable = false)
