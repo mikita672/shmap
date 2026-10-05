@@ -101,7 +101,8 @@ export default function ProfileScreen() {
       <ChangeAvatarSheet
         visible={avatarSheetVisible}
         onClose={() => setAvatarSheetVisible(false)}
-        onSelectAvatar={updateAvatar}
+        onPickImage={(asset) => updateAvatar(asset.uri)}
+        onRemove={() => updateAvatar(null)}
         hasCurrentAvatar={Boolean(profile.avatarUrl)}
       />
     </View>

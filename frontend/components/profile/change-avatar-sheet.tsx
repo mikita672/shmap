@@ -8,14 +8,16 @@ import { toast } from "sonner-native";
 interface ChangeAvatarSheetProps {
   visible: boolean;
   onClose: () => void;
-  onSelectAvatar: (uri: string | null) => void;
+  onPickImage: (asset: ImagePicker.ImagePickerAsset) => void;
+  onRemove: () => void;
   hasCurrentAvatar: boolean;
 }
 
 export function ChangeAvatarSheet({
   visible,
   onClose,
-  onSelectAvatar,
+  onPickImage,
+  onRemove,
   hasCurrentAvatar,
 }: ChangeAvatarSheetProps) {
   const handlePickFromLibrary = async () => {
@@ -39,8 +41,7 @@ export function ChangeAvatarSheet({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        onSelectAvatar(result.assets[0].uri);
-        toast.success("Avatar updated");
+        onPickImage(result.assets[0]);
         onClose();
       }
     } catch (err) {
@@ -68,8 +69,7 @@ export function ChangeAvatarSheet({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        onSelectAvatar(result.assets[0].uri);
-        toast.success("Avatar updated");
+        onPickImage(result.assets[0]);
         onClose();
       }
     } catch (err) {
@@ -80,8 +80,7 @@ export function ChangeAvatarSheet({
 
   const handleRemove = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    onSelectAvatar(null);
-    toast.success("Avatar removed");
+    onRemove();
     onClose();
   };
 

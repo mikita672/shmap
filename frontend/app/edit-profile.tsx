@@ -258,7 +258,8 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
       <ChangeAvatarSheet
         visible={avatarSheetVisible}
         onClose={() => setAvatarSheetVisible(false)}
-        onSelectAvatar={(uri) => setField("avatarUrl", uri)}
+        onPickImage={(asset) => setField("avatarUrl", asset.uri)}
+        onRemove={() => setField("avatarUrl", null)}
         hasCurrentAvatar={Boolean(values.avatarUrl)}
       />
     </KeyboardAvoidingView>
