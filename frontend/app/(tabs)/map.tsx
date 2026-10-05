@@ -132,8 +132,9 @@ export default function MapScreen() {
   }, [reverseRefetch]);
 
   const handleMyLocation = useCallback(() => {
+    handleSheetClose();
     setTrackUserLocation("default");
-  }, []);
+  }, [handleSheetClose]);
 
   useEffect(() => {
     let cancelled = false;
