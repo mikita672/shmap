@@ -5,6 +5,8 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileInfo } from "@/components/profile/profile-info";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
@@ -13,10 +15,11 @@ import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
 import { useProfile } from "@/hooks/useProfile";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { shareProfile } from "@/lib/profile-link";
+import { getErrorMessage } from "@/lib/utils/error";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { data: profile, isPending } = useProfile();
+  const { data: profile, isPending, isError, error, refetch } = useProfile();
   // TODO(step 5.5): replace with the avatar upload mutation
   const { updateAvatar } = useUserProfile();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
@@ -30,9 +33,21 @@ export default function ProfileScreen() {
     );
   }
 
-  // TODO(step 2.5): show an error message with a Retry button
-  if (!profile) {
-    return null;
+  if (isError) {
+    return (
+      <View className="flex-1 justify-center items-center gap-4 px-6 bg-background">
+        <BackButton
+          className="absolute left-6"
+          style={{ top: Math.max(insets.top + 8, 48) }}
+        />
+        <Text className="text-center">
+          {getErrorMessage(error, "Couldn't load your profile")}
+        </Text>
+        <Button onPress={() => refetch()}>
+          <Text>Retry</Text>
+        </Button>
+      </View>
+    );
   }
 
   const handleShareProfile = async () => {
