@@ -57,7 +57,7 @@ export function EditableAvatar({
         disabled={isLoading}
         className={cn(
           "absolute bottom-1 right-1 h-11 w-11 rounded-full bg-primary items-center justify-center border-2 border-background shadow-md active:scale-95 transition-transform",
-          isLoading && "opacity-50",
+          isLoading ? "opacity-50" : "opacity-100",
         )}
         accessibilityRole="button"
         accessibilityLabel="Edit avatar"
