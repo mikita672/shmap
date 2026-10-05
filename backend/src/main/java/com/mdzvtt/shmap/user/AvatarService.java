@@ -76,6 +76,20 @@ public class AvatarService {
                 return userService.toProfileResponse(user);
         }
 
+        public ProfileResponse remove(Integer userId) {
+                User user = findUser(userId);
+                String oldKey = user.getAvatarKey();
+                if (oldKey == null) {
+                        return userService.toProfileResponse(user);
+                }
+
+                user.setAvatarKey(null);
+                userRepository.save(user);
+
+                deleteQuietly(oldKey);
+                return userService.toProfileResponse(user);
+        }
+
         private String extensionFor(String contentType) {
                 String extension = EXTENSIONS_BY_CONTENT_TYPE.get(contentType);
                 if (extension == null) {
