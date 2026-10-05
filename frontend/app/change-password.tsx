@@ -17,7 +17,12 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/hooks/useAuth";
 import { changePassword } from "@/lib/api/users";
-import { validatePasswordChange } from "@/lib/validation/password";
+import { extractApiError } from "@/lib/utils/error";
+import {
+  validatePasswordChange,
+  type PasswordChangeErrors,
+  type PasswordChangeField,
+} from "@/lib/validation/password";
 
 export default function ChangePasswordScreen() {
   const insets = useSafeAreaInsets();
@@ -28,6 +33,7 @@ export default function ChangePasswordScreen() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [serverErrors, setServerErrors] = useState<PasswordChangeErrors>({});
 
   const newPasswordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
@@ -42,7 +48,24 @@ export default function ChangePasswordScreen() {
     confirmPassword,
   });
   const isValid = Object.keys(validationErrors).length === 0;
-  const errors = submitAttempted ? validationErrors : {};
+  const shownErrors: PasswordChangeErrors = submitAttempted
+    ? validationErrors
+    : {};
+  const errors: PasswordChangeErrors = {
+    currentPassword:
+      serverErrors.currentPassword ?? shownErrors.currentPassword,
+    newPassword: serverErrors.newPassword ?? shownErrors.newPassword,
+    confirmPassword: shownErrors.confirmPassword,
+  };
+
+  const clearServerError = (field: PasswordChangeField) => {
+    setServerErrors((prev) => {
+      if (!(field in prev)) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
 
   const changePasswordMutation = useMutation({
     mutationFn: changePassword,
@@ -52,12 +75,24 @@ export default function ChangePasswordScreen() {
       toast.success("Password updated");
       router.back();
     },
-    // TODO(step 3.5): show server errors (e.g. wrong current password)
+    onError: (error) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const apiError = extractApiError(error);
+      const fieldErrors: PasswordChangeErrors = {
+        currentPassword: apiError?.fieldErrors?.currentPassword,
+        newPassword: apiError?.fieldErrors?.newPassword,
+      };
+      if (fieldErrors.currentPassword || fieldErrors.newPassword) {
+        setServerErrors(fieldErrors);
+      } else {
+        toast.error(apiError?.message ?? "Could not update your password");
+      }
+    },
   });
 
   const handleSubmit = () => {
     setSubmitAttempted(true);
-    if (!isValid) return;
+    if (!isValid || changePasswordMutation.isPending) return;
     changePasswordMutation.mutate({ currentPassword, newPassword });
   };
 
@@ -88,7 +123,10 @@ export default function ChangePasswordScreen() {
             placeholder="Current password"
             autoComplete="current-password"
             value={currentPassword}
-            onChangeText={setCurrentPassword}
+            onChangeText={(text) => {
+              setCurrentPassword(text);
+              clearServerError("currentPassword");
+            }}
             error={errors.currentPassword}
             returnKeyType="next"
             submitBehavior="submit"
@@ -99,7 +137,10 @@ export default function ChangePasswordScreen() {
             placeholder="New password"
             autoComplete="new-password"
             value={newPassword}
-            onChangeText={setNewPassword}
+            onChangeText={(text) => {
+              setNewPassword(text);
+              clearServerError("newPassword");
+            }}
             error={errors.newPassword}
             returnKeyType="next"
             submitBehavior="submit"
@@ -120,10 +161,12 @@ export default function ChangePasswordScreen() {
         <Button
           size="xl"
           className="mt-5"
-          disabled={!isFormFilled}
+          disabled={!isFormFilled || changePasswordMutation.isPending}
           onPress={handleSubmit}
         >
-          <Text className="text-2xl">Update password</Text>
+          <Text className="text-2xl">
+            {changePasswordMutation.isPending ? "Updating…" : "Update password"}
+          </Text>
         </Button>
 
         <View className="flex-row items-center justify-center mt-5">
