@@ -19,6 +19,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { useProfile } from "@/hooks/useProfile";
 import { useGeocoding } from "@/hooks/useGeocoding";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
+import { cn } from "@/lib/utils";
 import type { SearchPlace } from "@/lib/api/geocoding";
 
 const AVATAR_RING_WIDTH = 3;
@@ -69,6 +70,7 @@ export function MapSearchBar({
   const showHistory =
     isFocused && query.trim().length < 2 && history.length > 0;
   const showResults = isFocused && query.trim().length >= 2;
+  const showTruncatedQuery = !isFocused && query.length > 0;
 
   const handleSelect = useCallback(
     (place: SearchPlace, { fromEnterKey = false } = {}) => {
@@ -218,18 +220,34 @@ export function MapSearchBar({
               size={20}
               className="text-searchbar-placeholder mr-2"
             />
-            <Input
-              ref={inputRef}
-              value={query}
-              onChangeText={handleChangeText}
-              onFocus={() => setIsFocused(true)}
-              placeholder="Search places..."
-              returnKeyType="search"
-              submitBehavior="submit"
-              onSubmitEditing={handleSubmit}
-              autoCorrect={false}
-              className="flex-1 border-0 bg-transparent shadow-none h-full py-0 text-on-surface placeholder:text-searchbar-placeholder"
-            />
+            <View className="flex-1 h-full justify-center">
+              <Input
+                ref={inputRef}
+                value={query}
+                onChangeText={handleChangeText}
+                onFocus={() => setIsFocused(true)}
+                placeholder="Search places..."
+                returnKeyType="search"
+                submitBehavior="submit"
+                onSubmitEditing={handleSubmit}
+                autoCorrect={false}
+                className={cn(
+                  "border-0 bg-transparent shadow-none h-full py-0 text-on-surface placeholder:text-searchbar-placeholder",
+                  showTruncatedQuery && "text-transparent",
+                )}
+              />
+              {showTruncatedQuery && (
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  aria-hidden
+                  style={{ pointerEvents: "none" }}
+                  className="absolute left-0 right-0 px-3 text-base leading-5 text-on-surface"
+                >
+                  {query}
+                </Text>
+              )}
+            </View>
             {isSearching && <ActivityIndicator size="small" className="mr-2" />}
             {query.length > 0 && !isSearching && (
               <Button
