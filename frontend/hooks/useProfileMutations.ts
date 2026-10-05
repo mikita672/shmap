@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { File } from "expo-file-system";
 import type { ImagePickerAsset } from "expo-image-picker";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,16 +15,23 @@ import {
   removeAvatar,
   updateMe,
 } from "@/lib/api/users";
+import type { ProfileResponse } from "@/lib/types/api";
 import { validateAvatar } from "@/lib/validation/avatar";
+
+async function setCachedProfile(
+  queryClient: QueryClient,
+  profile: ProfileResponse,
+) {
+  await queryClient.cancelQueries({ queryKey: profileQueryOptions.queryKey });
+  queryClient.setQueryData(profileQueryOptions.queryKey, profile);
+}
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: updateMe,
-    onSuccess: (response) => {
-      queryClient.setQueryData(profileQueryOptions.queryKey, response.data);
-    },
+    onSuccess: (response) => setCachedProfile(queryClient, response.data),
   });
 }
 
@@ -59,9 +70,7 @@ export function useUploadAvatar() {
       const { data: profile } = await confirmAvatar({ key: upload.key });
       return profile;
     },
-    onSuccess: (profile) => {
-      queryClient.setQueryData(profileQueryOptions.queryKey, profile);
-    },
+    onSuccess: (profile) => setCachedProfile(queryClient, profile),
   });
 }
 
@@ -70,8 +79,6 @@ export function useRemoveAvatar() {
 
   return useMutation({
     mutationFn: removeAvatar,
-    onSuccess: (response) => {
-      queryClient.setQueryData(profileQueryOptions.queryKey, response.data);
-    },
+    onSuccess: (response) => setCachedProfile(queryClient, response.data),
   });
 }
