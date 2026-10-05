@@ -33,12 +33,12 @@ app:
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
 storage:
-  b2:
-    endpoint: ${B2_ENDPOINT}
-    region: ${B2_REGION}
-    bucket: ${B2_BUCKET}
-    key-id: ${B2_KEY_ID}
-    application-key: ${B2_APPLICATION_KEY}
+  s3:
+    endpoint: ${STORAGE_ENDPOINT}
+    region: ${STORAGE_REGION:auto}
+    bucket: ${STORAGE_BUCKET}
+    access-key-id: ${STORAGE_ACCESS_KEY_ID}
+    secret-access-key: ${STORAGE_SECRET_ACCESS_KEY}
     public-base-url: ${STORAGE_PUBLIC_BASE_URL}
   avatar:
     max-size-bytes: 5242880
