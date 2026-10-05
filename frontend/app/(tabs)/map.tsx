@@ -146,7 +146,12 @@ export default function MapScreen() {
     const { signal } = controller;
 
     const position = await LocationManager.getCurrentPosition();
-    if (signal.aborted || !position || !mapRef.current) return;
+    if (signal.aborted || !mapRef.current) return;
+
+    if (!position) {
+      setTrackUserLocation("default");
+      return;
+    }
 
     const user: LngLat = [position.coords.longitude, position.coords.latitude];
     const view = await mapRef.current.getViewState();
