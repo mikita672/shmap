@@ -18,7 +18,7 @@ import { TextField } from "@/components/ui/text-field";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { useProfile } from "@/hooks/useProfile";
-import { useUpdateProfile } from "@/hooks/useProfileMutations";
+import { useChangeEmail, useUpdateProfile } from "@/hooks/useProfileMutations";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   useEditProfileForm,
@@ -68,6 +68,7 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
   const insets = useSafeAreaInsets();
   const headerTop = Math.max(insets.top + 8, 48);
   const updateProfile = useUpdateProfile();
+  const changeEmail = useChangeEmail();
   // TODO(step 5.7): replace with the avatar mutations
   const { updateAvatar } = useUserProfile();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
@@ -95,7 +96,9 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
     if (Object.keys(fields).length > 0) {
       await updateProfile.mutateAsync(fields);
     }
-    // TODO(step 4.5): save the email
+    if (email !== undefined) {
+      await changeEmail.mutateAsync({ email });
+    }
     if (avatarUrl !== undefined) updateAvatar(avatarUrl);
   };
 
