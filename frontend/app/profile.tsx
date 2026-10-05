@@ -19,7 +19,7 @@ import { getErrorMessage } from "@/lib/utils/error";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { data: profile, isPending, isError, error, refetch } = useProfile();
+  const { data: profile, isPending, error, refetch } = useProfile();
   // TODO(step 5.5): replace with the avatar upload mutation
   const { updateAvatar } = useUserProfile();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
@@ -33,7 +33,7 @@ export default function ProfileScreen() {
     );
   }
 
-  if (isError) {
+  if (!profile) {
     return (
       <View className="flex-1 justify-center items-center gap-4 px-6 bg-background">
         <BackButton

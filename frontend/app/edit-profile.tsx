@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,18 +17,57 @@ import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
+import { useProfile } from "@/hooks/useProfile";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   useEditProfileForm,
   type ProfileChanges,
 } from "@/hooks/useEditProfileForm";
+import type { ProfileResponse } from "@/lib/types/api";
 import { PROFILE_LIMITS } from "@/lib/validation/profile";
-import { extractApiError } from "@/lib/utils/error";
+import { extractApiError, getErrorMessage } from "@/lib/utils/error";
 
 export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
+  const { data: profile, isPending, error, refetch } = useProfile();
+
+  if (isPending) {
+    return (
+      <View className="flex-1 justify-center items-center bg-background">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <View className="flex-1 justify-center items-center gap-4 px-6 bg-background">
+        <BackButton
+          className="absolute left-6"
+          style={{ top: Math.max(insets.top + 8, 48) }}
+        />
+        <Text className="text-center">
+          {getErrorMessage(error, "Couldn't load your profile")}
+        </Text>
+        <Button onPress={() => refetch()}>
+          <Text>Retry</Text>
+        </Button>
+      </View>
+    );
+  }
+
+  return <EditProfileForm profile={profile} />;
+}
+
+interface EditProfileFormProps {
+  profile: ProfileResponse;
+}
+
+function EditProfileForm({ profile }: EditProfileFormProps) {
+  const insets = useSafeAreaInsets();
   const headerTop = Math.max(insets.top + 8, 48);
-  const { profile, updateProfile, updateAvatar } = useUserProfile();
+  // TODO(steps 4.3, 5.7): replace with the profile and avatar mutations
+  const { updateProfile, updateAvatar } = useUserProfile();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
 
   const form = useEditProfileForm({
@@ -35,7 +75,7 @@ export default function EditProfileScreen() {
     lastName: profile.lastName,
     username: profile.username,
     email: profile.email,
-    bio: profile.bio,
+    bio: profile.bio ?? "",
     avatarUrl: profile.avatarUrl,
   });
   const { values, errors, setField, markTouched } = form;
