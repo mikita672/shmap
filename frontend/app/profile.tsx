@@ -1,23 +1,53 @@
-import React, { useState } from "react";
-import { View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileInfo } from "@/components/profile/profile-info";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAvatarActions } from "@/hooks/useAvatarActions";
+import { useProfile } from "@/hooks/useProfile";
 import { shareProfile } from "@/lib/profile-link";
+import { getErrorMessage } from "@/lib/utils/error";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { profile, updateAvatar } = useUserProfile();
+  const { data: profile, isPending, error, refetch } = useProfile();
+  const avatar = useAvatarActions();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
+
+  if (isPending) {
+    return (
+      <View className="flex-1 justify-center items-center bg-background">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <View className="flex-1 justify-center items-center gap-4 px-6 bg-background">
+        <BackButton
+          className="absolute left-6"
+          style={{ top: Math.max(insets.top + 8, 48) }}
+        />
+        <Text className="text-center">
+          {getErrorMessage(error, "Couldn't load your profile")}
+        </Text>
+        <Button onPress={() => refetch()}>
+          <Text>Retry</Text>
+        </Button>
+      </View>
+    );
+  }
 
   const handleShareProfile = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -42,6 +72,7 @@ export default function ProfileScreen() {
         <EditableAvatar
           uri={profile.avatarUrl}
           fallbackText={`${profile.firstName} ${profile.lastName}`}
+          isLoading={avatar.isPending}
           onEdit={() => setAvatarSheetVisible(true)}
         />
 
@@ -70,7 +101,8 @@ export default function ProfileScreen() {
       <ChangeAvatarSheet
         visible={avatarSheetVisible}
         onClose={() => setAvatarSheetVisible(false)}
-        onSelectAvatar={updateAvatar}
+        onPickImage={avatar.pickImage}
+        onRemove={avatar.remove}
         hasCurrentAvatar={Boolean(profile.avatarUrl)}
       />
     </View>

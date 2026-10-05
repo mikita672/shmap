@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View, ActivityIndicator, Animated, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -139,7 +139,10 @@ export default function MapScreen() {
     let cancelled = false;
 
     LocationManager.requestPermissions()
-      .then((granted) => {
+      .then(async (granted) => {
+        if (granted) {
+          await LocationManager.getCurrentPosition();
+        }
         if (!cancelled) {
           setLocationPermission(granted);
           if (granted) {

@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text } from "react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";

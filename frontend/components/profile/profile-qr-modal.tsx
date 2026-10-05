@@ -1,4 +1,3 @@
-import React from "react";
 import { Modal, Pressable, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
@@ -9,7 +8,7 @@ import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
 import { getProfileUrl } from "@/lib/profile-link";
 import { QRCode } from "@/lib/qr-code";
-import type { UserProfile } from "@/hooks/useUserProfile";
+import type { ProfileResponse } from "@/lib/types/api";
 
 const QR_SIZE = 208;
 
@@ -17,7 +16,7 @@ export interface ProfileQrModalProps {
   visible: boolean;
   onClose: () => void;
   profile: Pick<
-    UserProfile,
+    ProfileResponse,
     "firstName" | "lastName" | "username" | "avatarUrl"
   >;
 }

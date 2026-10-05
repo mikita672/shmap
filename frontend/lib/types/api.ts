@@ -63,3 +63,50 @@ export interface ResetPasswordRequest {
   otp: string;
   newPassword: string;
 }
+
+export interface ProfileResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  bio: string | null;
+  avatarUrl: string | null;
+  createdAt: string;
+}
+
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  bio?: string;
+}
+
+export interface ChangeEmailRequest {
+  email: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface AvatarUploadRequest {
+  contentType: string;
+  contentLength: number;
+}
+
+export interface AvatarUploadResponse {
+  uploadUrl: string;
+  key: string;
+  expiresAt: string;
+}
+
+export interface ConfirmAvatarRequest {
+  key: string;
+}
+
+export interface UsernameAvailabilityResponse {
+  username: string;
+  available: boolean;
+}
