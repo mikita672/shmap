@@ -1,10 +1,10 @@
 import type { LngLat, ViewState } from "@maplibre/maplibre-react-native";
 
-export function halfScreensAway(
-  view: ViewState,
-  point: LngLat,
-  zoom: number,
-): number {
+const MS_PER_ZOOM_LEVEL = 250;
+const MIN_FLY_DURATION = 800;
+const MAX_FLY_DURATION = 2500;
+
+function halfScreensAway(view: ViewState, point: LngLat, zoom: number): number {
   const [west, south, east, north] = view.bounds;
   const scale = 2 ** (view.zoom - zoom);
   const halfWidth = ((east - west) / 2) * scale;
@@ -16,8 +16,18 @@ export function halfScreensAway(
   );
 }
 
-export function midpoint(a: LngLat, b: LngLat): LngLat {
-  return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+export function getFlyDuration(
+  view: ViewState,
+  target: LngLat,
+  zoom: number,
+): number {
+  const distance = halfScreensAway(view, target, Math.min(view.zoom, zoom));
+  const zoomLevels = Math.abs(view.zoom - zoom) + 2 * Math.log2(1 + distance);
+
+  return Math.min(
+    Math.max(zoomLevels * MS_PER_ZOOM_LEVEL, MIN_FLY_DURATION),
+    MAX_FLY_DURATION,
+  );
 }
 
 export function waitForAnimation(

@@ -20,7 +20,7 @@ import { useSharedValue } from "react-native-reanimated";
 import { PlaceDetailsSheet } from "@/components/place-details-sheet";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
-import { halfScreensAway, midpoint, waitForAnimation } from "@/lib/map-camera";
+import { getFlyDuration, waitForAnimation } from "@/lib/map-camera";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 LogManager.onLog((log) => {
@@ -36,9 +36,7 @@ LogManager.onLog((log) => {
 
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DEFAULT_ZOOM = 15;
-const MY_LOCATION_DURATION = 600;
-const OVERVIEW_DURATION = 800;
-const FLY_IN_DURATION = 1200;
+const FOLLOW_DELAY = 150;
 
 interface SelectedCoordinate {
   lat: number;
@@ -154,34 +152,11 @@ export default function MapScreen() {
     const view = await mapRef.current.getViewState();
     if (signal.aborted || !cameraRef.current) return;
 
-    const baseZoom = Math.min(view.zoom, DEFAULT_ZOOM);
-    const distance = halfScreensAway(view, user, baseZoom);
+    const duration = getFlyDuration(view, user, DEFAULT_ZOOM);
 
     setTrackUserLocation(undefined);
-
-    if (distance <= 1) {
-      cameraRef.current.easeTo({
-        center: user,
-        zoom: DEFAULT_ZOOM,
-        duration: MY_LOCATION_DURATION,
-      });
-      await waitForAnimation(MY_LOCATION_DURATION, signal);
-    } else {
-      cameraRef.current.easeTo({
-        center: midpoint(view.center, user),
-        zoom: baseZoom - Math.log2(distance),
-        duration: OVERVIEW_DURATION,
-      });
-      await waitForAnimation(OVERVIEW_DURATION, signal);
-      if (signal.aborted) return;
-
-      cameraRef.current?.flyTo({
-        center: user,
-        zoom: DEFAULT_ZOOM,
-        duration: FLY_IN_DURATION,
-      });
-      await waitForAnimation(FLY_IN_DURATION, signal);
-    }
+    cameraRef.current.flyTo({ center: user, zoom: DEFAULT_ZOOM, duration });
+    await waitForAnimation(duration + FOLLOW_DELAY, signal);
 
     if (signal.aborted) return;
     setTrackUserLocation("default");
