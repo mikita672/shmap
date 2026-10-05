@@ -10,6 +10,7 @@ import {
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import type { ImagePickerAsset } from "expo-image-picker";
 import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,13 @@ import { TextField } from "@/components/ui/text-field";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { useProfile } from "@/hooks/useProfile";
-import { useChangeEmail, useUpdateProfile } from "@/hooks/useProfileMutations";
+import {
+  useChangeEmail,
+  useRemoveAvatar,
+  useUpdateProfile,
+  useUploadAvatar,
+} from "@/hooks/useProfileMutations";
 import { useUsernameAvailability } from "@/hooks/useUsernameAvailability";
-import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   useEditProfileForm,
   type ProfileChanges,
@@ -70,8 +75,8 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
   const headerTop = Math.max(insets.top + 8, 48);
   const updateProfile = useUpdateProfile();
   const changeEmail = useChangeEmail();
-  // TODO(step 5.7): replace with the avatar mutations
-  const { updateAvatar } = useUserProfile();
+  const uploadAvatar = useUploadAvatar();
+  const removeAvatar = useRemoveAvatar();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
 
   const form = useEditProfileForm({
@@ -80,7 +85,6 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
     username: profile.username,
     email: profile.email,
     bio: profile.bio ?? "",
-    avatarUrl: profile.avatarUrl,
   });
   const { values, errors, setField, markTouched } = form;
   const usernameAvailability = useUsernameAvailability(
@@ -93,18 +97,34 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
   const emailRef = useRef<TextInput>(null);
   const bioRef = useRef<TextInput>(null);
 
-  const saveProfile = async ({
-    email,
-    avatarUrl,
-    ...fields
-  }: ProfileChanges) => {
+  const saveProfile = async ({ email, ...fields }: ProfileChanges) => {
     if (Object.keys(fields).length > 0) {
       await updateProfile.mutateAsync(fields);
     }
     if (email !== undefined) {
       await changeEmail.mutateAsync({ email });
     }
-    if (avatarUrl !== undefined) updateAvatar(avatarUrl);
+  };
+
+  const handlePickImage = (asset: ImagePickerAsset) => {
+    uploadAvatar.mutate(asset, {
+      onSuccess: () => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        toast.success("Avatar updated");
+      },
+      onError: (error) => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        toast.error(getErrorMessage(error, "Couldn't update your avatar"));
+      },
+    });
+  };
+
+  const handleRemoveAvatar = () => {
+    removeAvatar.mutate(undefined, {
+      onSuccess: () => toast.success("Avatar removed"),
+      onError: (error) =>
+        toast.error(getErrorMessage(error, "Couldn't remove your avatar")),
+    });
   };
 
   const handleSave = async () => {
@@ -148,8 +168,9 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
         keyboardShouldPersistTaps="handled"
       >
         <EditableAvatar
-          uri={values.avatarUrl}
+          uri={profile.avatarUrl}
           fallbackText={`${values.firstName} ${values.lastName}`}
+          isLoading={uploadAvatar.isPending || removeAvatar.isPending}
           onEdit={() => setAvatarSheetVisible(true)}
         />
 
@@ -258,9 +279,9 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
       <ChangeAvatarSheet
         visible={avatarSheetVisible}
         onClose={() => setAvatarSheetVisible(false)}
-        onPickImage={(asset) => setField("avatarUrl", asset.uri)}
-        onRemove={() => setField("avatarUrl", null)}
-        hasCurrentAvatar={Boolean(values.avatarUrl)}
+        onPickImage={handlePickImage}
+        onRemove={handleRemoveAvatar}
+        hasCurrentAvatar={Boolean(profile.avatarUrl)}
       />
     </KeyboardAvoidingView>
   );

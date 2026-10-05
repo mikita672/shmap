@@ -4,10 +4,9 @@ export interface EditableProfile {
   username: string;
   email: string;
   bio: string;
-  avatarUrl: string | null;
 }
 
-export type ProfileTextField = Exclude<keyof EditableProfile, "avatarUrl">;
+export type ProfileTextField = keyof EditableProfile;
 
 export type ProfileFieldErrors = Partial<Record<ProfileTextField, string>>;
 
