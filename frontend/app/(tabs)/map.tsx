@@ -9,6 +9,7 @@ import {
   LogManager,
   ViewAnnotation,
   type CameraRef,
+  type LngLat,
   type MapRef,
   type TrackUserLocation,
 } from "@maplibre/maplibre-react-native";
@@ -19,6 +20,7 @@ import { useSharedValue } from "react-native-reanimated";
 import { PlaceDetailsSheet } from "@/components/place-details-sheet";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
+import { halfScreensAway, midpoint } from "@/lib/map-camera";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 LogManager.onLog((log) => {
@@ -35,6 +37,8 @@ LogManager.onLog((log) => {
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DEFAULT_ZOOM = 15;
 const MY_LOCATION_DURATION = 600;
+const OVERVIEW_DURATION = 800;
+const FLY_IN_DURATION = 1200;
 
 interface SelectedCoordinate {
   lat: number;
@@ -141,18 +145,45 @@ export default function MapScreen() {
     clearTimeout(trackingTimeoutRef.current);
 
     const position = await LocationManager.getCurrentPosition();
-    if (!position || !cameraRef.current) return;
+    if (!position || !cameraRef.current || !mapRef.current) return;
+
+    const user: LngLat = [position.coords.longitude, position.coords.latitude];
+    const view = await mapRef.current.getViewState();
+    const baseZoom = Math.min(view.zoom, DEFAULT_ZOOM);
+    const distance = halfScreensAway(view, user, baseZoom);
 
     setTrackUserLocation(undefined);
+
+    if (distance <= 1) {
+      cameraRef.current.easeTo({
+        center: user,
+        zoom: DEFAULT_ZOOM,
+        duration: MY_LOCATION_DURATION,
+      });
+
+      trackingTimeoutRef.current = setTimeout(() => {
+        setTrackUserLocation("default");
+      }, MY_LOCATION_DURATION);
+      return;
+    }
+
     cameraRef.current.easeTo({
-      center: [position.coords.longitude, position.coords.latitude],
-      zoom: DEFAULT_ZOOM,
-      duration: MY_LOCATION_DURATION,
+      center: midpoint(view.center, user),
+      zoom: baseZoom - Math.log2(distance),
+      duration: OVERVIEW_DURATION,
     });
 
     trackingTimeoutRef.current = setTimeout(() => {
-      setTrackUserLocation("default");
-    }, MY_LOCATION_DURATION);
+      cameraRef.current?.flyTo({
+        center: user,
+        zoom: DEFAULT_ZOOM,
+        duration: FLY_IN_DURATION,
+      });
+
+      trackingTimeoutRef.current = setTimeout(() => {
+        setTrackUserLocation("default");
+      }, FLY_IN_DURATION);
+    }, OVERVIEW_DURATION);
   }, [handleSheetClose]);
 
   useEffect(() => {
