@@ -90,7 +90,7 @@ public class GoogleAuthService {
                         .firstName(finalFirstName)
                         .lastName(finalLastName)
                         .email(email)
-                        .username(toUsernameBase(email))
+                        .username(generateUniqueUsername(email))
                         .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                         .role(Role.USER)
                         .build();
@@ -109,6 +109,19 @@ public class GoogleAuthService {
                     .refreshToken(refreshToken)
                     .build();
         }
+    }
+
+    private String generateUniqueUsername(String email) {
+        String base = toUsernameBase(email);
+        String candidate = base;
+        int suffix = 1;
+
+        while (userRepository.existsByUsername(candidate)) {
+            String number = String.valueOf(suffix++);
+            candidate = base.substring(0, Math.min(base.length(), MAX_USERNAME_LENGTH - number.length())) + number;
+        }
+
+        return candidate;
     }
 
     private String toUsernameBase(String email) {
