@@ -31,7 +31,10 @@ public class FriendRequestController {
     public ResponseEntity<SendFriendRequestResponse> send(@AuthenticationPrincipal User user,
             @Valid @RequestBody SendFriendRequestRequest request) {
         SendFriendRequestResponse response = friendRequestService.send(user.getId(), request.receiverId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        HttpStatus status = response.outcome() == SendFriendRequestResponse.Outcome.REQUEST_SENT
+                ? HttpStatus.CREATED
+                : HttpStatus.OK;
+        return ResponseEntity.status(status).body(response);
     }
 
     @GetMapping("/incoming")

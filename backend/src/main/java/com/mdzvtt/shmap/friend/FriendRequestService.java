@@ -44,6 +44,11 @@ public class FriendRequestService {
 
         User sender = userRepository.getReferenceById(senderId);
 
+        if (friendRequestRepository.existsBySenderIdAndReceiverId(receiverId, senderId)) {
+            becomeFriends(sender, receiver);
+            return SendFriendRequestResponse.becameFriends();
+        }
+
         FriendRequest request = friendRequestRepository.save(new FriendRequest(sender, receiver));
 
         return SendFriendRequestResponse.requestSent(request.getId());
@@ -84,13 +89,15 @@ public class FriendRequestService {
     @Transactional
     public void accept(Integer userId, Long requestId) {
         FriendRequest request = findIncomingRequest(userId, requestId);
-        User sender = request.getSender();
-        User receiver = request.getReceiver();
+        becomeFriends(request.getSender(), request.getReceiver());
+    }
 
-        friendRequestRepository.delete(request);
+    private void becomeFriends(User first, User second) {
+        friendRequestRepository.deleteBySenderIdAndReceiverId(first.getId(), second.getId());
+        friendRequestRepository.deleteBySenderIdAndReceiverId(second.getId(), first.getId());
         friendshipRepository.saveAll(List.of(
-                new Friendship(sender, receiver),
-                new Friendship(receiver, sender)));
+                new Friendship(first, second),
+                new Friendship(second, first)));
     }
 
     private FriendRequest findIncomingRequest(Integer userId, Long requestId) {
