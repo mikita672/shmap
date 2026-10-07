@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.friend;
 
 import com.mdzvtt.shmap.exception.DuplicateFriendRequestException;
+import com.mdzvtt.shmap.exception.FriendRequestNotFoundException;
 import com.mdzvtt.shmap.exception.SelfFriendRequestException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.dto.FriendRequestCountResponse;
@@ -59,6 +60,14 @@ public class FriendRequestService {
     @Transactional(readOnly = true)
     public FriendRequestCountResponse countIncoming(Integer userId) {
         return new FriendRequestCountResponse(friendRequestRepository.countByReceiverId(userId));
+    }
+
+    @Transactional
+    public void cancel(Integer userId, Long requestId) {
+        FriendRequest request = friendRequestRepository.findByIdAndSenderId(requestId, userId)
+                .orElseThrow(FriendRequestNotFoundException::new);
+
+        friendRequestRepository.delete(request);
     }
 
     private FriendRequestResponse toResponse(FriendRequest request, User otherUser) {

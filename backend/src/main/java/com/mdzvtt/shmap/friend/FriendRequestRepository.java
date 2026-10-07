@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
     boolean existsBySenderIdAndReceiverId(Integer senderId, Integer receiverId);
@@ -15,4 +16,6 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
     List<FriendRequest> findBySenderIdOrderByCreatedAtDesc(Integer senderId);
 
     long countByReceiverId(Integer receiverId);
+
+    Optional<FriendRequest> findByIdAndSenderId(Long id, Integer senderId);
 }
