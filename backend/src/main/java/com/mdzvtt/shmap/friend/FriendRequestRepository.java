@@ -18,4 +18,6 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
     long countByReceiverId(Integer receiverId);
 
     Optional<FriendRequest> findByIdAndSenderId(Long id, Integer senderId);
+
+    Optional<FriendRequest> findByIdAndReceiverId(Long id, Integer receiverId);
 }

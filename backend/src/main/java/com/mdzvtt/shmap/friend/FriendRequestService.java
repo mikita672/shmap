@@ -70,6 +70,16 @@ public class FriendRequestService {
         friendRequestRepository.delete(request);
     }
 
+    @Transactional
+    public void decline(Integer userId, Long requestId) {
+        friendRequestRepository.delete(findIncomingRequest(userId, requestId));
+    }
+
+    private FriendRequest findIncomingRequest(Integer userId, Long requestId) {
+        return friendRequestRepository.findByIdAndReceiverId(requestId, userId)
+                .orElseThrow(FriendRequestNotFoundException::new);
+    }
+
     private FriendRequestResponse toResponse(FriendRequest request, User otherUser) {
         String avatarUrl = storageService.publicUrl(otherUser.getAvatarKey());
         return new FriendRequestResponse(
