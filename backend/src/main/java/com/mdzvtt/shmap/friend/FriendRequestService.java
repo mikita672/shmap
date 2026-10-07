@@ -21,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
+    private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
 
@@ -73,6 +74,18 @@ public class FriendRequestService {
     @Transactional
     public void decline(Integer userId, Long requestId) {
         friendRequestRepository.delete(findIncomingRequest(userId, requestId));
+    }
+
+    @Transactional
+    public void accept(Integer userId, Long requestId) {
+        FriendRequest request = findIncomingRequest(userId, requestId);
+        User sender = request.getSender();
+        User receiver = request.getReceiver();
+
+        friendRequestRepository.delete(request);
+        friendshipRepository.saveAll(List.of(
+                new Friendship(sender, receiver),
+                new Friendship(receiver, sender)));
     }
 
     private FriendRequest findIncomingRequest(Integer userId, Long requestId) {

@@ -55,6 +55,12 @@ public class FriendRequestController {
         friendRequestService.cancel(user.getId(), requestId);
     }
 
+    @PostMapping("/{requestId}/accept")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void accept(@AuthenticationPrincipal User user, @PathVariable Long requestId) {
+        friendRequestService.accept(user.getId(), requestId);
+    }
+
     @PostMapping("/{requestId}/decline")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void decline(@AuthenticationPrincipal User user, @PathVariable Long requestId) {
