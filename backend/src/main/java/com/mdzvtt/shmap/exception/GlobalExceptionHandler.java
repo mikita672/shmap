@@ -13,6 +13,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -155,6 +156,25 @@ public class GlobalExceptionHandler {
                 .message(message)
                 .error(message)
                 .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatch(
+            MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        log.warn("Invalid value for parameter '{}' at {}: {}", ex.getName(), request.getRequestURI(), ex.getValue());
+
+        String message = "Invalid value for " + ex.getName();
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .code(ErrorCode.VALIDATION_FAILED)
+                .message(message)
+                .error(message)
+                .path(request.getRequestURI())
+                .fieldErrors(Map.of(ex.getName(), message))
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
