@@ -10,4 +10,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
 
     @EntityGraph(attributePaths = "sender")
     List<FriendRequest> findByReceiverIdOrderByCreatedAtDesc(Integer receiverId);
+
+    @EntityGraph(attributePaths = "receiver")
+    List<FriendRequest> findBySenderIdOrderByCreatedAtDesc(Integer senderId);
 }

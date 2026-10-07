@@ -34,4 +34,9 @@ public class FriendRequestController {
     public List<FriendRequestResponse> incoming(@AuthenticationPrincipal User user) {
         return friendRequestService.getIncoming(user.getId());
     }
+
+    @GetMapping("/sent")
+    public List<FriendRequestResponse> sent(@AuthenticationPrincipal User user) {
+        return friendRequestService.getSent(user.getId());
+    }
 }

@@ -48,6 +48,13 @@ public class FriendRequestService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<FriendRequestResponse> getSent(Integer userId) {
+        return friendRequestRepository.findBySenderIdOrderByCreatedAtDesc(userId).stream()
+                .map(request -> toResponse(request, request.getReceiver()))
+                .toList();
+    }
+
     private FriendRequestResponse toResponse(FriendRequest request, User otherUser) {
         String avatarUrl = storageService.publicUrl(otherUser.getAvatarKey());
         return new FriendRequestResponse(
