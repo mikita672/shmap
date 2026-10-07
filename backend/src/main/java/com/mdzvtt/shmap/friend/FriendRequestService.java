@@ -34,6 +34,8 @@ public class FriendRequestService {
             throw new SelfFriendRequestException();
         }
 
+        userRepository.findAllByIdForUpdate(List.of(senderId, receiverId));
+
         User receiver = userRepository.findById(receiverId).orElseThrow(UserNotFoundException::new);
 
         if (userBlockRepository.existsBetween(senderId, receiverId)) {
