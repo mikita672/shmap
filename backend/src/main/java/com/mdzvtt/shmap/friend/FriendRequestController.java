@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.friend;
 
+import com.mdzvtt.shmap.friend.dto.FriendRequestCountResponse;
 import com.mdzvtt.shmap.friend.dto.FriendRequestResponse;
 import com.mdzvtt.shmap.friend.dto.SendFriendRequestRequest;
 import com.mdzvtt.shmap.friend.dto.SendFriendRequestResponse;
@@ -33,6 +34,11 @@ public class FriendRequestController {
     @GetMapping("/incoming")
     public List<FriendRequestResponse> incoming(@AuthenticationPrincipal User user) {
         return friendRequestService.getIncoming(user.getId());
+    }
+
+    @GetMapping("/incoming/count")
+    public FriendRequestCountResponse incomingCount(@AuthenticationPrincipal User user) {
+        return friendRequestService.countIncoming(user.getId());
     }
 
     @GetMapping("/sent")
