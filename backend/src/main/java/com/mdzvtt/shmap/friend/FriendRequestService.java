@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.friend;
 
+import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.exception.AlreadyFriendsException;
 import com.mdzvtt.shmap.exception.DuplicateFriendRequestException;
 import com.mdzvtt.shmap.exception.FriendRequestNotFoundException;
@@ -23,6 +24,7 @@ import java.util.List;
 public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendshipRepository friendshipRepository;
+    private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
 
@@ -33,6 +35,10 @@ public class FriendRequestService {
         }
 
         User receiver = userRepository.findById(receiverId).orElseThrow(UserNotFoundException::new);
+
+        if (userBlockRepository.existsBetween(senderId, receiverId)) {
+            throw new UserNotFoundException();
+        }
 
         if (friendshipRepository.existsByUserIdAndFriendId(senderId, receiverId)) {
             throw new AlreadyFriendsException();
