@@ -42,18 +42,23 @@ public class UserSearchService {
         Map<Integer, FriendRequestIds> requestsByUserId = friendRequestRepository
                 .findIdsBetween(viewerId, userIds).stream()
                 .collect(Collectors.toMap(request -> request.otherUserId(viewerId), request -> request));
+        Map<Integer, Long> mutualFriendsCounts = friendshipRepository
+                .countMutualFriends(viewerId, userIds).stream()
+                .collect(Collectors.toMap(mutual -> mutual.userId(), mutual -> mutual.count()));
 
         return users.stream()
-                .map(user -> toResponse(viewerId, user, friendIds, requestsByUserId.get(user.getId())))
+                .map(user -> toResponse(viewerId, user, friendIds, requestsByUserId.get(user.getId()),
+                        mutualFriendsCounts.getOrDefault(user.getId(), 0L)))
                 .toList();
     }
 
     private UserSearchResultResponse toResponse(Integer viewerId, User user, Set<Integer> friendIds,
-            FriendRequestIds request) {
+            FriendRequestIds request, long mutualFriendsCount) {
         String avatarUrl = storageService.publicUrl(user.getAvatarKey());
         Relationship relationship = relationshipOf(viewerId, user, friendIds, request);
         Long requestId = request == null ? null : request.id();
-        return new UserSearchResultResponse(UserSummaryResponse.from(user, avatarUrl), relationship, requestId);
+        return new UserSearchResultResponse(UserSummaryResponse.from(user, avatarUrl), relationship, requestId,
+                mutualFriendsCount);
     }
 
     private Relationship relationshipOf(Integer viewerId, User user, Set<Integer> friendIds,

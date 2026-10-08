@@ -51,6 +51,16 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
                         """)
         Set<Integer> findFriendIdsAmong(Integer userId, Collection<Integer> candidateIds);
 
+        @Query("""
+                        select new com.mdzvtt.shmap.friend.MutualFriendsCount(theirs.user.id, count(theirs))
+                        from Friendship mine
+                        join Friendship theirs on theirs.friend = mine.friend
+                        where mine.user.id = :userId
+                          and theirs.user.id in :candidateIds
+                        group by theirs.user.id
+                        """)
+        List<MutualFriendsCount> countMutualFriends(Integer userId, Collection<Integer> candidateIds);
+
         @Modifying
         @Query("""
                         delete from Friendship f
