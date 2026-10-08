@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.friend;
 
+import com.mdzvtt.shmap.exception.FriendNotFoundException;
 import com.mdzvtt.shmap.friend.dto.FriendResponse;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
@@ -21,6 +22,13 @@ public class FriendService {
         return friendshipRepository.findFriends(userId).stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public void remove(Integer userId, Integer friendId) {
+        if (friendshipRepository.deleteBetween(userId, friendId) == 0) {
+            throw new FriendNotFoundException();
+        }
     }
 
     private FriendResponse toResponse(Friendship friendship) {
