@@ -1,0 +1,49 @@
+package com.mdzvtt.shmap.friend;
+
+import com.mdzvtt.shmap.friend.dto.FriendResponse;
+import com.mdzvtt.shmap.user.User;
+import jakarta.validation.constraints.Size;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/friends")
+@RequiredArgsConstructor
+public class FriendController {
+    private final FriendService friendService;
+
+    @GetMapping
+    public List<FriendResponse> list(@AuthenticationPrincipal User user,
+            @RequestParam(required = false) @Size(max = 100, message = "Search query must be at most 100 characters") String q) {
+        return friendService.getFriends(user.getId(), q);
+    }
+
+    @DeleteMapping("/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remove(@AuthenticationPrincipal User user, @PathVariable Integer friendId) {
+        friendService.remove(user.getId(), friendId);
+    }
+
+    @PutMapping("/{friendId}/favorite")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addFavorite(@AuthenticationPrincipal User user, @PathVariable Integer friendId) {
+        friendService.addFavorite(user.getId(), friendId);
+    }
+
+    @DeleteMapping("/{friendId}/favorite")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeFavorite(@AuthenticationPrincipal User user, @PathVariable Integer friendId) {
+        friendService.removeFavorite(user.getId(), friendId);
+    }
+}

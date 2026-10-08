@@ -9,10 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
@@ -24,197 +26,231 @@ import java.util.Set;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(AppException.class)
-    public ResponseEntity<ApiErrorResponse> handleAppException(AppException ex, HttpServletRequest request) {
-        log.warn("Application exception [{} - {}] at {}: {}", ex.getErrorCode(), ex.getHttpStatus(),
-                request.getRequestURI(), ex.getMessage());
+        @ExceptionHandler(AppException.class)
+        public ResponseEntity<ApiErrorResponse> handleAppException(AppException ex, HttpServletRequest request) {
+                log.warn("Application exception [{} - {}] at {}: {}", ex.getErrorCode(), ex.getHttpStatus(),
+                                request.getRequestURI(), ex.getMessage());
 
-        Map<String, String> fieldErrors = null;
-        if (ex.getField() != null) {
-            fieldErrors = Map.of(ex.getField(), ex.getMessage());
+                Map<String, String> fieldErrors = null;
+                if (ex.getField() != null) {
+                        fieldErrors = Map.of(ex.getField(), ex.getMessage());
+                }
+
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(ex.getHttpStatus().value())
+                                .code(ex.getErrorCode())
+                                .message(ex.getMessage())
+                                .error(ex.getMessage())
+                                .path(request.getRequestURI())
+                                .fieldErrors(fieldErrors)
+                                .build();
+
+                return ResponseEntity.status(ex.getHttpStatus()).body(response);
         }
 
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(ex.getHttpStatus().value())
-                .code(ex.getErrorCode())
-                .message(ex.getMessage())
-                .error(ex.getMessage())
-                .path(request.getRequestURI())
-                .fieldErrors(fieldErrors)
-                .build();
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException ex,
+                        HttpServletRequest request) {
+                log.warn("Validation failed for request to {}: {} error(s)", request.getRequestURI(),
+                                ex.getBindingResult().getErrorCount());
 
-        return ResponseEntity.status(ex.getHttpStatus()).body(response);
-    }
+                Map<String, String> fieldErrors = new HashMap<>();
+                for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+                        fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
+                }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
-        log.warn("Validation failed for request to {}: {} error(s)", request.getRequestURI(),
-                ex.getBindingResult().getErrorCount());
+                String message = "Validation failed for one or more fields";
+                if (!fieldErrors.isEmpty()) {
+                        message = fieldErrors.values().iterator().next();
+                }
 
-        Map<String, String> fieldErrors = new HashMap<>();
-        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .code(ErrorCode.VALIDATION_FAILED)
+                                .message(message)
+                                .error(message)
+                                .path(request.getRequestURI())
+                                .fieldErrors(fieldErrors)
+                                .build();
+
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        String message = "Validation failed for one or more fields";
-        if (!fieldErrors.isEmpty()) {
-            message = fieldErrors.values().iterator().next();
+        @ExceptionHandler(HandlerMethodValidationException.class)
+        public ResponseEntity<ApiErrorResponse> handleHandlerMethodValidation(HandlerMethodValidationException ex,
+                        HttpServletRequest request) {
+                log.warn("Parameter validation failed for request to {}: {} parameter(s)", request.getRequestURI(),
+                                ex.getParameterValidationResults().size());
+
+                Map<String, String> fieldErrors = new HashMap<>();
+                for (ParameterValidationResult result : ex.getParameterValidationResults()) {
+                        fieldErrors.putIfAbsent(result.getMethodParameter().getParameterName(),
+                                        result.getResolvableErrors().getFirst().getDefaultMessage());
+                }
+
+                String message = "Validation failed for one or more parameters";
+                if (!fieldErrors.isEmpty()) {
+                        message = fieldErrors.values().iterator().next();
+                }
+
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .code(ErrorCode.VALIDATION_FAILED)
+                                .message(message)
+                                .error(message)
+                                .path(request.getRequestURI())
+                                .fieldErrors(fieldErrors)
+                                .build();
+
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .code(ErrorCode.VALIDATION_FAILED)
-                .message(message)
-                .error(message)
-                .path(request.getRequestURI())
-                .fieldErrors(fieldErrors)
-                .build();
+        @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
+        public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Exception ex,
+                        HttpServletRequest request) {
+                log.warn("Authentication failed at {}: {}", request.getRequestURI(), ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
+                String message = "Invalid email or password";
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .code(ErrorCode.INVALID_CREDENTIALS)
+                                .message(message)
+                                .error(message)
+                                .path(request.getRequestURI())
+                                .build();
 
-    @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
-    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(Exception ex, HttpServletRequest request) {
-        log.warn("Authentication failed at {}: {}", request.getRequestURI(), ex.getMessage());
-
-        String message = "Invalid email or password";
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .code(ErrorCode.INVALID_CREDENTIALS)
-                .message(message)
-                .error(message)
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex,
-            HttpServletRequest request) {
-        log.warn("Data integrity violation at {}: {}", request.getRequestURI(), ex.getMessage());
-
-        String msgLower = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
-        ErrorCode code = ErrorCode.VALIDATION_FAILED;
-        String message = "A database constraint violation occurred";
-        Map<String, String> fieldErrors = new HashMap<>();
-
-        if (msgLower.contains("email") || msgLower.contains("unique_email")) {
-            code = ErrorCode.EMAIL_ALREADY_EXISTS;
-            message = "An account with this email already exists";
-            fieldErrors.put("email", message);
-        } else if (msgLower.contains("username") || msgLower.contains("unique_username")) {
-            code = ErrorCode.USERNAME_ALREADY_EXISTS;
-            message = "This username is already taken";
-            fieldErrors.put("username", message);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.CONFLICT.value())
-                .code(code)
-                .message(message)
-                .error(message)
-                .path(request.getRequestURI())
-                .fieldErrors(fieldErrors.isEmpty() ? null : fieldErrors)
-                .build();
+        @ExceptionHandler(DataIntegrityViolationException.class)
+        public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex,
+                        HttpServletRequest request) {
+                log.warn("Data integrity violation at {}: {}", request.getRequestURI(), ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-    }
+                String msgLower = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
+                ErrorCode code = ErrorCode.VALIDATION_FAILED;
+                String message = "A database constraint violation occurred";
+                Map<String, String> fieldErrors = new HashMap<>();
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiErrorResponse> handleIllegalStateException(IllegalStateException ex,
-            HttpServletRequest request) {
-        log.warn("Illegal state exception at {}: {}", request.getRequestURI(), ex.getMessage());
+                if (msgLower.contains("email") || msgLower.contains("unique_email")) {
+                        code = ErrorCode.EMAIL_ALREADY_EXISTS;
+                        message = "An account with this email already exists";
+                        fieldErrors.put("email", message);
+                } else if (msgLower.contains("username") || msgLower.contains("unique_username")) {
+                        code = ErrorCode.USERNAME_ALREADY_EXISTS;
+                        message = "This username is already taken";
+                        fieldErrors.put("username", message);
+                }
 
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.CONFLICT.value())
-                .code(ErrorCode.EMAIL_ALREADY_EXISTS)
-                .message(ex.getMessage())
-                .error(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.CONFLICT.value())
+                                .code(code)
+                                .message(message)
+                                .error(message)
+                                .path(request.getRequestURI())
+                                .fieldErrors(fieldErrors.isEmpty() ? null : fieldErrors)
+                                .build();
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
 
-    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadable(
-            org.springframework.http.converter.HttpMessageNotReadableException ex, HttpServletRequest request) {
-        log.warn("Malformed request body at {}: {}", request.getRequestURI(), ex.getMessage());
+        @ExceptionHandler(IllegalStateException.class)
+        public ResponseEntity<ApiErrorResponse> handleIllegalStateException(IllegalStateException ex,
+                        HttpServletRequest request) {
+                log.warn("Illegal state exception at {}: {}", request.getRequestURI(), ex.getMessage());
 
-        String message = "Malformed request body";
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .code(ErrorCode.VALIDATION_FAILED)
-                .message(message)
-                .error(message)
-                .path(request.getRequestURI())
-                .build();
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.CONFLICT.value())
+                                .code(ErrorCode.EMAIL_ALREADY_EXISTS)
+                                .message(ex.getMessage())
+                                .error(ex.getMessage())
+                                .path(request.getRequestURI())
+                                .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatch(
-            MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
-        log.warn("Invalid value for parameter '{}' at {}: {}", ex.getName(), request.getRequestURI(), ex.getValue());
+        @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+        public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadable(
+                        org.springframework.http.converter.HttpMessageNotReadableException ex,
+                        HttpServletRequest request) {
+                log.warn("Malformed request body at {}: {}", request.getRequestURI(), ex.getMessage());
 
-        String message = "Invalid value for " + ex.getName();
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .code(ErrorCode.VALIDATION_FAILED)
-                .message(message)
-                .error(message)
-                .path(request.getRequestURI())
-                .fieldErrors(Map.of(ex.getName(), message))
-                .build();
+                String message = "Malformed request body";
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .code(ErrorCode.VALIDATION_FAILED)
+                                .message(message)
+                                .error(message)
+                                .path(request.getRequestURI())
+                                .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ApiErrorResponse> handleMethodNotSupported(
-            HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
-        log.warn("Method {} not supported at {}", ex.getMethod(), request.getRequestURI());
+        @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+        public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatch(
+                        MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+                log.warn("Invalid value for parameter '{}' at {}: {}", ex.getName(), request.getRequestURI(),
+                                ex.getValue());
 
-        String message = "Method " + ex.getMethod() + " is not supported for this endpoint";
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.METHOD_NOT_ALLOWED.value())
-                .code(ErrorCode.METHOD_NOT_ALLOWED)
-                .message(message)
-                .error(message)
-                .path(request.getRequestURI())
-                .build();
+                String message = "Invalid value for " + ex.getName();
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .code(ErrorCode.VALIDATION_FAILED)
+                                .message(message)
+                                .error(message)
+                                .path(request.getRequestURI())
+                                .fieldErrors(Map.of(ex.getName(), message))
+                                .build();
 
-        Set<HttpMethod> supportedMethods = ex.getSupportedHttpMethods();
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                .allow(supportedMethods != null ? supportedMethods.toArray(HttpMethod[]::new) : new HttpMethod[0])
-                .body(response);
-    }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
-        log.error("Unhandled exception at {}: ", request.getRequestURI(), ex);
+        @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+        public ResponseEntity<ApiErrorResponse> handleMethodNotSupported(
+                        HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+                log.warn("Method {} not supported at {}", ex.getMethod(), request.getRequestURI());
 
-        String message = "An unexpected error occurred. Please try again later.";
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .code(ErrorCode.INTERNAL_SERVER_ERROR)
-                .message(message)
-                .error(message)
-                .path(request.getRequestURI())
-                .build();
+                String message = "Method " + ex.getMethod() + " is not supported for this endpoint";
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.METHOD_NOT_ALLOWED.value())
+                                .code(ErrorCode.METHOD_NOT_ALLOWED)
+                                .message(message)
+                                .error(message)
+                                .path(request.getRequestURI())
+                                .build();
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
+                Set<HttpMethod> supportedMethods = ex.getSupportedHttpMethods();
+                return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                                .allow(supportedMethods != null ? supportedMethods.toArray(HttpMethod[]::new)
+                                                : new HttpMethod[0])
+                                .body(response);
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ApiErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
+                log.error("Unhandled exception at {}: ", request.getRequestURI(), ex);
+
+                String message = "An unexpected error occurred. Please try again later.";
+                ApiErrorResponse response = ApiErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                .code(ErrorCode.INTERNAL_SERVER_ERROR)
+                                .message(message)
+                                .error(message)
+                                .path(request.getRequestURI())
+                                .build();
+
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
 }
