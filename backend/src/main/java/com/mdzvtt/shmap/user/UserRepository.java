@@ -11,8 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
-        String A_TO_Z = """
-                        order by lower(u.firstName), lower(u.lastName), lower(u.username), u.id
+        String EXACT_USERNAME_FIRST_THEN_A_TO_Z = """
+                        order by case when lower(u.username) = lower(:term) then 0 else 1 end,
+                                 lower(u.firstName), lower(u.lastName), lower(u.username), u.id
                         """;
 
         String NOT_BLOCKED_EITHER_WAY = """
@@ -38,16 +39,16 @@ public interface UserRepository extends JpaRepository<User, Integer> {
         @Query("""
                         select u from User u
                         where u.id <> :viewerId
-                          and (concat(u.firstName, ' ', u.lastName) ilike %:#{escape(#text)}% escape :#{escapeCharacter()}
-                               or u.username ilike %:#{escape(#text)}% escape :#{escapeCharacter()})
+                          and (concat(u.firstName, ' ', u.lastName) ilike %:#{escape(#term)}% escape :#{escapeCharacter()}
+                               or u.username ilike %:#{escape(#term)}% escape :#{escapeCharacter()})
                         """
-                        + NOT_BLOCKED_EITHER_WAY + A_TO_Z)
-        List<User> search(Integer viewerId, String text, Limit limit);
+                        + NOT_BLOCKED_EITHER_WAY + EXACT_USERNAME_FIRST_THEN_A_TO_Z)
+        List<User> search(Integer viewerId, String term, Limit limit);
 
         @Query("""
                         select u from User u
                         where u.id <> :viewerId
-                          and u.username ilike :#{escape(#prefix)}% escape :#{escapeCharacter()}
-                        """ + NOT_BLOCKED_EITHER_WAY + A_TO_Z)
-        List<User> searchByUsername(Integer viewerId, String prefix, Limit limit);
+                          and u.username ilike :#{escape(#term)}% escape :#{escapeCharacter()}
+                        """ + NOT_BLOCKED_EITHER_WAY + EXACT_USERNAME_FIRST_THEN_A_TO_Z)
+        List<User> searchByUsername(Integer viewerId, String term, Limit limit);
 }
