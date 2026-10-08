@@ -15,6 +15,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                         order by lower(u.firstName), lower(u.lastName), lower(u.username), u.id
                         """;
 
+        String NOT_BLOCKED_EITHER_WAY = """
+                          and not exists (select b from UserBlock b
+                                          where (b.blocker.id = :viewerId and b.blocked = u)
+                                             or (b.blocker = u and b.blocked.id = :viewerId))
+                        """;
+
         Optional<User> findByEmail(String email);
 
         Optional<User> findByUsername(String username);
@@ -35,13 +41,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                           and (concat(u.firstName, ' ', u.lastName) ilike %:#{escape(#text)}% escape :#{escapeCharacter()}
                                or u.username ilike %:#{escape(#text)}% escape :#{escapeCharacter()})
                         """
-                        + A_TO_Z)
+                        + NOT_BLOCKED_EITHER_WAY + A_TO_Z)
         List<User> search(Integer viewerId, String text, Limit limit);
 
         @Query("""
                         select u from User u
                         where u.id <> :viewerId
                           and u.username ilike :#{escape(#prefix)}% escape :#{escapeCharacter()}
-                        """ + A_TO_Z)
+                        """ + NOT_BLOCKED_EITHER_WAY + A_TO_Z)
         List<User> searchByUsername(Integer viewerId, String prefix, Limit limit);
 }
