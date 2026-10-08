@@ -7,10 +7,15 @@ sealed interface FriendSearch {
     record Text(String text) implements FriendSearch {
     }
 
+    record UsernamePrefix(String prefix) implements FriendSearch {
+    }
+
     static FriendSearch parse(String query) {
-        if (query == null || query.isBlank()) {
-            return new All();
+        String trimmed = query == null ? "" : query.strip();
+        if (trimmed.startsWith("@")) {
+            String prefix = trimmed.substring(1).strip();
+            return prefix.isEmpty() ? new All() : new UsernamePrefix(prefix);
         }
-        return new Text(query.strip());
+        return trimmed.isEmpty() ? new All() : new Text(trimmed);
     }
 }

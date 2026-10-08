@@ -30,8 +30,17 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
                         where f.user.id = :userId
                           and (concat(u.firstName, ' ', u.lastName) ilike %:#{escape(#text)}% escape :#{escapeCharacter()}
                                or u.username ilike %:#{escape(#text)}% escape :#{escapeCharacter()})
-                        """ + FAVORITES_FIRST_THEN_A_TO_Z)
+                        """
+                        + FAVORITES_FIRST_THEN_A_TO_Z)
         List<Friendship> searchFriends(Integer userId, String text);
+
+        @Query("""
+                        select f from Friendship f
+                        join fetch f.friend u
+                        where f.user.id = :userId
+                          and u.username ilike :#{escape(#prefix)}% escape :#{escapeCharacter()}
+                        """ + FAVORITES_FIRST_THEN_A_TO_Z)
+        List<Friendship> searchFriendsByUsername(Integer userId, String prefix);
 
         @Modifying
         @Query("""

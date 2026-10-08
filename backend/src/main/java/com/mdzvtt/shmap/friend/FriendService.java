@@ -22,6 +22,8 @@ public class FriendService {
         List<Friendship> friendships = switch (FriendSearch.parse(query)) {
             case FriendSearch.All() -> friendshipRepository.findFriends(userId);
             case FriendSearch.Text(String text) -> friendshipRepository.searchFriends(userId, text);
+            case FriendSearch.UsernamePrefix(String prefix) ->
+                friendshipRepository.searchFriendsByUsername(userId, prefix);
         };
         return friendships.stream()
                 .map(this::toResponse)
