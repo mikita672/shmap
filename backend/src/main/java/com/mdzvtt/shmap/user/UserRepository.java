@@ -31,15 +31,17 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
         @Query("""
                         select u from User u
-                        where concat(u.firstName, ' ', u.lastName) ilike %:#{escape(#text)}% escape :#{escapeCharacter()}
-                           or u.username ilike %:#{escape(#text)}% escape :#{escapeCharacter()}
+                        where u.id <> :viewerId
+                          and (concat(u.firstName, ' ', u.lastName) ilike %:#{escape(#text)}% escape :#{escapeCharacter()}
+                               or u.username ilike %:#{escape(#text)}% escape :#{escapeCharacter()})
                         """
                         + A_TO_Z)
-        List<User> search(String text, Limit limit);
+        List<User> search(Integer viewerId, String text, Limit limit);
 
         @Query("""
                         select u from User u
-                        where u.username ilike :#{escape(#prefix)}% escape :#{escapeCharacter()}
+                        where u.id <> :viewerId
+                          and u.username ilike :#{escape(#prefix)}% escape :#{escapeCharacter()}
                         """ + A_TO_Z)
-        List<User> searchByUsername(String prefix, Limit limit);
+        List<User> searchByUsername(Integer viewerId, String prefix, Limit limit);
 }

@@ -21,11 +21,12 @@ public class UserSearchService {
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
-    public List<UserSearchResultResponse> search(String query) {
+    public List<UserSearchResultResponse> search(Integer viewerId, String query) {
         List<User> users = switch (FriendSearch.parse(query)) {
             case FriendSearch.All() -> List.of();
-            case FriendSearch.Text(String text) -> userRepository.search(text, RESULT_LIMIT);
-            case FriendSearch.UsernamePrefix(String prefix) -> userRepository.searchByUsername(prefix, RESULT_LIMIT);
+            case FriendSearch.Text(String text) -> userRepository.search(viewerId, text, RESULT_LIMIT);
+            case FriendSearch.UsernamePrefix(String prefix) ->
+                userRepository.searchByUsername(viewerId, prefix, RESULT_LIMIT);
         };
         return users.stream()
                 .map(this::toResponse)
