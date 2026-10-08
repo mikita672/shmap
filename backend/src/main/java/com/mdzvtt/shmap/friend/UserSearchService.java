@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class UserSearchService {
     private static final Limit RESULT_LIMIT = Limit.of(20);
 
     private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -28,13 +30,21 @@ public class UserSearchService {
             case FriendSearch.UsernamePrefix(String prefix) ->
                 userRepository.searchByUsername(viewerId, prefix, RESULT_LIMIT);
         };
+        if (users.isEmpty()) {
+            return List.of();
+        }
+
+        List<Integer> userIds = users.stream().map(user -> user.getId()).toList();
+        Set<Integer> friendIds = friendshipRepository.findFriendIdsAmong(viewerId, userIds);
+
         return users.stream()
-                .map(this::toResponse)
+                .map(user -> toResponse(user, friendIds))
                 .toList();
     }
 
-    private UserSearchResultResponse toResponse(User user) {
+    private UserSearchResultResponse toResponse(User user, Set<Integer> friendIds) {
         String avatarUrl = storageService.publicUrl(user.getAvatarKey());
-        return new UserSearchResultResponse(UserSummaryResponse.from(user, avatarUrl));
+        Relationship relationship = friendIds.contains(user.getId()) ? Relationship.FRIENDS : Relationship.NONE;
+        return new UserSearchResultResponse(UserSummaryResponse.from(user, avatarUrl), relationship);
     }
 }
