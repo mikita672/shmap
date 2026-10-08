@@ -18,8 +18,12 @@ public class FriendService {
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
-    public List<FriendResponse> getFriends(Integer userId) {
-        return friendshipRepository.findFriends(userId).stream()
+    public List<FriendResponse> getFriends(Integer userId, String query) {
+        List<Friendship> friendships = switch (FriendSearch.parse(query)) {
+            case FriendSearch.All() -> friendshipRepository.findFriends(userId);
+            case FriendSearch.Text(String text) -> friendshipRepository.searchFriends(userId, text);
+        };
+        return friendships.stream()
                 .map(this::toResponse)
                 .toList();
     }
