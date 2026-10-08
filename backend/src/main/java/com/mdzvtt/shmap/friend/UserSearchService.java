@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,7 @@ public class UserSearchService {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final FriendRequestRepository friendRequestRepository;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -36,15 +39,31 @@ public class UserSearchService {
 
         List<Integer> userIds = users.stream().map(user -> user.getId()).toList();
         Set<Integer> friendIds = friendshipRepository.findFriendIdsAmong(viewerId, userIds);
+        Map<Integer, FriendRequestIds> requestsByUserId = friendRequestRepository
+                .findIdsBetween(viewerId, userIds).stream()
+                .collect(Collectors.toMap(request -> request.otherUserId(viewerId), request -> request));
 
         return users.stream()
-                .map(user -> toResponse(user, friendIds))
+                .map(user -> toResponse(viewerId, user, friendIds, requestsByUserId.get(user.getId())))
                 .toList();
     }
 
-    private UserSearchResultResponse toResponse(User user, Set<Integer> friendIds) {
+    private UserSearchResultResponse toResponse(Integer viewerId, User user, Set<Integer> friendIds,
+            FriendRequestIds request) {
         String avatarUrl = storageService.publicUrl(user.getAvatarKey());
-        Relationship relationship = friendIds.contains(user.getId()) ? Relationship.FRIENDS : Relationship.NONE;
-        return new UserSearchResultResponse(UserSummaryResponse.from(user, avatarUrl), relationship);
+        Relationship relationship = relationshipOf(viewerId, user, friendIds, request);
+        Long requestId = request == null ? null : request.id();
+        return new UserSearchResultResponse(UserSummaryResponse.from(user, avatarUrl), relationship, requestId);
+    }
+
+    private Relationship relationshipOf(Integer viewerId, User user, Set<Integer> friendIds,
+            FriendRequestIds request) {
+        if (friendIds.contains(user.getId())) {
+            return Relationship.FRIENDS;
+        }
+        if (request == null) {
+            return Relationship.NONE;
+        }
+        return request.isSentBy(viewerId) ? Relationship.REQUESTED : Relationship.INCOMING;
     }
 }
