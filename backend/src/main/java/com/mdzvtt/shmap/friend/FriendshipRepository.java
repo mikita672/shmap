@@ -1,7 +1,18 @@
 package com.mdzvtt.shmap.friend;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     boolean existsByUserIdAndFriendId(Integer userId, Integer friendId);
+
+    @Query("""
+            select f from Friendship f
+            join fetch f.friend u
+            where f.user.id = :userId
+            order by lower(u.firstName), lower(u.lastName), lower(u.username), u.id
+            """)
+    List<Friendship> findFriends(Integer userId);
 }
