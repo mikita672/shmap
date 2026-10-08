@@ -37,4 +37,10 @@ public class FriendController {
     public void addFavorite(@AuthenticationPrincipal User user, @PathVariable Integer friendId) {
         friendService.addFavorite(user.getId(), friendId);
     }
+
+    @DeleteMapping("/{friendId}/favorite")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeFavorite(@AuthenticationPrincipal User user, @PathVariable Integer friendId) {
+        friendService.removeFavorite(user.getId(), friendId);
+    }
 }

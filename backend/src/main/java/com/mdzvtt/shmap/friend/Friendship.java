@@ -57,4 +57,8 @@ public class Friendship {
             favoritedAt = Instant.now();
         }
     }
+
+    public void unmarkFavorite() {
+        favoritedAt = null;
+    }
 }
