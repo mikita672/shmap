@@ -51,4 +51,10 @@ public class Friendship {
     public boolean isFavorite() {
         return favoritedAt != null;
     }
+
+    public void markFavorite() {
+        if (favoritedAt == null) {
+            favoritedAt = Instant.now();
+        }
+    }
 }

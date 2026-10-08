@@ -31,6 +31,16 @@ public class FriendService {
         }
     }
 
+    @Transactional
+    public void addFavorite(Integer userId, Integer friendId) {
+        findFriendship(userId, friendId).markFavorite();
+    }
+
+    private Friendship findFriendship(Integer userId, Integer friendId) {
+        return friendshipRepository.findByUserIdAndFriendId(userId, friendId)
+                .orElseThrow(FriendNotFoundException::new);
+    }
+
     private FriendResponse toResponse(Friendship friendship) {
         User friend = friendship.getFriend();
         String avatarUrl = storageService.publicUrl(friend.getAvatarKey());

@@ -5,9 +5,12 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
         boolean existsByUserIdAndFriendId(Integer userId, Integer friendId);
+
+        Optional<Friendship> findByUserIdAndFriendId(Integer userId, Integer friendId);
 
         @Query("""
                         select f from Friendship f
