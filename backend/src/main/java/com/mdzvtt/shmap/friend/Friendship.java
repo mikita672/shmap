@@ -41,8 +41,14 @@ public class Friendship {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    private Instant favoritedAt;
+
     public Friendship(User user, User friend) {
         this.user = user;
         this.friend = friend;
+    }
+
+    public boolean isFavorite() {
+        return favoritedAt != null;
     }
 }

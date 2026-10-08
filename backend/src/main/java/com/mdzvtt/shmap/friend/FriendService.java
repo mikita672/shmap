@@ -36,6 +36,7 @@ public class FriendService {
         String avatarUrl = storageService.publicUrl(friend.getAvatarKey());
         return new FriendResponse(
                 UserSummaryResponse.from(friend, avatarUrl),
+                friendship.isFavorite(),
                 friendship.getCreatedAt());
     }
 }
