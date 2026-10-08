@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.friend;
 
 import com.mdzvtt.shmap.friend.dto.FriendResponse;
 import com.mdzvtt.shmap.user.User;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,7 +25,7 @@ public class FriendController {
 
     @GetMapping
     public List<FriendResponse> list(@AuthenticationPrincipal User user,
-            @RequestParam(required = false) String q) {
+            @RequestParam(required = false) @Size(max = 100, message = "Search query must be at most 100 characters") String q) {
         return friendService.getFriends(user.getId(), q);
     }
 
