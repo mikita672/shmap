@@ -13,5 +13,6 @@ public record PublicProfileResponse(
         boolean favorite,
         Instant friendsSince,
         long mutualFriendsCount,
+        boolean previewOnly,
         Long friendsCount) {
 }
