@@ -40,6 +40,7 @@ public class PublicProfileService {
                 .findFirst()
                 .map(mutual -> mutual.count())
                 .orElse(0L);
+        long friendsCount = friendshipRepository.countByUserId(user.getId());
 
         String avatarUrl = storageService.publicUrl(user.getAvatarKey());
         return new PublicProfileResponse(
@@ -49,6 +50,7 @@ public class PublicProfileService {
                 requestId,
                 friendship != null && friendship.isFavorite(),
                 friendship == null ? null : friendship.getCreatedAt(),
-                mutualFriendsCount);
+                mutualFriendsCount,
+                friendsCount);
     }
 }
