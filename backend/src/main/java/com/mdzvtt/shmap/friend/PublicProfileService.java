@@ -24,11 +24,7 @@ public class PublicProfileService {
 
     @Transactional(readOnly = true)
     public PublicProfileResponse getProfile(Integer viewerId, String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
-
-        if (userBlockRepository.existsBetween(viewerId, user.getId())) {
-            throw new UserNotFoundException();
-        }
+        User user = findVisibleUser(viewerId, username);
 
         Friendship friendship = friendshipRepository.findByUserIdAndFriendId(viewerId, user.getId()).orElse(null);
         FriendRequestIds request = friendRequestRepository.findIdsBetween(viewerId, List.of(user.getId())).stream()
@@ -42,9 +38,8 @@ public class PublicProfileService {
                 .orElse(0L);
         long friendsCount = friendshipRepository.countByUserId(user.getId());
 
-        String avatarUrl = storageService.publicUrl(user.getAvatarKey());
         return new PublicProfileResponse(
-                UserSummaryResponse.from(user, avatarUrl),
+                toSummary(user),
                 user.getBio(),
                 relationship,
                 requestId,
@@ -52,5 +47,27 @@ public class PublicProfileService {
                 friendship == null ? null : friendship.getCreatedAt(),
                 mutualFriendsCount,
                 friendsCount);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSummaryResponse> getMutualFriends(Integer viewerId, String username) {
+        User user = findVisibleUser(viewerId, username);
+        return friendshipRepository.findMutualFriends(viewerId, user.getId()).stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+    private User findVisibleUser(Integer viewerId, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+
+        if (userBlockRepository.existsBetween(viewerId, user.getId())) {
+            throw new UserNotFoundException();
+        }
+
+        return user;
+    }
+
+    private UserSummaryResponse toSummary(User user) {
+        return UserSummaryResponse.from(user, storageService.publicUrl(user.getAvatarKey()));
     }
 }

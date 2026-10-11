@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.friend;
 
+import com.mdzvtt.shmap.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -62,6 +63,15 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
       group by theirs.user.id
       """)
   List<MutualFriendsCount> countMutualFriends(Integer userId, Collection<Integer> candidateIds);
+
+  @Query("""
+      select u from Friendship f
+      join f.friend u
+      join Friendship theirs on theirs.friend = u
+      where f.user.id = :viewerId
+        and theirs.user.id = :userId
+      """ + FAVORITES_FIRST_THEN_A_TO_Z)
+  List<User> findMutualFriends(Integer viewerId, Integer userId);
 
   @Modifying
   @Query("""
