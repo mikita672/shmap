@@ -14,5 +14,6 @@ public record PublicProfileResponse(
         Instant friendsSince,
         long mutualFriendsCount,
         boolean previewOnly,
-        Long friendsCount) {
+        Long friendsCount,
+        boolean friendsListVisible) {
 }

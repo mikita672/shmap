@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.friend;
 
 import com.mdzvtt.shmap.block.UserBlockRepository;
+import com.mdzvtt.shmap.exception.FriendsListHiddenException;
 import com.mdzvtt.shmap.exception.PrivateAccountException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.dto.PublicProfileResponse;
@@ -49,7 +50,8 @@ public class PublicProfileService {
                 friendship == null ? null : friendship.getCreatedAt(),
                 mutualFriendsCount,
                 previewOnly,
-                friendsCount);
+                friendsCount,
+                canSeeFriendsList(user, friendship != null));
     }
 
     @Transactional(readOnly = true)
@@ -67,6 +69,9 @@ public class PublicProfileService {
         boolean friends = friendshipRepository.existsByUserIdAndFriendId(viewerId, user.getId());
         if (!canSeeFullProfile(user, friends)) {
             throw new PrivateAccountException();
+        }
+        if (!canSeeFriendsList(user, friends)) {
+            throw new FriendsListHiddenException();
         }
 
         return friendshipRepository.findFriendsOf(user.getId(), viewerId).stream()
@@ -86,6 +91,10 @@ public class PublicProfileService {
 
     private boolean canSeeFullProfile(User user, boolean friends) {
         return friends || !user.isPrivateAccount();
+    }
+
+    private boolean canSeeFriendsList(User user, boolean friends) {
+        return canSeeFullProfile(user, friends) && !user.isFriendsListHidden();
     }
 
     private UserSummaryResponse toSummary(User user) {
