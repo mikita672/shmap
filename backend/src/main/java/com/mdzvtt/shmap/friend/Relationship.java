@@ -4,7 +4,8 @@ public enum Relationship {
     NONE,
     REQUESTED,
     INCOMING,
-    FRIENDS;
+    FRIENDS,
+    SELF;
 
     static Relationship of(Integer viewerId, boolean friends, FriendRequestIds request) {
         if (friends) {

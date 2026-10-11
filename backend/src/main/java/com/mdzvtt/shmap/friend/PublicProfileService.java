@@ -27,18 +27,21 @@ public class PublicProfileService {
     @Transactional(readOnly = true)
     public PublicProfileResponse getProfile(Integer viewerId, String username) {
         User user = findVisibleUser(viewerId, username);
+        boolean self = isSelf(viewerId, user);
 
         Friendship friendship = friendshipRepository.findByUserIdAndFriendId(viewerId, user.getId()).orElse(null);
         FriendRequestIds request = friendRequestRepository.findIdsBetween(viewerId, List.of(user.getId())).stream()
                 .findFirst()
                 .orElse(null);
-        Relationship relationship = Relationship.of(viewerId, friendship != null, request);
+        Relationship relationship = self ? Relationship.SELF : Relationship.of(viewerId, friendship != null, request);
         Long requestId = request == null ? null : request.id();
-        long mutualFriendsCount = friendshipRepository.countMutualFriends(viewerId, List.of(user.getId())).stream()
-                .findFirst()
-                .map(mutual -> mutual.count())
-                .orElse(0L);
-        boolean previewOnly = !canSeeFullProfile(user, friendship != null);
+        long mutualFriendsCount = self ? 0
+                : friendshipRepository.countMutualFriends(viewerId, List.of(user.getId()))
+                        .stream()
+                        .findFirst()
+                        .map(mutual -> mutual.count())
+                        .orElse(0L);
+        boolean previewOnly = !canSeeFullProfile(viewerId, user, friendship != null);
         Long friendsCount = previewOnly ? null : friendshipRepository.countByUserId(user.getId());
 
         return new PublicProfileResponse(
@@ -51,12 +54,16 @@ public class PublicProfileService {
                 mutualFriendsCount,
                 previewOnly,
                 friendsCount,
-                canSeeFriendsList(user, friendship != null));
+                canSeeFriendsList(viewerId, user, friendship != null));
     }
 
     @Transactional(readOnly = true)
     public List<UserSummaryResponse> getMutualFriends(Integer viewerId, String username) {
         User user = findVisibleUser(viewerId, username);
+        if (isSelf(viewerId, user)) {
+            return List.of();
+        }
+
         return friendshipRepository.findMutualFriends(viewerId, user.getId()).stream()
                 .map(this::toSummary)
                 .toList();
@@ -67,10 +74,10 @@ public class PublicProfileService {
         User user = findVisibleUser(viewerId, username);
 
         boolean friends = friendshipRepository.existsByUserIdAndFriendId(viewerId, user.getId());
-        if (!canSeeFullProfile(user, friends)) {
+        if (!canSeeFullProfile(viewerId, user, friends)) {
             throw new PrivateAccountException();
         }
-        if (!canSeeFriendsList(user, friends)) {
+        if (!canSeeFriendsList(viewerId, user, friends)) {
             throw new FriendsListHiddenException();
         }
 
@@ -89,12 +96,17 @@ public class PublicProfileService {
         return user;
     }
 
-    private boolean canSeeFullProfile(User user, boolean friends) {
-        return friends || !user.isPrivateAccount();
+    private boolean isSelf(Integer viewerId, User user) {
+        return user.getId().equals(viewerId);
     }
 
-    private boolean canSeeFriendsList(User user, boolean friends) {
-        return canSeeFullProfile(user, friends) && !user.isFriendsListHidden();
+    private boolean canSeeFullProfile(Integer viewerId, User user, boolean friends) {
+        return isSelf(viewerId, user) || friends || !user.isPrivateAccount();
+    }
+
+    private boolean canSeeFriendsList(Integer viewerId, User user, boolean friends) {
+        return isSelf(viewerId, user)
+                || (canSeeFullProfile(viewerId, user, friends) && !user.isFriendsListHidden());
     }
 
     private UserSummaryResponse toSummary(User user) {
