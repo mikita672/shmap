@@ -1,4 +1,3 @@
-import React from "react";
 import { View, type StyleProp, type ViewStyle } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";

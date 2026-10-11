@@ -47,6 +47,9 @@ function RootNavigator() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={isAuthenticated}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="profile" />
+            <Stack.Screen name="edit-profile" />
+            <Stack.Screen name="change-password" />
           </Stack.Protected>
 
           <Stack.Protected guard={!isAuthenticated}>

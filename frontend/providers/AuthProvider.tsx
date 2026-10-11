@@ -8,6 +8,7 @@ import {
 import { AppState, Platform } from "react-native";
 import type { AppStateStatus } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import type { Href } from "expo-router";
 import {
   focusManager,
   QueryClient,
@@ -22,12 +23,18 @@ import {
 import { logoutUser } from "@/lib/api/auth";
 import type { AuthenticationResponse } from "@/lib/types/api";
 
+interface SignOutOptions {
+  redirectTo?: Href;
+}
+
 interface AuthContextValue {
   isLoading: boolean;
   isAuthenticated: boolean;
+  pendingRedirect: Href | null;
   signIn: (response: AuthenticationResponse) => Promise<void>;
   signUp: (response: AuthenticationResponse) => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: (options?: SignOutOptions) => Promise<void>;
+  clearPendingRedirect: () => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -54,6 +61,7 @@ function onAppStateChange(status: AppStateStatus): void {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState<Href | null>(null);
 
   useEffect(() => {
     SecureStore.getItemAsync(ACCESS_TOKEN_KEY)
@@ -80,10 +88,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
   }, []);
 
-  const signOut = useCallback(async () => {
-    await logoutUser().catch(console.warn);
-    await clearSession();
-  }, [clearSession]);
+  const signOut = useCallback(
+    async (options?: SignOutOptions) => {
+      await logoutUser().catch(console.warn);
+      setPendingRedirect(options?.redirectTo ?? null);
+      await clearSession();
+    },
+    [clearSession],
+  );
+
+  const clearPendingRedirect = useCallback(() => setPendingRedirect(null), []);
 
   useEffect(() => {
     setOnSessionClear(clearSession);
@@ -99,11 +113,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       isLoading,
       isAuthenticated,
+      pendingRedirect,
       signIn: handleAuth,
       signUp: handleAuth,
       signOut,
+      clearPendingRedirect,
     }),
-    [isLoading, isAuthenticated, handleAuth, signOut],
+    [
+      isLoading,
+      isAuthenticated,
+      pendingRedirect,
+      handleAuth,
+      signOut,
+      clearPendingRedirect,
+    ],
   );
 
   return (

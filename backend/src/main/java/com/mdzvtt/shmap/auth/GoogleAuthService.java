@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.auth;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,9 @@ import okhttp3.Response;
 
 @Service
 public class GoogleAuthService {
+    private static final int MIN_USERNAME_LENGTH = 3;
+    private static final int MAX_USERNAME_LENGTH = 30;
+
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
@@ -86,7 +90,7 @@ public class GoogleAuthService {
                         .firstName(finalFirstName)
                         .lastName(finalLastName)
                         .email(email)
-                        .username(email)
+                        .username(generateUniqueUsername(email))
                         .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                         .role(Role.USER)
                         .build();
@@ -105,6 +109,30 @@ public class GoogleAuthService {
                     .refreshToken(refreshToken)
                     .build();
         }
+    }
+
+    private String generateUniqueUsername(String email) {
+        String base = toUsernameBase(email);
+        String candidate = base;
+        int suffix = 1;
+
+        while (userRepository.existsByUsername(candidate)) {
+            String number = String.valueOf(suffix++);
+            candidate = base.substring(0, Math.min(base.length(), MAX_USERNAME_LENGTH - number.length())) + number;
+        }
+
+        return candidate;
+    }
+
+    private String toUsernameBase(String email) {
+        String localPart = email.substring(0, email.indexOf('@'));
+        String base = localPart.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_.-]", "");
+
+        if (base.length() < MIN_USERNAME_LENGTH) {
+            base = "user" + base;
+        }
+
+        return base.substring(0, Math.min(base.length(), MAX_USERNAME_LENGTH));
     }
 
     private void saveUserToken(User user, String jwtToken, TokenType tokenType) {

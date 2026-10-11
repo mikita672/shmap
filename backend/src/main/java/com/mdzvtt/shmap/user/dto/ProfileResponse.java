@@ -11,9 +11,10 @@ public record ProfileResponse(
         String username,
         String email,
         String bio,
+        String avatarUrl,
         Instant createdAt) {
 
-    public static ProfileResponse from(User user) {
+    public static ProfileResponse from(User user, String avatarUrl) {
         return new ProfileResponse(
                 user.getId(),
                 user.getFirstName(),
@@ -21,6 +22,7 @@ public record ProfileResponse(
                 user.getPublicUsername(),
                 user.getEmail(),
                 user.getBio(),
+                avatarUrl,
                 user.getCreatedAt());
     }
 }

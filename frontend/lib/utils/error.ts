@@ -6,10 +6,15 @@ const ALLOWED_FIELD_KEYS = new Set([
   "password",
   "otp",
   "newPassword",
+  "currentPassword",
   "firstname",
   "lastname",
+  "firstName",
+  "lastName",
   "username",
   "bio",
+  "avatar",
+  "key",
 ]);
 
 function sanitizeFieldErrors(

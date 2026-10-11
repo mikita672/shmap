@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   View,
   Pressable,
@@ -16,9 +16,10 @@ import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar } from "@/components/ui/avatar";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useProfile } from "@/hooks/useProfile";
 import { useGeocoding } from "@/hooks/useGeocoding";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
+import { cn } from "@/lib/utils";
 import type { SearchPlace } from "@/lib/api/geocoding";
 
 const AVATAR_RING_WIDTH = 3;
@@ -46,14 +47,14 @@ export function MapSearchBar({
   const inputRef = useRef<TextInput>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [searchBarHeight, setSearchBarHeight] = useState<number>(48);
-  const { profile } = useUserProfile();
+  const { data: profile } = useProfile();
 
   const handleAvatarPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (onAvatarPress) {
       onAvatarPress();
     } else {
-      router.push("/profile" as any);
+      router.push("/profile");
     }
   }, [onAvatarPress, router]);
 
@@ -69,6 +70,7 @@ export function MapSearchBar({
   const showHistory =
     isFocused && query.trim().length < 2 && history.length > 0;
   const showResults = isFocused && query.trim().length >= 2;
+  const showTruncatedQuery = !isFocused && query.length > 0;
 
   const handleSelect = useCallback(
     (place: SearchPlace, { fromEnterKey = false } = {}) => {
@@ -189,8 +191,10 @@ export function MapSearchBar({
           >
             <Avatar
               size="lg"
-              uri={profile.avatarUrl}
-              fallbackText={`${profile.firstName} ${profile.lastName}`}
+              uri={profile?.avatarUrl}
+              fallbackText={
+                profile ? `${profile.firstName} ${profile.lastName}` : undefined
+              }
               fallbackIcon={true}
               style={{
                 width: searchBarHeight - AVATAR_RING_WIDTH * 2,
@@ -216,18 +220,34 @@ export function MapSearchBar({
               size={20}
               className="text-searchbar-placeholder mr-2"
             />
-            <Input
-              ref={inputRef}
-              value={query}
-              onChangeText={handleChangeText}
-              onFocus={() => setIsFocused(true)}
-              placeholder="Search places..."
-              returnKeyType="search"
-              submitBehavior="submit"
-              onSubmitEditing={handleSubmit}
-              autoCorrect={false}
-              className="flex-1 border-0 bg-transparent shadow-none h-full py-0 text-on-surface placeholder:text-searchbar-placeholder"
-            />
+            <View className="flex-1 h-full justify-center">
+              <Input
+                ref={inputRef}
+                value={query}
+                onChangeText={handleChangeText}
+                onFocus={() => setIsFocused(true)}
+                placeholder="Search places..."
+                returnKeyType="search"
+                submitBehavior="submit"
+                onSubmitEditing={handleSubmit}
+                autoCorrect={false}
+                className={cn(
+                  "border-0 bg-transparent shadow-none h-full py-0 text-on-surface placeholder:text-searchbar-placeholder",
+                  showTruncatedQuery && "text-transparent",
+                )}
+              />
+              {showTruncatedQuery && (
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  aria-hidden
+                  style={{ pointerEvents: "none" }}
+                  className="absolute left-0 right-0 px-3 text-base leading-5 text-on-surface"
+                >
+                  {query}
+                </Text>
+              )}
+            </View>
             {isSearching && <ActivityIndicator size="small" className="mr-2" />}
             {query.length > 0 && !isSearching && (
               <Button

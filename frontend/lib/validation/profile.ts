@@ -1,11 +1,12 @@
-import type { UserProfile } from "@/hooks/useUserProfile";
+export interface EditableProfile {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  bio: string;
+}
 
-export type EditableProfile = Pick<
-  UserProfile,
-  "firstName" | "lastName" | "username" | "email" | "bio" | "avatarUrl"
->;
-
-export type ProfileTextField = Exclude<keyof EditableProfile, "avatarUrl">;
+export type ProfileTextField = keyof EditableProfile;
 
 export type ProfileFieldErrors = Partial<Record<ProfileTextField, string>>;
 
@@ -73,6 +74,8 @@ export function validateProfile(values: EditableProfile): ProfileFieldErrors {
 const SERVER_FIELD_MAP: Record<string, ProfileTextField> = {
   firstname: "firstName",
   lastname: "lastName",
+  firstName: "firstName",
+  lastName: "lastName",
   username: "username",
   email: "email",
   bio: "bio",
