@@ -11,5 +11,6 @@ public record PublicProfileResponse(
         Relationship relationship,
         Long requestId,
         boolean favorite,
-        Instant friendsSince) {
+        Instant friendsSince,
+        long mutualFriendsCount) {
 }
