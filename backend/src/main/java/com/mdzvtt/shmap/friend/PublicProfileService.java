@@ -11,11 +11,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class PublicProfileService {
     private final UserRepository userRepository;
     private final UserBlockRepository userBlockRepository;
+    private final FriendshipRepository friendshipRepository;
+    private final FriendRequestRepository friendRequestRepository;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -26,7 +31,15 @@ public class PublicProfileService {
             throw new UserNotFoundException();
         }
 
+        Optional<Friendship> friendship = friendshipRepository.findByUserIdAndFriendId(viewerId, user.getId());
+        FriendRequestIds request = friendRequestRepository.findIdsBetween(viewerId, List.of(user.getId())).stream()
+                .findFirst()
+                .orElse(null);
+        Relationship relationship = Relationship.of(viewerId, friendship.isPresent(), request);
+        Long requestId = request == null ? null : request.id();
+
         String avatarUrl = storageService.publicUrl(user.getAvatarKey());
-        return new PublicProfileResponse(UserSummaryResponse.from(user, avatarUrl), user.getBio());
+        return new PublicProfileResponse(UserSummaryResponse.from(user, avatarUrl), user.getBio(), relationship,
+                requestId);
     }
 }

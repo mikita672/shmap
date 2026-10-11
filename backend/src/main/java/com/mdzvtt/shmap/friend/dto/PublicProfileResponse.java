@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.friend.dto;
 
+import com.mdzvtt.shmap.friend.Relationship;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 
-public record PublicProfileResponse(UserSummaryResponse user, String bio) {
+public record PublicProfileResponse(UserSummaryResponse user, String bio, Relationship relationship, Long requestId) {
 }
