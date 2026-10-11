@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +30,11 @@ public class PublicProfileService {
             throw new UserNotFoundException();
         }
 
-        Optional<Friendship> friendship = friendshipRepository.findByUserIdAndFriendId(viewerId, user.getId());
+        Friendship friendship = friendshipRepository.findByUserIdAndFriendId(viewerId, user.getId()).orElse(null);
         FriendRequestIds request = friendRequestRepository.findIdsBetween(viewerId, List.of(user.getId())).stream()
                 .findFirst()
                 .orElse(null);
-        Relationship relationship = Relationship.of(viewerId, friendship.isPresent(), request);
+        Relationship relationship = Relationship.of(viewerId, friendship != null, request);
         Long requestId = request == null ? null : request.id();
 
         String avatarUrl = storageService.publicUrl(user.getAvatarKey());
@@ -44,7 +43,7 @@ public class PublicProfileService {
                 user.getBio(),
                 relationship,
                 requestId,
-                friendship.map(Friendship::isFavorite).orElse(false),
-                friendship.map(Friendship::getCreatedAt).orElse(null));
+                friendship != null && friendship.isFavorite(),
+                friendship == null ? null : friendship.getCreatedAt());
     }
 }
