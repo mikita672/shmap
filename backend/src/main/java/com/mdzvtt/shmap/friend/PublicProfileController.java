@@ -28,4 +28,9 @@ public class PublicProfileController {
             @PathVariable String username) {
         return publicProfileService.getMutualFriends(user.getId(), username);
     }
+
+    @GetMapping("/{username}/friends")
+    public List<UserSummaryResponse> friends(@AuthenticationPrincipal User user, @PathVariable String username) {
+        return publicProfileService.getFriends(user.getId(), username);
+    }
 }

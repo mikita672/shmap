@@ -57,6 +57,14 @@ public class PublicProfileService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<UserSummaryResponse> getFriends(Integer viewerId, String username) {
+        User user = findVisibleUser(viewerId, username);
+        return friendshipRepository.findFriendsOf(user.getId(), viewerId).stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
     private User findVisibleUser(Integer viewerId, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
 

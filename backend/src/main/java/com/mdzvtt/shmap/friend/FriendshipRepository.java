@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.friend;
 
 import com.mdzvtt.shmap.user.User;
+import com.mdzvtt.shmap.user.UserRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,10 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
   String FAVORITES_FIRST_THEN_A_TO_Z = """
       order by case when f.favoritedAt is null then 1 else 0 end,
                lower(u.firstName), lower(u.lastName), lower(u.username), u.id
+      """;
+
+  String A_TO_Z = """
+      order by lower(u.firstName), lower(u.lastName), lower(u.username), u.id
       """;
 
   boolean existsByUserIdAndFriendId(Integer userId, Integer friendId);
@@ -72,6 +77,13 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
         and theirs.user.id = :userId
       """ + FAVORITES_FIRST_THEN_A_TO_Z)
   List<User> findMutualFriends(Integer viewerId, Integer userId);
+
+  @Query("""
+      select u from Friendship f
+      join f.friend u
+      where f.user.id = :userId
+      """ + UserRepository.NOT_BLOCKED_EITHER_WAY + A_TO_Z)
+  List<User> findFriendsOf(Integer userId, Integer viewerId);
 
   @Modifying
   @Query("""
