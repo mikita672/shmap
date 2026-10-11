@@ -55,20 +55,9 @@ public class UserSearchService {
     private UserSearchResultResponse toResponse(Integer viewerId, User user, Set<Integer> friendIds,
             FriendRequestIds request, long mutualFriendsCount) {
         String avatarUrl = storageService.publicUrl(user.getAvatarKey());
-        Relationship relationship = relationshipOf(viewerId, user, friendIds, request);
+        Relationship relationship = Relationship.of(viewerId, friendIds.contains(user.getId()), request);
         Long requestId = request == null ? null : request.id();
         return new UserSearchResultResponse(UserSummaryResponse.from(user, avatarUrl), relationship, requestId,
                 mutualFriendsCount);
-    }
-
-    private Relationship relationshipOf(Integer viewerId, User user, Set<Integer> friendIds,
-            FriendRequestIds request) {
-        if (friendIds.contains(user.getId())) {
-            return Relationship.FRIENDS;
-        }
-        if (request == null) {
-            return Relationship.NONE;
-        }
-        return request.isSentBy(viewerId) ? Relationship.REQUESTED : Relationship.INCOMING;
     }
 }

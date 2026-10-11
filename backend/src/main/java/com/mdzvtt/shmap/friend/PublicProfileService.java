@@ -1,0 +1,115 @@
+package com.mdzvtt.shmap.friend;
+
+import com.mdzvtt.shmap.block.UserBlockRepository;
+import com.mdzvtt.shmap.exception.FriendsListHiddenException;
+import com.mdzvtt.shmap.exception.PrivateAccountException;
+import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.friend.dto.PublicProfileResponse;
+import com.mdzvtt.shmap.storage.StorageService;
+import com.mdzvtt.shmap.user.User;
+import com.mdzvtt.shmap.user.UserRepository;
+import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class PublicProfileService {
+    private final UserRepository userRepository;
+    private final UserBlockRepository userBlockRepository;
+    private final FriendshipRepository friendshipRepository;
+    private final FriendRequestRepository friendRequestRepository;
+    private final StorageService storageService;
+
+    @Transactional(readOnly = true)
+    public PublicProfileResponse getProfile(Integer viewerId, String username) {
+        User user = findVisibleUser(viewerId, username);
+        boolean self = isSelf(viewerId, user);
+
+        Friendship friendship = friendshipRepository.findByUserIdAndFriendId(viewerId, user.getId()).orElse(null);
+        FriendRequestIds request = friendRequestRepository.findIdsBetween(viewerId, List.of(user.getId())).stream()
+                .findFirst()
+                .orElse(null);
+        Relationship relationship = self ? Relationship.SELF : Relationship.of(viewerId, friendship != null, request);
+        Long requestId = request == null ? null : request.id();
+        long mutualFriendsCount = self ? 0
+                : friendshipRepository.countMutualFriends(viewerId, List.of(user.getId()))
+                        .stream()
+                        .findFirst()
+                        .map(mutual -> mutual.count())
+                        .orElse(0L);
+        boolean previewOnly = !canSeeFullProfile(viewerId, user, friendship != null);
+        Long friendsCount = previewOnly ? null : friendshipRepository.countByUserId(user.getId());
+
+        return new PublicProfileResponse(
+                toSummary(user),
+                user.getBio(),
+                relationship,
+                requestId,
+                friendship != null && friendship.isFavorite(),
+                friendship == null ? null : friendship.getCreatedAt(),
+                mutualFriendsCount,
+                previewOnly,
+                friendsCount,
+                canSeeFriendsList(viewerId, user, friendship != null));
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSummaryResponse> getMutualFriends(Integer viewerId, String username) {
+        User user = findVisibleUser(viewerId, username);
+        if (isSelf(viewerId, user)) {
+            return List.of();
+        }
+
+        return friendshipRepository.findMutualFriends(viewerId, user.getId()).stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSummaryResponse> getFriends(Integer viewerId, String username) {
+        User user = findVisibleUser(viewerId, username);
+
+        boolean friends = friendshipRepository.existsByUserIdAndFriendId(viewerId, user.getId());
+        if (!canSeeFullProfile(viewerId, user, friends)) {
+            throw new PrivateAccountException();
+        }
+        if (!canSeeFriendsList(viewerId, user, friends)) {
+            throw new FriendsListHiddenException();
+        }
+
+        return friendshipRepository.findFriendsOf(user.getId(), viewerId).stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+    private User findVisibleUser(Integer viewerId, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+
+        if (userBlockRepository.existsBetween(viewerId, user.getId())) {
+            throw new UserNotFoundException();
+        }
+
+        return user;
+    }
+
+    private boolean isSelf(Integer viewerId, User user) {
+        return user.getId().equals(viewerId);
+    }
+
+    private boolean canSeeFullProfile(Integer viewerId, User user, boolean friends) {
+        return isSelf(viewerId, user) || friends || !user.isPrivateAccount();
+    }
+
+    private boolean canSeeFriendsList(Integer viewerId, User user, boolean friends) {
+        return isSelf(viewerId, user)
+                || (canSeeFullProfile(viewerId, user, friends) && !user.isFriendsListHidden());
+    }
+
+    private UserSummaryResponse toSummary(User user) {
+        return UserSummaryResponse.from(user, storageService.publicUrl(user.getAvatarKey()));
+    }
+}
