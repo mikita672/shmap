@@ -39,7 +39,12 @@ public class PublicProfileService {
         Long requestId = request == null ? null : request.id();
 
         String avatarUrl = storageService.publicUrl(user.getAvatarKey());
-        return new PublicProfileResponse(UserSummaryResponse.from(user, avatarUrl), user.getBio(), relationship,
-                requestId);
+        return new PublicProfileResponse(
+                UserSummaryResponse.from(user, avatarUrl),
+                user.getBio(),
+                relationship,
+                requestId,
+                friendship.map(Friendship::isFavorite).orElse(false),
+                friendship.map(Friendship::getCreatedAt).orElse(null));
     }
 }
