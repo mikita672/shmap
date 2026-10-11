@@ -41,6 +41,10 @@ public class User implements UserDetails {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(updatable = false)
     private Instant createdAt;
+    @ColumnDefault("false")
+    private boolean privateAccount;
+    @ColumnDefault("false")
+    private boolean friendsListHidden;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
