@@ -25,7 +25,8 @@ The project is in early development. Accounts, profiles, friends and the map wor
 - Share your profile as a link or a QR code.
 - Search for other users, send and answer friend requests, mark friends as favorites, and see mutual friends on public profiles. Private accounts can hide their friends list.
 - Get "People you may know" suggestions: friends of your friends, ranked by mutual friends. You can dismiss any suggestion.
-- Mute friends and block users. Blocking removes the friendship and any pending requests, and the two users stop seeing each other in search and on profiles.
+- See your recent friend activity: who accepted your requests and whose requests you accepted.
+- Mute friends and block users. Blocking removes the friendship, its activity and any pending requests, and the two users stop seeing each other in search and on profiles.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
 - Switch between light and dark themes.
 
@@ -138,6 +139,7 @@ All routes live under `/api/v1`:
 | `/friends` | Friends list, removing friends, favorites, muting |
 | `/friend-requests` | Sending, accepting, declining and cancelling requests |
 | `/friend-suggestions` | "People you may know" and dismissing suggestions |
+| `/friend-activity` | Your recent friend activity, newest first |
 | `/blocks` | Blocking and unblocking users, and the list of users you blocked |
 
 ## CI and releases
