@@ -68,6 +68,7 @@ public class FriendService {
         return new FriendResponse(
                 UserSummaryResponse.from(friend, avatarUrl),
                 friendship.isFavorite(),
+                friendship.isMuted(),
                 friendship.getCreatedAt());
     }
 }

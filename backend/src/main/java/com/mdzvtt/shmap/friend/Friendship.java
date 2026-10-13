@@ -64,6 +64,10 @@ public class Friendship {
         favoritedAt = null;
     }
 
+    public boolean isMuted() {
+        return mutedAt != null;
+    }
+
     public void mute() {
         if (mutedAt == null) {
             mutedAt = Instant.now();
