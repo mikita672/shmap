@@ -69,4 +69,8 @@ public class Friendship {
             mutedAt = Instant.now();
         }
     }
+
+    public void unmute() {
+        mutedAt = null;
+    }
 }

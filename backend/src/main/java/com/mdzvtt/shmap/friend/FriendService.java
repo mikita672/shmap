@@ -52,6 +52,11 @@ public class FriendService {
         findFriendship(userId, friendId).mute();
     }
 
+    @Transactional
+    public void unmute(Integer userId, Integer friendId) {
+        findFriendship(userId, friendId).unmute();
+    }
+
     private Friendship findFriendship(Integer userId, Integer friendId) {
         return friendshipRepository.findByUserIdAndFriendId(userId, friendId)
                 .orElseThrow(FriendNotFoundException::new);
