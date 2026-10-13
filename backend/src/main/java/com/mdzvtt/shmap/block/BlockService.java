@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.block;
 
 import com.mdzvtt.shmap.exception.SelfBlockException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.friend.FriendshipRepository;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BlockService {
     private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
 
     @Transactional
     public void block(Integer blockerId, Integer blockedId) {
@@ -25,6 +27,8 @@ public class BlockService {
         if (userBlockRepository.existsByBlockerIdAndBlockedId(blockerId, blockedId)) {
             return;
         }
+
+        friendshipRepository.deleteBetween(blockerId, blockedId);
 
         User blocker = userRepository.getReferenceById(blockerId);
         userBlockRepository.save(new UserBlock(blocker, blocked));
