@@ -24,6 +24,7 @@ import java.util.List;
 public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendshipRepository friendshipRepository;
+    private final FriendActivityRepository friendActivityRepository;
     private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
@@ -53,7 +54,7 @@ public class FriendRequestService {
         User sender = userRepository.getReferenceById(senderId);
 
         if (friendRequestRepository.existsBySenderIdAndReceiverId(receiverId, senderId)) {
-            becomeFriends(sender, receiver);
+            becomeFriends(receiver, sender);
             return SendFriendRequestResponse.becameFriends();
         }
 
@@ -100,12 +101,15 @@ public class FriendRequestService {
         becomeFriends(request.getSender(), request.getReceiver());
     }
 
-    private void becomeFriends(User first, User second) {
-        friendRequestRepository.deleteBySenderIdAndReceiverId(first.getId(), second.getId());
-        friendRequestRepository.deleteBySenderIdAndReceiverId(second.getId(), first.getId());
+    private void becomeFriends(User requester, User accepter) {
+        friendRequestRepository.deleteBySenderIdAndReceiverId(requester.getId(), accepter.getId());
+        friendRequestRepository.deleteBySenderIdAndReceiverId(accepter.getId(), requester.getId());
         friendshipRepository.saveAll(List.of(
-                new Friendship(first, second),
-                new Friendship(second, first)));
+                new Friendship(requester, accepter),
+                new Friendship(accepter, requester)));
+        friendActivityRepository.saveAll(List.of(
+                new FriendActivity(requester, accepter, FriendActivityType.REQUEST_ACCEPTED),
+                new FriendActivity(accepter, requester, FriendActivityType.NEW_FRIENDSHIP)));
     }
 
     private FriendRequest findIncomingRequest(Integer userId, Long requestId) {
