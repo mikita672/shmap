@@ -11,7 +11,7 @@ public interface UserBlockRepository extends JpaRepository<UserBlock, Long> {
     @EntityGraph(attributePaths = "blocked")
     List<UserBlock> findByBlockerIdOrderByCreatedAtDesc(Integer blockerId);
 
-    void deleteByBlockerIdAndBlockedId(Integer blockerId, Integer blockedId);
+    long deleteByBlockerIdAndBlockedId(Integer blockerId, Integer blockedId);
 
     default boolean existsBetween(Integer userId, Integer otherUserId) {
         return existsByBlockerIdAndBlockedId(userId, otherUserId)

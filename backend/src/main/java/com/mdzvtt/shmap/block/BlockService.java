@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.block;
 
 import com.mdzvtt.shmap.block.dto.BlockedUserResponse;
+import com.mdzvtt.shmap.exception.BlockNotFoundException;
 import com.mdzvtt.shmap.exception.SelfBlockException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.FriendRequestRepository;
@@ -55,7 +56,9 @@ public class BlockService {
 
     @Transactional
     public void unblock(Integer blockerId, Integer blockedId) {
-        userBlockRepository.deleteByBlockerIdAndBlockedId(blockerId, blockedId);
+        if (userBlockRepository.deleteByBlockerIdAndBlockedId(blockerId, blockedId) == 0) {
+            throw new BlockNotFoundException();
+        }
     }
 
     private BlockedUserResponse toResponse(UserBlock block) {
