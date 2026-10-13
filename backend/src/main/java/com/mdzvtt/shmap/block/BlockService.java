@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.block;
 
 import com.mdzvtt.shmap.exception.SelfBlockException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.friend.FriendRequestRepository;
 import com.mdzvtt.shmap.friend.FriendshipRepository;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -15,6 +16,7 @@ public class BlockService {
     private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final FriendRequestRepository friendRequestRepository;
 
     @Transactional
     public void block(Integer blockerId, Integer blockedId) {
@@ -29,6 +31,8 @@ public class BlockService {
         }
 
         friendshipRepository.deleteBetween(blockerId, blockedId);
+        friendRequestRepository.deleteBySenderIdAndReceiverId(blockerId, blockedId);
+        friendRequestRepository.deleteBySenderIdAndReceiverId(blockedId, blockerId);
 
         User blocker = userRepository.getReferenceById(blockerId);
         userBlockRepository.save(new UserBlock(blocker, blocked));
