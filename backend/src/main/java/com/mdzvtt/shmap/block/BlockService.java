@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.block.dto.BlockedUserResponse;
 import com.mdzvtt.shmap.exception.BlockNotFoundException;
 import com.mdzvtt.shmap.exception.SelfBlockException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.friend.FriendActivityRepository;
 import com.mdzvtt.shmap.friend.FriendRequestRepository;
 import com.mdzvtt.shmap.friend.FriendshipRepository;
 import com.mdzvtt.shmap.storage.StorageService;
@@ -22,6 +23,7 @@ public class BlockService {
     private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final FriendActivityRepository friendActivityRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final StorageService storageService;
 
@@ -40,6 +42,7 @@ public class BlockService {
         }
 
         friendshipRepository.deleteBetween(blockerId, blockedId);
+        friendActivityRepository.deleteBetween(blockerId, blockedId);
         friendRequestRepository.deleteBySenderIdAndReceiverId(blockerId, blockedId);
         friendRequestRepository.deleteBySenderIdAndReceiverId(blockedId, blockerId);
 
