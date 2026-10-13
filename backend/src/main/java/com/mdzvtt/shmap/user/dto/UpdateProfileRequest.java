@@ -10,7 +10,11 @@ public record UpdateProfileRequest(
 
         @Size(min = 3, max = 30, message = "Username must be between 3 and 30 characters") @Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "Username can only contain letters, numbers, underscores, dots, or hyphens") String username,
 
-        @Size(max = 160, message = "Bio must be at most 160 characters") String bio) {
+        @Size(max = 160, message = "Bio must be at most 160 characters") String bio,
+
+        Boolean privateAccount,
+
+        Boolean friendsListHidden) {
 
     public UpdateProfileRequest {
         firstName = strip(firstName);
