@@ -102,6 +102,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
               and not exists (select r from FriendRequest r
                               where (r.sender.id = :viewerId and r.receiver = u)
                                  or (r.sender = u and r.receiver.id = :viewerId))
+            """ + UserRepository.NOT_BLOCKED_EITHER_WAY + """
             group by u
             """ + MOST_MUTUAL_FIRST_THEN_A_TO_Z)
     List<FriendSuggestion> findSuggestions(Integer viewerId, Limit limit);
