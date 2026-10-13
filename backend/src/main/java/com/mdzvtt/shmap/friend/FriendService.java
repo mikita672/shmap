@@ -15,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FriendService {
     private final FriendshipRepository friendshipRepository;
+    private final FriendActivityRepository friendActivityRepository;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -35,6 +36,7 @@ public class FriendService {
         if (friendshipRepository.deleteBetween(userId, friendId) == 0) {
             throw new FriendNotFoundException();
         }
+        friendActivityRepository.deleteBetween(userId, friendId);
     }
 
     @Transactional
