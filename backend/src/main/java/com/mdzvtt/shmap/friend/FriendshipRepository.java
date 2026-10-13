@@ -97,6 +97,8 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             join Friendship theirs on theirs.user = mine.friend
             join theirs.friend u
             where mine.user.id = :viewerId
+              and u.id <> :viewerId
+              and not exists (select f from Friendship f where f.user.id = :viewerId and f.friend = u)
             group by u
             """ + MOST_MUTUAL_FIRST_THEN_A_TO_Z)
     List<FriendSuggestion> findSuggestions(Integer viewerId, Limit limit);
