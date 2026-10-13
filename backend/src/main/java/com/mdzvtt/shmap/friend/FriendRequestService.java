@@ -24,6 +24,7 @@ import java.util.List;
 public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendshipRepository friendshipRepository;
+    private final FriendActivityRepository friendActivityRepository;
     private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
@@ -106,6 +107,9 @@ public class FriendRequestService {
         friendshipRepository.saveAll(List.of(
                 new Friendship(requester, accepter),
                 new Friendship(accepter, requester)));
+        friendActivityRepository.saveAll(List.of(
+                new FriendActivity(requester, accepter, FriendActivityType.REQUEST_ACCEPTED),
+                new FriendActivity(accepter, requester, FriendActivityType.NEW_FRIENDSHIP)));
     }
 
     private FriendRequest findIncomingRequest(Integer userId, Long requestId) {
