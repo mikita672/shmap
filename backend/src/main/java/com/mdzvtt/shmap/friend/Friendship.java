@@ -43,6 +43,8 @@ public class Friendship {
 
     private Instant favoritedAt;
 
+    private Instant mutedAt;
+
     public Friendship(User user, User friend) {
         this.user = user;
         this.friend = friend;
