@@ -53,6 +53,11 @@ public class BlockService {
                 .toList();
     }
 
+    @Transactional
+    public void unblock(Integer blockerId, Integer blockedId) {
+        userBlockRepository.deleteByBlockerIdAndBlockedId(blockerId, blockedId);
+    }
+
     private BlockedUserResponse toResponse(UserBlock block) {
         User blocked = block.getBlocked();
         String avatarUrl = storageService.publicUrl(blocked.getAvatarKey());

@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,5 +30,11 @@ public class BlockController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void block(@AuthenticationPrincipal User user, @PathVariable Integer userId) {
         blockService.block(user.getId(), userId);
+    }
+
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unblock(@AuthenticationPrincipal User user, @PathVariable Integer userId) {
+        blockService.unblock(user.getId(), userId);
     }
 }
