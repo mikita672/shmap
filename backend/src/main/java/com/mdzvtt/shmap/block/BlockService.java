@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.block;
 
+import com.mdzvtt.shmap.exception.SelfBlockException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -15,6 +16,10 @@ public class BlockService {
 
     @Transactional
     public void block(Integer blockerId, Integer blockedId) {
+        if (blockerId.equals(blockedId)) {
+            throw new SelfBlockException();
+        }
+
         User blocked = userRepository.findById(blockedId).orElseThrow(UserNotFoundException::new);
 
         if (userBlockRepository.existsByBlockerIdAndBlockedId(blockerId, blockedId)) {
