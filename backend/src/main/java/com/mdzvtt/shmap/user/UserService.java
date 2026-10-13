@@ -73,6 +73,12 @@ public class UserService {
         Optional.ofNullable(request.lastName()).ifPresent(user::setLastName);
         Optional.ofNullable(request.username()).ifPresent(user::setUsername);
         Optional.ofNullable(request.bio()).ifPresent(user::setBio);
+        if (request.privateAccount() != null) {
+            user.setPrivateAccount(request.privateAccount());
+        }
+        if (request.friendsListHidden() != null) {
+            user.setFriendsListHidden(request.friendsListHidden());
+        }
 
         return toProfileResponse(user);
     }
