@@ -16,8 +16,12 @@ public class BlockService {
     @Transactional
     public void block(Integer blockerId, Integer blockedId) {
         User blocked = userRepository.findById(blockedId).orElseThrow(UserNotFoundException::new);
-        User blocker = userRepository.getReferenceById(blockerId);
 
+        if (userBlockRepository.existsByBlockerIdAndBlockedId(blockerId, blockedId)) {
+            return;
+        }
+
+        User blocker = userRepository.getReferenceById(blockerId);
         userBlockRepository.save(new UserBlock(blocker, blocked));
     }
 }
