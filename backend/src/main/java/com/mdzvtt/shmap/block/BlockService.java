@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class BlockService {
@@ -23,6 +25,8 @@ public class BlockService {
         if (blockerId.equals(blockedId)) {
             throw new SelfBlockException();
         }
+
+        userRepository.findAllByIdForUpdate(List.of(blockerId, blockedId));
 
         User blocked = userRepository.findById(blockedId).orElseThrow(UserNotFoundException::new);
 
