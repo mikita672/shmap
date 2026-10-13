@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.friend;
 
+import com.mdzvtt.shmap.exception.SelfDismissException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.dto.FriendSuggestionResponse;
 import com.mdzvtt.shmap.storage.StorageService;
@@ -32,6 +33,10 @@ public class FriendSuggestionService {
 
     @Transactional
     public void dismiss(Integer userId, Integer dismissedId) {
+        if (userId.equals(dismissedId)) {
+            throw new SelfDismissException();
+        }
+
         userRepository.findAllByIdForUpdate(List.of(userId, dismissedId));
 
         User dismissed = userRepository.findById(dismissedId).orElseThrow(UserNotFoundException::new);
