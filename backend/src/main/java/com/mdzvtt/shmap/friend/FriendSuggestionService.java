@@ -32,6 +32,8 @@ public class FriendSuggestionService {
 
     @Transactional
     public void dismiss(Integer userId, Integer dismissedId) {
+        userRepository.findAllByIdForUpdate(List.of(userId, dismissedId));
+
         User dismissed = userRepository.findById(dismissedId).orElseThrow(UserNotFoundException::new);
 
         if (suggestionDismissalRepository.existsByUserIdAndDismissedId(userId, dismissedId)) {
