@@ -94,7 +94,8 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     @Query("""
             select new com.mdzvtt.shmap.friend.FriendSuggestion(u, count(theirs))
             from Friendship mine
-            join Friendship theirs on theirs.user = mine.friend
+            join mine.friend mutual
+            join Friendship theirs on theirs.user = mutual
             join theirs.friend u
             where mine.user.id = :viewerId
               and u.id <> :viewerId
@@ -104,6 +105,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
                                  or (r.sender = u and r.receiver.id = :viewerId))
             """ + UserRepository.NOT_BLOCKED_EITHER_WAY + """
             group by u
+            having count(theirs) filter (where mutual.friendsListHidden = false) > 0
             """ + MOST_MUTUAL_FIRST_THEN_A_TO_Z)
     List<FriendSuggestion> findSuggestions(Integer viewerId, Limit limit);
 
