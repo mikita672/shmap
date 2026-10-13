@@ -33,8 +33,12 @@ public class FriendSuggestionService {
     @Transactional
     public void dismiss(Integer userId, Integer dismissedId) {
         User dismissed = userRepository.findById(dismissedId).orElseThrow(UserNotFoundException::new);
-        User user = userRepository.getReferenceById(userId);
 
+        if (suggestionDismissalRepository.existsByUserIdAndDismissedId(userId, dismissedId)) {
+            return;
+        }
+
+        User user = userRepository.getReferenceById(userId);
         suggestionDismissalRepository.save(new SuggestionDismissal(user, dismissed));
     }
 
