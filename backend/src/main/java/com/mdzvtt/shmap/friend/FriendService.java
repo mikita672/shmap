@@ -47,6 +47,16 @@ public class FriendService {
         findFriendship(userId, friendId).unmarkFavorite();
     }
 
+    @Transactional
+    public void mute(Integer userId, Integer friendId) {
+        findFriendship(userId, friendId).mute();
+    }
+
+    @Transactional
+    public void unmute(Integer userId, Integer friendId) {
+        findFriendship(userId, friendId).unmute();
+    }
+
     private Friendship findFriendship(Integer userId, Integer friendId) {
         return friendshipRepository.findByUserIdAndFriendId(userId, friendId)
                 .orElseThrow(FriendNotFoundException::new);
@@ -58,6 +68,7 @@ public class FriendService {
         return new FriendResponse(
                 UserSummaryResponse.from(friend, avatarUrl),
                 friendship.isFavorite(),
+                friendship.isMuted(),
                 friendship.getCreatedAt());
     }
 }

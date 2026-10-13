@@ -24,6 +24,7 @@ The project is in early development. Accounts, profiles, friends and the map wor
 - Edit your profile: username, email, password and avatar. Avatars are uploaded straight to object storage through a presigned URL.
 - Share your profile as a link or a QR code.
 - Search for other users, send and answer friend requests, mark friends as favorites, and see mutual friends on public profiles. Private accounts can hide their friends list.
+- Mute friends and block users. Blocking removes the friendship and any pending requests, and the two users stop seeing each other in search and on profiles.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
 - Switch between light and dark themes.
 
@@ -42,6 +43,7 @@ The mobile app is built with Expo and React Native in TypeScript, with Expo Rout
 │   │   ├── auth/         registration, login, Google sign-in, password reset
 │   │   ├── user/         account and profile endpoints, avatars
 │   │   ├── friend/       friends, friend requests, user search, public profiles
+│   │   ├── block/        blocking and unblocking users
 │   │   ├── storage/      S3-compatible object storage
 │   │   └── configuration/ security, JWT, OpenAPI
 │   ├── docker-compose.yml  local PostgreSQL
@@ -132,8 +134,9 @@ All routes live under `/api/v1`:
 | `/users` | The current user's profile, email, password, avatar and username checks |
 | `/users/search` | Find users by username |
 | `/profiles/{username}` | Public profiles, their friends and mutual friends |
-| `/friends` | Friends list, removing friends, favorites |
+| `/friends` | Friends list, removing friends, favorites, muting |
 | `/friend-requests` | Sending, accepting, declining and cancelling requests |
+| `/blocks` | Blocking and unblocking users, and the list of users you blocked |
 
 ## CI and releases
 

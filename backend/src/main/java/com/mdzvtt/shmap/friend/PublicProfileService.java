@@ -50,6 +50,7 @@ public class PublicProfileService {
                 relationship,
                 requestId,
                 friendship != null && friendship.isFavorite(),
+                friendship != null && friendship.isMuted(),
                 friendship == null ? null : friendship.getCreatedAt(),
                 mutualFriendsCount,
                 previewOnly,

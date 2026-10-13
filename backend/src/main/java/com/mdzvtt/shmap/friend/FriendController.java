@@ -46,4 +46,16 @@ public class FriendController {
     public void removeFavorite(@AuthenticationPrincipal User user, @PathVariable Integer friendId) {
         friendService.removeFavorite(user.getId(), friendId);
     }
+
+    @PutMapping("/{friendId}/mute")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void mute(@AuthenticationPrincipal User user, @PathVariable Integer friendId) {
+        friendService.mute(user.getId(), friendId);
+    }
+
+    @DeleteMapping("/{friendId}/mute")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unmute(@AuthenticationPrincipal User user, @PathVariable Integer friendId) {
+        friendService.unmute(user.getId(), friendId);
+    }
 }

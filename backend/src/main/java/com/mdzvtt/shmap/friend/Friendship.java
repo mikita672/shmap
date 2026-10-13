@@ -43,6 +43,8 @@ public class Friendship {
 
     private Instant favoritedAt;
 
+    private Instant mutedAt;
+
     public Friendship(User user, User friend) {
         this.user = user;
         this.friend = friend;
@@ -60,5 +62,19 @@ public class Friendship {
 
     public void unmarkFavorite() {
         favoritedAt = null;
+    }
+
+    public boolean isMuted() {
+        return mutedAt != null;
+    }
+
+    public void mute() {
+        if (mutedAt == null) {
+            mutedAt = Instant.now();
+        }
+    }
+
+    public void unmute() {
+        mutedAt = null;
     }
 }
