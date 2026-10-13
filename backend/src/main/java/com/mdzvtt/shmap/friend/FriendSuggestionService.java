@@ -1,8 +1,10 @@
 package com.mdzvtt.shmap.friend;
 
+import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.dto.FriendSuggestionResponse;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
+import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Limit;
@@ -17,6 +19,8 @@ public class FriendSuggestionService {
     private static final Limit RESULT_LIMIT = Limit.of(20);
 
     private final FriendshipRepository friendshipRepository;
+    private final SuggestionDismissalRepository suggestionDismissalRepository;
+    private final UserRepository userRepository;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -24,6 +28,14 @@ public class FriendSuggestionService {
         return friendshipRepository.findSuggestions(viewerId, RESULT_LIMIT).stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public void dismiss(Integer userId, Integer dismissedId) {
+        User dismissed = userRepository.findById(dismissedId).orElseThrow(UserNotFoundException::new);
+        User user = userRepository.getReferenceById(userId);
+
+        suggestionDismissalRepository.save(new SuggestionDismissal(user, dismissed));
     }
 
     private FriendSuggestionResponse toResponse(FriendSuggestion suggestion) {
