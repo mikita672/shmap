@@ -12,7 +12,9 @@ public record ProfileResponse(
         String email,
         String bio,
         String avatarUrl,
-        Instant createdAt) {
+        Instant createdAt,
+        boolean privateAccount,
+        boolean friendsListHidden) {
 
     public static ProfileResponse from(User user, String avatarUrl) {
         return new ProfileResponse(
@@ -23,6 +25,8 @@ public record ProfileResponse(
                 user.getEmail(),
                 user.getBio(),
                 avatarUrl,
-                user.getCreatedAt());
+                user.getCreatedAt(),
+                user.isPrivateAccount(),
+                user.isFriendsListHidden());
     }
 }
