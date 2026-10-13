@@ -104,6 +104,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
                               where (r.sender.id = :viewerId and r.receiver = u)
                                  or (r.sender = u and r.receiver.id = :viewerId))
             """ + UserRepository.NOT_BLOCKED_EITHER_WAY + """
+              and not exists (select d from SuggestionDismissal d where d.user.id = :viewerId and d.dismissed = u)
             group by u
             having count(theirs) filter (where mutual.friendsListHidden = false) > 0
             """ + MOST_MUTUAL_FIRST_THEN_A_TO_Z)
