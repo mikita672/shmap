@@ -15,7 +15,7 @@ public class EmailService {
 
     public void sendOtpEmail(String recipientEmail, String otp) throws Exception {
         CreateEmailOptions options = CreateEmailOptions.builder()
-                .from("Acme <onboarding@resend.dev>")
+                .from("No Reply <no-reply@shmap.dev>")
                 .to(recipientEmail)
                 .subject("Your Password Reset Code")
                 .text("Your password reset code is: " + otp + ". It expires in 15 minutes")
