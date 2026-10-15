@@ -74,6 +74,8 @@
     /* Avatar */
     --avatar: 43 81% 88%; /* Lemon Meringue */
     --avatar-foreground: 93.1 15.03% 37.84%; /* Dark Olive Green */
+    --avatar-surface: 52 93% 93%; /* Cornsilk — avatar on a row/card */
+    --avatar-surface-foreground: 93.1 15.03% 37.84%; /* Dark Olive Green */
 
     /* Profile action buttons */
     --action: 43 81% 88%; /* Lemon Meringue — pill background */
@@ -156,8 +158,10 @@
     --searchbar-placeholder: 22.74 65.52% 28.43%; /* Russet */
 
     /* Avatar */
-    --avatar: 93.1 15.03% 37.84%; /* Dark Olive Green */
-    --avatar-foreground: 43 81% 88%; /* Lemon Meringue */
+    --avatar: 22.74 65.52% 28.43%; /* Russet */
+    --avatar-foreground: 30 34% 58%; /* Camel */
+    --avatar-surface: 30 34% 58%; /* Camel — avatar on a row/card */
+    --avatar-surface-foreground: 22.74 65.52% 28.43%; /* Russet */
 
     /* Profile action buttons */
     --action: 22.74 65.52% 28.43%; /* Russet — pill background */

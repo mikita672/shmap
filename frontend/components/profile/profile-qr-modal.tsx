@@ -64,7 +64,7 @@ export function ProfileQrModal({
             className="absolute right-4 top-4"
           />
 
-          <Avatar uri={profile.avatarUrl} size={72} />
+          <Avatar uri={profile.avatarUrl} size={72} tone="surface" />
 
           <View className="items-center gap-0.5">
             <Text className="text-card-title text-2xl leading-8 tracking-[0.5px] text-center">

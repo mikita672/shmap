@@ -65,6 +65,8 @@ module.exports = {
         avatar: {
           DEFAULT: "hsl(var(--avatar))",
           foreground: "hsl(var(--avatar-foreground))",
+          surface: "hsl(var(--avatar-surface))",
+          "surface-foreground": "hsl(var(--avatar-surface-foreground))",
         },
         action: {
           DEFAULT: "hsl(var(--action))",

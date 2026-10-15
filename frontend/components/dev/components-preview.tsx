@@ -3,6 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PillButton } from "@/components/ui/pill-button";
@@ -67,6 +68,16 @@ export function ComponentsPreview() {
           onChangeText={setQuery}
           placeholder="Search friends"
         />
+      </SettingsSection>
+
+      <SettingsSection title="Avatar (on background, on surface)">
+        <View className="flex-row items-center gap-4 px-5">
+          <Avatar />
+          <View className="rounded-full bg-action p-2">
+            <Avatar tone="surface" />
+          </View>
+          <Avatar size={96} />
+        </View>
       </SettingsSection>
 
       <SettingsSection title="Segmented Control">

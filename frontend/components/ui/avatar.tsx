@@ -1,12 +1,41 @@
 import { useState } from "react";
 import { View, type ViewProps } from "react-native";
+import { cva, type VariantProps } from "class-variance-authority";
 import { AccountCircleIcon } from "@/components/ui/account-circle-icon";
 import { Image } from "@/lib/image";
 import { cn } from "@/lib/utils";
 
 const ICON_TO_AVATAR_RATIO = 45 / 48;
 
-export interface AvatarProps extends ViewProps {
+const avatarVariants = cva(
+  "items-center justify-center overflow-hidden rounded-full",
+  {
+    variants: {
+      tone: {
+        background: "bg-avatar",
+        surface: "bg-avatar-surface",
+      },
+    },
+    defaultVariants: {
+      tone: "background",
+    },
+  },
+);
+
+const avatarIconVariants = cva("", {
+  variants: {
+    tone: {
+      background: "text-avatar-foreground",
+      surface: "text-avatar-surface-foreground",
+    },
+  },
+  defaultVariants: {
+    tone: "background",
+  },
+});
+
+export interface AvatarProps
+  extends ViewProps, VariantProps<typeof avatarVariants> {
   uri?: string | null;
   size?: number;
   iconClassName?: string;
@@ -15,6 +44,7 @@ export interface AvatarProps extends ViewProps {
 export function Avatar({
   uri,
   size = 48,
+  tone,
   className,
   iconClassName,
   style,
@@ -24,10 +54,7 @@ export function Avatar({
 
   return (
     <View
-      className={cn(
-        "items-center justify-center overflow-hidden rounded-full bg-avatar",
-        className,
-      )}
+      className={cn(avatarVariants({ tone }), className)}
       style={[{ width: size, height: size }, style]}
       {...props}
     >
@@ -42,7 +69,7 @@ export function Avatar({
       ) : (
         <AccountCircleIcon
           size={size * ICON_TO_AVATAR_RATIO}
-          className={cn("text-avatar-foreground", iconClassName)}
+          className={cn(avatarIconVariants({ tone }), iconClassName)}
         />
       )}
     </View>
