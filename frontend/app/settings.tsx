@@ -10,16 +10,16 @@ export default function SettingsScreen() {
   return (
     <View className="flex-1 bg-background">
       <View
-        className="h-[52px] flex-row items-center px-6"
+        className="h-[52px] items-center justify-center"
         style={{ marginTop: headerTop }}
       >
-        <BackButton className="relative" />
         <Text
           role="heading"
           className="text-heading text-2xl leading-8 tracking-[0.5px]"
         >
           Settings
         </Text>
+        <BackButton className="absolute left-6 top-0" />
       </View>
     </View>
   );
