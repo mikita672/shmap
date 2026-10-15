@@ -29,6 +29,8 @@
 
     /* Logo / wordmark — Alloy Orange */
     --brand: 25.82 72.69% 44.51%;
+    /* Text on the brand color (badge count) — Cornsilk */
+    --brand-foreground: 52 93% 93%;
 
     /* Typed text on input / card surfaces — Dark Camel */
     --on-surface: 30 34% 38%;
@@ -110,6 +112,8 @@
 
     /* Logo / wordmark — Alloy Orange */
     --brand: 25.82 72.69% 44.51%;
+    /* Text on the brand color (badge count) — Cornsilk */
+    --brand-foreground: 52 93% 93%;
 
     /* Typed text on input surfaces — Russet */
     --on-surface: 22.74 65.52% 28.43%;

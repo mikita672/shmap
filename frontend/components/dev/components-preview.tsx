@@ -2,6 +2,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PillButton } from "@/components/ui/pill-button";
 import { RoundButton } from "@/components/ui/round-button";
@@ -43,6 +44,15 @@ export function ComponentsPreview() {
           <PillButton label="Add" />
           <PillButton label="Cancel" variant="tonal" />
           <PillButton label="Add" disabled />
+        </View>
+      </SettingsSection>
+
+      <SettingsSection title="Badge (2, 12, 120, 0)">
+        <View className="flex-row items-center gap-4 px-5">
+          <Badge count={2} />
+          <Badge count={12} />
+          <Badge count={120} />
+          <Badge count={0} />
         </View>
       </SettingsSection>
     </ScrollView>

@@ -9,7 +9,10 @@ module.exports = {
       colors: {
         background: "hsl(var(--background))",
         surface: "hsl(var(--surface))",
-        brand: "hsl(var(--brand))",
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          foreground: "hsl(var(--brand-foreground))",
+        },
         "on-surface": "hsl(var(--on-surface))",
         "on-surface-muted": "hsl(var(--on-surface-muted))",
         border: "hsl(var(--border))",
