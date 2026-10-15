@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Button } from "@/components/ui/button";
+import { PillButton } from "@/components/ui/pill-button";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 
@@ -34,6 +35,14 @@ export function ComponentsPreview() {
             accessibilityLabel="Add"
             disabled
           />
+        </View>
+      </SettingsSection>
+
+      <SettingsSection title="Pill Button">
+        <View className="flex-row gap-4 px-5">
+          <PillButton label="Add" />
+          <PillButton label="Cancel" variant="tonal" />
+          <PillButton label="Add" disabled />
         </View>
       </SettingsSection>
     </ScrollView>
