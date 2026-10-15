@@ -3,12 +3,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { BackButton } from "@/components/ui/back-button";
 import { Text } from "@/components/ui/text";
+import { LogoutButton } from "@/components/settings/logout-button";
 import { SettingsRow } from "@/components/settings/settings-row";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const { signOut } = useAuth();
   const headerTop = Math.max(insets.top + 8, 48);
 
   return (
@@ -26,7 +29,7 @@ export default function SettingsScreen() {
         <BackButton className="absolute left-6 top-0" />
       </View>
 
-      <View className="gap-6 px-6 pt-3">
+      <View className="flex-1 gap-6 px-6 pt-3">
         <SettingsSection title="Appearance">
           <ThemeSwitch />
         </SettingsSection>
@@ -38,6 +41,10 @@ export default function SettingsScreen() {
             onPress={() => router.push("/change-password")}
           />
         </SettingsSection>
+      </View>
+
+      <View className="px-6" style={{ paddingBottom: insets.bottom + 24 }}>
+        <LogoutButton onPress={() => signOut()} />
       </View>
     </View>
   );
