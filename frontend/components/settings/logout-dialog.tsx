@@ -67,12 +67,13 @@ export function LogoutDialog({
               onPress={onConfirm}
             />
             <Button
+              variant="secondary"
               size="xl"
-              className="w-full bg-action active:bg-action/80"
+              className="w-full"
               disabled={isPending}
               onPress={handleCancel}
             >
-              <Text className="text-action-foreground">Cancel</Text>
+              <Text>Cancel</Text>
             </Button>
           </View>
         </View>

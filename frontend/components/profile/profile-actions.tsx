@@ -13,9 +13,6 @@ export interface ProfileActionsProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const actionButtonClassName = "bg-action active:bg-action/80";
-const actionTextClassName = "text-action-foreground";
-
 export function ProfileActions({
   onShareProfile,
   onShowQrCode,
@@ -28,11 +25,12 @@ export function ProfileActions({
     <View className={cn("gap-3", className)} style={style}>
       <View className="flex-row gap-2">
         <Button
+          variant="secondary"
           size="xl"
-          className={cn("flex-1", actionButtonClassName)}
+          className="flex-1"
           onPress={onShareProfile}
         >
-          <Text className={actionTextClassName}>Share profile</Text>
+          <Text>Share profile</Text>
         </Button>
         <Button
           size="icon-xl"
@@ -48,20 +46,12 @@ export function ProfileActions({
         </Button>
       </View>
 
-      <Button
-        size="xl"
-        className={actionButtonClassName}
-        onPress={onOpenSettings}
-      >
-        <Text className={actionTextClassName}>Settings</Text>
+      <Button variant="secondary" size="xl" onPress={onOpenSettings}>
+        <Text>Settings</Text>
       </Button>
 
-      <Button
-        size="xl"
-        className={actionButtonClassName}
-        onPress={onEditProfile}
-      >
-        <Text className={actionTextClassName}>Edit profile</Text>
+      <Button variant="secondary" size="xl" onPress={onEditProfile}>
+        <Text>Edit profile</Text>
       </Button>
     </View>
   );
