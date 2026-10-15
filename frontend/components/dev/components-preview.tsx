@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { PillButton } from "@/components/ui/pill-button";
 import { RoundButton } from "@/components/ui/round-button";
 import { SearchField } from "@/components/ui/search-field";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Text } from "@/components/ui/text";
 
 export function ComponentsPreview() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState<"friends" | "requests">("friends");
 
   return (
     <ScrollView
@@ -64,6 +66,17 @@ export function ComponentsPreview() {
           value={query}
           onChangeText={setQuery}
           placeholder="Search friends"
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Segmented Control">
+        <SegmentedControl
+          segments={[
+            { value: "friends", label: "Friends" },
+            { value: "requests", label: "Requests", badge: 2 },
+          ]}
+          value={tab}
+          onValueChange={setTab}
         />
       </SettingsSection>
     </ScrollView>
