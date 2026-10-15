@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { BackButton } from "@/components/ui/back-button";
 import { Text } from "@/components/ui/text";
 import { LogoutButton } from "@/components/settings/logout-button";
+import { LogoutDialog } from "@/components/settings/logout-dialog";
 import { SettingsRow } from "@/components/settings/settings-row";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -13,6 +15,17 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { signOut } = useAuth();
   const headerTop = Math.max(insets.top + 8, 48);
+  const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -44,8 +57,15 @@ export default function SettingsScreen() {
       </View>
 
       <View className="px-6" style={{ paddingBottom: insets.bottom + 24 }}>
-        <LogoutButton onPress={() => signOut()} />
+        <LogoutButton onPress={() => setLogoutDialogVisible(true)} />
       </View>
+
+      <LogoutDialog
+        visible={logoutDialogVisible}
+        isPending={isSigningOut}
+        onConfirm={handleLogout}
+        onCancel={() => setLogoutDialogVisible(false)}
+      />
     </View>
   );
 }
