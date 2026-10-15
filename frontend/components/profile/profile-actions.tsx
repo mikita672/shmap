@@ -8,7 +8,6 @@ export interface ProfileActionsProps {
   onShareProfile?: () => void;
   onShowQrCode?: () => void;
   onOpenSettings?: () => void;
-  onResetPassword?: () => void;
   onEditProfile?: () => void;
   className?: string;
   style?: StyleProp<ViewStyle>;
@@ -21,7 +20,6 @@ export function ProfileActions({
   onShareProfile,
   onShowQrCode,
   onOpenSettings,
-  onResetPassword,
   onEditProfile,
   className,
   style,
@@ -55,20 +53,7 @@ export function ProfileActions({
         className={actionButtonClassName}
         onPress={onOpenSettings}
       >
-        <MaterialIcons
-          name="settings"
-          size={24}
-          className={actionTextClassName}
-        />
         <Text className={actionTextClassName}>Settings</Text>
-      </Button>
-
-      <Button
-        size="xl"
-        className={actionButtonClassName}
-        onPress={onResetPassword}
-      >
-        <Text className={actionTextClassName}>Reset password</Text>
       </Button>
 
       <Button
