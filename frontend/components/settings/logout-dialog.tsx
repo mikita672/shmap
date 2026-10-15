@@ -34,8 +34,8 @@ export function LogoutDialog({
         <Pressable
           className="absolute inset-0 bg-black/60"
           onPress={handleCancel}
-          accessibilityRole="button"
-          accessibilityLabel="Cancel log out"
+          accessible={false}
+          importantForAccessibility="no"
         />
 
         <View
