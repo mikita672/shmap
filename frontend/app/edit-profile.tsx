@@ -151,7 +151,6 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
       >
         <EditableAvatar
           uri={profile.avatarUrl}
-          fallbackText={`${values.firstName} ${values.lastName}`}
           isLoading={avatar.isPending}
           onEdit={() => setAvatarSheetVisible(true)}
         />
