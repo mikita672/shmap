@@ -21,14 +21,14 @@ The project is in early development. Accounts, profiles, friends and the map wor
 
 - Sign up with email and password or with Google. Sessions use JWT access and refresh tokens.
 - Reset a forgotten password with a one-time code sent by email.
-- Edit your profile: username, email, password and avatar. Avatars are uploaded straight to object storage through a presigned URL.
+- Edit your profile: username, email and avatar. Avatars are uploaded straight to object storage through a presigned URL.
 - Share your profile as a link or a QR code.
 - Search for other users, send and answer friend requests, mark friends as favorites, and see mutual friends on public profiles. Private accounts can hide their friends list.
 - Get "People you may know" suggestions: friends of your friends, ranked by mutual friends. You can dismiss any suggestion.
 - See your recent friend activity: who accepted your requests and whose requests you accepted.
 - Mute friends and block users. Blocking removes the friendship, its activity and any pending requests, and the two users stop seeing each other in search and on profiles.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
-- Switch between light and dark themes.
+- Use the Settings screen to pick a light, dark or system theme, change your password, and log out.
 
 ## Tech stack
 
@@ -87,15 +87,15 @@ The API listens on `http://localhost:8080`. Hibernate creates and updates the sc
 
 The backend reads these environment variables:
 
-| Variable | Purpose |
-| --- | --- |
-| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Local database, used by Docker Compose and the `dev` profile |
-| `DB_URL`, `DB_USER`, `DB_PASSWORD` | Database connection outside the `dev` profile |
-| `JWT_SECRET` | Key for signing tokens, at least 256 bits |
-| `RESEND_API_KEY` | Sends password reset emails |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID that ID tokens are checked against |
-| `STORAGE_ENDPOINT`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY_ID`, `STORAGE_SECRET_ACCESS_KEY`, `STORAGE_PUBLIC_BASE_URL` | S3-compatible bucket for avatars |
-| `STORAGE_REGION` | Optional, defaults to `auto` |
+| Variable                                                                                                              | Purpose                                                      |
+| --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`                                                                   | Local database, used by Docker Compose and the `dev` profile |
+| `DB_URL`, `DB_USER`, `DB_PASSWORD`                                                                                    | Database connection outside the `dev` profile                |
+| `JWT_SECRET`                                                                                                          | Key for signing tokens, at least 256 bits                    |
+| `RESEND_API_KEY`                                                                                                      | Sends password reset emails                                  |
+| `GOOGLE_CLIENT_ID`                                                                                                    | Google OAuth client ID that ID tokens are checked against    |
+| `STORAGE_ENDPOINT`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY_ID`, `STORAGE_SECRET_ACCESS_KEY`, `STORAGE_PUBLIC_BASE_URL` | S3-compatible bucket for avatars                             |
+| `STORAGE_REGION`                                                                                                      | Optional, defaults to `auto`                                 |
 
 ### Mobile app
 
@@ -110,12 +110,12 @@ The app uses native modules (MapLibre and Google Sign-In), so it won't run in Ex
 
 Set these in `frontend/.env`:
 
-| Variable | Purpose |
-| --- | --- |
-| `EXPO_PUBLIC_API_URL` | Backend base URL. An Android emulator reaches your machine at `http://10.0.2.2:8080`. |
-| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Google OAuth web client ID |
-| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | Google OAuth iOS client ID |
-| `EXPO_PUBLIC_IOS_URL_SCHEME` | Reversed iOS client ID, used as the Google Sign-In URL scheme |
+| Variable                           | Purpose                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_API_URL`              | Backend base URL. An Android emulator reaches your machine at `http://10.0.2.2:8080`. |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Google OAuth web client ID                                                            |
+| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | Google OAuth iOS client ID                                                            |
+| `EXPO_PUBLIC_IOS_URL_SCHEME`       | Reversed iOS client ID, used as the Google Sign-In URL scheme                         |
 
 Before you push, run the same checks CI runs:
 
@@ -130,17 +130,17 @@ With the backend running, Swagger UI is at [http://localhost:8080/swagger-ui.htm
 
 All routes live under `/api/v1`:
 
-| Path | What it covers |
-| --- | --- |
-| `/auth` | Register, log in, refresh tokens, Google sign-in, password reset |
-| `/users` | The current user's profile, email, password, avatar and username checks |
-| `/users/search` | Find users by username |
-| `/profiles/{username}` | Public profiles, their friends and mutual friends |
-| `/friends` | Friends list, removing friends, favorites, muting |
-| `/friend-requests` | Sending, accepting, declining and cancelling requests |
-| `/friend-suggestions` | "People you may know" and dismissing suggestions |
-| `/friend-activity` | Your recent friend activity, newest first |
-| `/blocks` | Blocking and unblocking users, and the list of users you blocked |
+| Path                   | What it covers                                                          |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `/auth`                | Register, log in, refresh tokens, Google sign-in, password reset        |
+| `/users`               | The current user's profile, email, password, avatar and username checks |
+| `/users/search`        | Find users by username                                                  |
+| `/profiles/{username}` | Public profiles, their friends and mutual friends                       |
+| `/friends`             | Friends list, removing friends, favorites, muting                       |
+| `/friend-requests`     | Sending, accepting, declining and cancelling requests                   |
+| `/friend-suggestions`  | "People you may know" and dismissing suggestions                        |
+| `/friend-activity`     | Your recent friend activity, newest first                               |
+| `/blocks`              | Blocking and unblocking users, and the list of users you blocked        |
 
 ## CI and releases
 
