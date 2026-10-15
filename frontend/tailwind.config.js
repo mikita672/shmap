@@ -70,6 +70,8 @@ module.exports = {
           "accent-foreground": "hsl(var(--action-accent-foreground))",
           chip: "hsl(var(--action-chip))",
           "chip-foreground": "hsl(var(--action-chip-foreground))",
+          tonal: "hsl(var(--action-tonal))",
+          "tonal-foreground": "hsl(var(--action-tonal-foreground))",
         },
       },
       borderWidth: {
