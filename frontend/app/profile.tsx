@@ -86,6 +86,7 @@ export default function ProfileScreen() {
       <ProfileActions
         className="px-6"
         style={{ paddingBottom: insets.bottom + 24 }}
+        onOpenSettings={() => router.push("/settings")}
         onResetPassword={() => router.push("/change-password")}
         onEditProfile={() => router.push("/edit-profile")}
         onShareProfile={handleShareProfile}

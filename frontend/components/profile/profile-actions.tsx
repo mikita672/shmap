@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 export interface ProfileActionsProps {
   onShareProfile?: () => void;
   onShowQrCode?: () => void;
+  onOpenSettings?: () => void;
   onResetPassword?: () => void;
   onEditProfile?: () => void;
   className?: string;
@@ -19,6 +20,7 @@ const actionTextClassName = "text-action-foreground";
 export function ProfileActions({
   onShareProfile,
   onShowQrCode,
+  onOpenSettings,
   onResetPassword,
   onEditProfile,
   className,
@@ -47,6 +49,19 @@ export function ProfileActions({
           />
         </Button>
       </View>
+
+      <Button
+        size="xl"
+        className={actionButtonClassName}
+        onPress={onOpenSettings}
+      >
+        <MaterialIcons
+          name="settings"
+          size={24}
+          className={actionTextClassName}
+        />
+        <Text className={actionTextClassName}>Settings</Text>
+      </Button>
 
       <Button
         size="xl"
