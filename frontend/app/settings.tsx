@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
 import { Text } from "@/components/ui/text";
 import { LogoutButton } from "@/components/settings/logout-button";
@@ -22,6 +23,8 @@ export default function SettingsScreen() {
     setIsSigningOut(true);
     try {
       await signOut();
+    } catch {
+      toast.error("Couldn't log out. Please try again.");
     } finally {
       setIsSigningOut(false);
     }
