@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,17 +7,11 @@ import {
   StyleSheet,
   LayoutChangeEvent,
 } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { MaterialIcons } from "@/lib/icons";
 import { useTheme, type ThemePreference } from "@/hooks/useTheme";
+import { useSlidingPill } from "@/hooks/useSlidingPill";
 import { cn } from "@/lib/utils";
 
 interface ThemeSwitchProps {
@@ -51,18 +45,15 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
     THEME_OPTIONS.findIndex((opt) => opt.key === themePreference),
   );
 
-  const prevIndexRef = useRef(selectedIndex);
-  const prevTabWidthRef = useRef(0);
-  const isInitializedRef = useRef(false);
-
-  const translateX = useSharedValue(0);
-  const scaleX = useSharedValue(1);
-  const scaleY = useSharedValue(1);
-
   const tabCount = THEME_OPTIONS.length;
   const availableWidth = Math.max(0, containerWidth - PADDING * 2);
   const tabWidth =
     containerWidth > 0 ? (availableWidth - GAP * (tabCount - 1)) / tabCount : 0;
+
+  const pillAnimatedStyle = useSlidingPill(
+    selectedIndex,
+    PADDING + selectedIndex * (tabWidth + GAP),
+  );
 
   const handleLayout = (e: LayoutChangeEvent) => {
     const width = e.nativeEvent.layout.width;
@@ -70,70 +61,6 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
       setContainerWidth(width);
     }
   };
-
-  useEffect(() => {
-    if (tabWidth <= 0) return;
-
-    const targetX = PADDING + selectedIndex * (tabWidth + GAP);
-
-    if (!isInitializedRef.current) {
-      translateX.value = targetX;
-      isInitializedRef.current = true;
-      prevIndexRef.current = selectedIndex;
-      prevTabWidthRef.current = tabWidth;
-      return;
-    }
-
-    const prevIndex = prevIndexRef.current;
-    const tabWidthChanged = prevTabWidthRef.current !== tabWidth;
-    prevTabWidthRef.current = tabWidth;
-
-    if (tabWidthChanged && prevIndex === selectedIndex) {
-      translateX.value = targetX;
-      return;
-    }
-
-    if (prevIndex !== selectedIndex) {
-      const distance = Math.abs(selectedIndex - prevIndex);
-
-      const stretchFactor = 1 + Math.min(distance * 0.18, 0.35);
-      const squashFactor = 1 - Math.min(distance * 0.1, 0.2);
-
-      scaleX.value = withSequence(
-        withTiming(stretchFactor, {
-          duration: 65,
-          easing: Easing.out(Easing.quad),
-        }),
-        withTiming(1, { duration: 75, easing: Easing.inOut(Easing.quad) }),
-      );
-
-      scaleY.value = withSequence(
-        withTiming(squashFactor, {
-          duration: 65,
-          easing: Easing.out(Easing.quad),
-        }),
-        withTiming(1, { duration: 75, easing: Easing.inOut(Easing.quad) }),
-      );
-
-      translateX.value = withSpring(targetX, {
-        stiffness: 280,
-        damping: 24,
-        mass: 0.45,
-      });
-
-      prevIndexRef.current = selectedIndex;
-    }
-  }, [selectedIndex, tabWidth, translateX, scaleX, scaleY]);
-
-  const pillAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { scaleX: scaleX.value },
-        { scaleY: scaleY.value },
-      ],
-    };
-  });
 
   const handleSelect = (key: ThemePreference) => {
     if (key === themePreference) return;
