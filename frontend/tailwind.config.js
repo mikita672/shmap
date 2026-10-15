@@ -68,6 +68,8 @@ module.exports = {
           foreground: "hsl(var(--action-foreground))",
           accent: "hsl(var(--action-accent))",
           "accent-foreground": "hsl(var(--action-accent-foreground))",
+          chip: "hsl(var(--action-chip))",
+          "chip-foreground": "hsl(var(--action-chip-foreground))",
         },
       },
       borderWidth: {

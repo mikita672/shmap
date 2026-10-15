@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 export interface ProfileActionsProps {
   onShareProfile?: () => void;
   onShowQrCode?: () => void;
-  onResetPassword?: () => void;
+  onOpenSettings?: () => void;
   onEditProfile?: () => void;
   className?: string;
   style?: StyleProp<ViewStyle>;
@@ -19,7 +19,7 @@ const actionTextClassName = "text-action-foreground";
 export function ProfileActions({
   onShareProfile,
   onShowQrCode,
-  onResetPassword,
+  onOpenSettings,
   onEditProfile,
   className,
   style,
@@ -51,9 +51,9 @@ export function ProfileActions({
       <Button
         size="xl"
         className={actionButtonClassName}
-        onPress={onResetPassword}
+        onPress={onOpenSettings}
       >
-        <Text className={actionTextClassName}>Reset password</Text>
+        <Text className={actionTextClassName}>Settings</Text>
       </Button>
 
       <Button

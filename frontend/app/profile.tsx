@@ -86,7 +86,7 @@ export default function ProfileScreen() {
       <ProfileActions
         className="px-6"
         style={{ paddingBottom: insets.bottom + 24 }}
-        onResetPassword={() => router.push("/change-password")}
+        onOpenSettings={() => router.push("/settings")}
         onEditProfile={() => router.push("/edit-profile")}
         onShareProfile={handleShareProfile}
         onShowQrCode={() => setQrModalVisible(true)}
