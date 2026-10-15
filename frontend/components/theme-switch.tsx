@@ -16,7 +16,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { Ionicons } from "@/lib/icons";
+import { MaterialIcons } from "@/lib/icons";
 import { useTheme, type ThemePreference } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
@@ -27,31 +27,16 @@ interface ThemeSwitchProps {
 const THEME_OPTIONS: {
   key: ThemePreference;
   label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  activeIcon: keyof typeof Ionicons.glyphMap;
+  icon: keyof typeof MaterialIcons.glyphMap;
 }[] = [
-  {
-    key: "light",
-    label: "Light",
-    icon: "sunny-outline",
-    activeIcon: "sunny",
-  },
-  {
-    key: "dark",
-    label: "Dark",
-    icon: "moon-outline",
-    activeIcon: "moon",
-  },
-  {
-    key: "auto",
-    label: "Auto",
-    icon: "phone-portrait-outline",
-    activeIcon: "phone-portrait",
-  },
+  { key: "light", label: "Light", icon: "light-mode" },
+  { key: "dark", label: "Dark", icon: "dark-mode" },
+  { key: "auto", label: "Auto", icon: "smartphone" },
 ];
 
 const TRACK_HEIGHT = 60;
 const PADDING = 4;
+const GAP = 4;
 const PILL_HEIGHT = TRACK_HEIGHT - PADDING * 2;
 const PILL_RADIUS = PILL_HEIGHT / 2;
 const TRACK_RADIUS = TRACK_HEIGHT / 2;
@@ -76,7 +61,8 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
 
   const tabCount = THEME_OPTIONS.length;
   const availableWidth = Math.max(0, containerWidth - PADDING * 2);
-  const tabWidth = containerWidth > 0 ? availableWidth / tabCount : 0;
+  const tabWidth =
+    containerWidth > 0 ? (availableWidth - GAP * (tabCount - 1)) / tabCount : 0;
 
   const handleLayout = (e: LayoutChangeEvent) => {
     const width = e.nativeEvent.layout.width;
@@ -88,7 +74,7 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
   useEffect(() => {
     if (tabWidth <= 0) return;
 
-    const targetX = PADDING + selectedIndex * tabWidth;
+    const targetX = PADDING + selectedIndex * (tabWidth + GAP);
 
     if (!isInitializedRef.current) {
       translateX.value = targetX;
@@ -163,7 +149,7 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
     <View
       onLayout={handleLayout}
       style={styles.track}
-      className={cn("w-full bg-surface border border-border/50", className)}
+      className={cn("w-full bg-action", className)}
     >
       {containerWidth > 0 && (
         <Animated.View
@@ -174,7 +160,7 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
             },
             pillAnimatedStyle,
           ]}
-          className="bg-primary shadow-sm shadow-black/10"
+          className="bg-action-chip"
         />
       )}
 
@@ -191,21 +177,21 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
               accessibilityLabel={`${option.label} theme`}
               style={styles.tabItem}
             >
-              <Ionicons
-                name={isSelected ? option.activeIcon : option.icon}
+              <MaterialIcons
+                name={option.icon}
                 size={20}
                 className={
                   isSelected
-                    ? "text-primary-foreground"
-                    : "text-on-surface-muted"
+                    ? "text-action-chip-foreground"
+                    : "text-action-foreground"
                 }
               />
               <Text
                 className={cn(
-                  "text-xs font-semibold mt-1",
+                  "text-xs mt-0.5",
                   isSelected
-                    ? "text-primary-foreground"
-                    : "text-on-surface-muted",
+                    ? "font-medium text-action-chip-foreground"
+                    : "text-action-foreground",
                 )}
               >
                 {option.label}
@@ -236,6 +222,8 @@ const styles = StyleSheet.create({
   },
   tabsRow: {
     flexDirection: "row",
+    paddingHorizontal: PADDING,
+    gap: GAP,
     height: PILL_HEIGHT,
     zIndex: 1,
   },
