@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -6,10 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PillButton } from "@/components/ui/pill-button";
 import { RoundButton } from "@/components/ui/round-button";
+import { SearchField } from "@/components/ui/search-field";
 import { Text } from "@/components/ui/text";
 
 export function ComponentsPreview() {
   const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState("");
 
   return (
     <ScrollView
@@ -54,6 +57,14 @@ export function ComponentsPreview() {
           <Badge count={120} />
           <Badge count={0} />
         </View>
+      </SettingsSection>
+
+      <SettingsSection title="Search Field">
+        <SearchField
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search friends"
+        />
       </SettingsSection>
     </ScrollView>
   );
