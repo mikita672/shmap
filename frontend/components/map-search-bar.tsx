@@ -192,7 +192,7 @@ export function MapSearchBar({
             <Avatar
               uri={profile?.avatarUrl}
               size={searchBarHeight - AVATAR_RING_WIDTH * 2}
-              className="border-0 bg-searchbar"
+              className="bg-searchbar"
               iconClassName="text-searchbar-placeholder"
             />
           </Pressable>

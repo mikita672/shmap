@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { View, type ViewProps } from "react-native";
-import { Ionicons } from "@/lib/icons";
+import { AccountCircleIcon } from "@/components/ui/account-circle-icon";
 import { Image } from "@/lib/image";
 import { cn } from "@/lib/utils";
+
+const ICON_TO_AVATAR_RATIO = 45 / 48;
 
 export interface AvatarProps extends ViewProps {
   uri?: string | null;
@@ -23,7 +25,7 @@ export function Avatar({
   return (
     <View
       className={cn(
-        "items-center justify-center overflow-hidden rounded-full border border-border/40 bg-avatar",
+        "items-center justify-center overflow-hidden rounded-full bg-avatar",
         className,
       )}
       style={[{ width: size, height: size }, style]}
@@ -38,11 +40,9 @@ export function Avatar({
           onError={() => setFailedUri(uri)}
         />
       ) : (
-        <Ionicons
-          name="person-circle-outline"
-          size={size}
+        <AccountCircleIcon
+          size={size * ICON_TO_AVATAR_RATIO}
           className={cn("text-avatar-foreground", iconClassName)}
-          style={{ lineHeight: size, includeFontPadding: false }}
         />
       )}
     </View>
