@@ -6,6 +6,7 @@ import { Text } from "@/components/ui/text";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { useUserSearch } from "@/hooks/useUserSearch";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
+import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export interface SearchResultsListProps {
@@ -13,7 +14,13 @@ export interface SearchResultsListProps {
 }
 
 export function SearchResultsList({ query }: SearchResultsListProps) {
-  const { data: results, isPending, error, refetch } = useUserSearch(query);
+  const {
+    data: results,
+    isPending,
+    isPlaceholderData,
+    error,
+    refetch,
+  } = useUserSearch(query);
   useRefreshOnFocus(refetch);
 
   if (isPending) {
@@ -40,6 +47,7 @@ export function SearchResultsList({ query }: SearchResultsListProps) {
   return (
     <FlatList
       data={results}
+      className={cn(isPlaceholderData && "opacity-60")}
       keyExtractor={(result) => String(result.user.id)}
       renderItem={({ item: result }) => (
         <FriendRow

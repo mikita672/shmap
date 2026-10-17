@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { searchUsers } from "@/lib/api/users";
 
@@ -14,5 +14,6 @@ export function useUserSearch(query: string) {
       return data;
     },
     staleTime: 0,
+    placeholderData: keepPreviousData,
   });
 }
