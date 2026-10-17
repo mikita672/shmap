@@ -3,6 +3,7 @@ import { ActivityIndicator, SectionList, View } from "react-native";
 import { FriendRow } from "@/components/friends/friend-row";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
+import { RefreshControl } from "@/components/ui/refresh-control";
 import { SearchField } from "@/components/ui/search-field";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
@@ -82,8 +83,13 @@ export function FriendsList() {
         stickySectionHeadersEnabled={false}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
-        refreshing={isRefetchingByUser}
-        onRefresh={refetchByUser}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetchingByUser}
+            onRefresh={refetchByUser}
+            className="bg-action text-secondary"
+          />
+        }
         ItemSeparatorComponent={RowGap}
         ListEmptyComponent={
           friends.length === 0 ? (
