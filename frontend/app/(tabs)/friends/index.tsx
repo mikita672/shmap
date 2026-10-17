@@ -7,11 +7,14 @@ import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { useFriends } from "@/hooks/useFriends";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export default function FriendsFeedScreen() {
   const insets = useSafeAreaInsets();
-  const { data: requestCount = 0 } = useIncomingRequestCount();
+  const { data: requestCount = 0, refetch: refetchRequestCount } =
+    useIncomingRequestCount();
+  useRefreshOnFocus(refetchRequestCount);
   const headerTop = Math.max(insets.top + 8, 48);
 
   return (
@@ -44,6 +47,7 @@ export default function FriendsFeedScreen() {
 
 function FeedBody() {
   const { data: friends, isPending, error, refetch } = useFriends();
+  useRefreshOnFocus(refetch);
 
   if (isPending) {
     return <ActivityIndicator size="large" />;
