@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
+import { router } from "expo-router";
 import { RoundButton } from "@/components/ui/round-button";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import {
@@ -28,7 +29,12 @@ export default function FriendsHubScreen() {
           onValueChange={setTab}
           className="flex-1"
         />
-        <RoundButton icon="add" size="md" accessibilityLabel="Add friends" />
+        <RoundButton
+          icon="add"
+          size="md"
+          accessibilityLabel="Add friends"
+          onPress={() => router.push("/friends/add")}
+        />
       </View>
     </View>
   );
