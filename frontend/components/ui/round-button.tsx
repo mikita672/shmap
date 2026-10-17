@@ -1,5 +1,6 @@
 import { Pressable, type PressableProps } from "react-native";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Badge } from "@/components/ui/badge";
 import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,7 @@ export interface RoundButtonProps
     VariantProps<typeof roundButtonVariants> {
   icon: MaterialIconName;
   accessibilityLabel: string;
+  badge?: number;
   className?: string;
 }
 
@@ -47,6 +49,7 @@ export function RoundButton({
   icon,
   variant,
   size,
+  badge = 0,
   className,
   disabled,
   ...props
@@ -68,6 +71,7 @@ export function RoundButton({
         size={24}
         className={roundButtonIconVariants({ variant })}
       />
+      <Badge count={badge} className="absolute -right-0.5 -top-0.5" />
     </Pressable>
   );
 }

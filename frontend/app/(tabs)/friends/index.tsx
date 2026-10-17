@@ -6,6 +6,7 @@ import { Text } from "@/components/ui/text";
 
 export default function FriendsFeedScreen() {
   const insets = useSafeAreaInsets();
+  const requestCount = 3;
   const headerTop = Math.max(insets.top + 8, 48);
 
   return (
@@ -23,10 +24,17 @@ export default function FriendsFeedScreen() {
         <RoundButton
           icon="groups"
           size="lg"
-          accessibilityLabel="Friends"
+          badge={requestCount}
+          accessibilityLabel={friendsButtonLabel(requestCount)}
           onPress={() => router.push("/friends/hub")}
         />
       </View>
     </View>
   );
+}
+
+function friendsButtonLabel(requestCount: number) {
+  if (requestCount <= 0) return "Friends";
+  const requests = requestCount === 1 ? "request" : "requests";
+  return `Friends, ${requestCount} pending ${requests}`;
 }
