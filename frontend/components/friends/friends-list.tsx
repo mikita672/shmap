@@ -1,15 +1,19 @@
+import { useState } from "react";
 import { ActivityIndicator, SectionList, View } from "react-native";
 import { FriendRow } from "@/components/friends/friend-row";
 import { Button } from "@/components/ui/button";
+import { SearchField } from "@/components/ui/search-field";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import { useFriends } from "@/hooks/useFriends";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { matchesFriendSearch } from "@/lib/friend-search";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export function FriendsList() {
   const { data: friends, isPending, error, refetch } = useFriends();
   useRefreshOnFocus(refetch);
+  const [query, setQuery] = useState("");
 
   if (isPending) {
     return (
@@ -32,39 +36,51 @@ export function FriendsList() {
     );
   }
 
+  const matches = friends.filter((friend) =>
+    matchesFriendSearch(friend, query),
+  );
+
   const sections = [
     {
       key: "favorites",
       title: "Favorites",
-      data: friends.filter((friend) => friend.favorite),
+      data: matches.filter((friend) => friend.favorite),
     },
     {
       key: "all",
       title: `All friends · ${friends.length}`,
-      data: friends.filter((friend) => !friend.favorite),
+      data: matches.filter((friend) => !friend.favorite),
     },
   ].filter((section) => section.data.length > 0);
 
   return (
-    <SectionList
-      sections={sections}
-      keyExtractor={(friend) => String(friend.user.id)}
-      renderItem={({ item: { user } }) => (
-        <FriendRow
-          variant="actions"
-          name={`${user.firstName} ${user.lastName}`}
-          subtitle={`@${user.username}`}
-          avatarUrl={user.avatarUrl}
-          onMore={() => {}}
-        />
-      )}
-      renderSectionHeader={({ section }) => (
-        <SectionLabel title={section.title} className="pb-2 pt-4" />
-      )}
-      stickySectionHeadersEnabled={false}
-      ItemSeparatorComponent={RowGap}
-      contentContainerClassName="px-6 pb-6"
-    />
+    <View className="flex-1">
+      <SearchField
+        className="mx-6 mt-4"
+        placeholder="Search friends"
+        value={query}
+        onChangeText={setQuery}
+      />
+      <SectionList
+        sections={sections}
+        keyExtractor={(friend) => String(friend.user.id)}
+        renderItem={({ item: { user } }) => (
+          <FriendRow
+            variant="actions"
+            name={`${user.firstName} ${user.lastName}`}
+            subtitle={`@${user.username}`}
+            avatarUrl={user.avatarUrl}
+            onMore={() => {}}
+          />
+        )}
+        renderSectionHeader={({ section }) => (
+          <SectionLabel title={section.title} className="pb-2 pt-4" />
+        )}
+        stickySectionHeadersEnabled={false}
+        ItemSeparatorComponent={RowGap}
+        contentContainerClassName="px-6 pb-6"
+      />
+    </View>
   );
 }
 
