@@ -150,3 +150,7 @@ export interface FriendSuggestionResponse {
   user: UserSummaryResponse;
   mutualFriendsCount: number;
 }
+
+export type SendFriendRequestResponse =
+  | { outcome: "REQUEST_SENT"; requestId: number }
+  | { outcome: "BECAME_FRIENDS"; requestId: null };

@@ -6,8 +6,25 @@ import {
   acceptFriendRequest,
   cancelFriendRequest,
   declineFriendRequest,
+  sendFriendRequest,
 } from "@/lib/api/friend-requests";
 import { getErrorMessage } from "@/lib/utils/error";
+
+export function useSendFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (receiverId: number) => {
+      const { data } = await sendFriendRequest(receiverId);
+      return data;
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't send the request"));
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+  });
+}
 
 export function useAcceptFriendRequest() {
   const queryClient = useQueryClient();

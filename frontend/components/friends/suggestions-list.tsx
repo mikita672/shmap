@@ -1,11 +1,10 @@
 import { ActivityIndicator, FlatList, View } from "react-native";
-import { FriendRow } from "@/components/friends/friend-row";
+import { SuggestionRow } from "@/components/friends/suggestion-row";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import { useFriendSuggestions } from "@/hooks/useFriendSuggestions";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
-import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export function SuggestionsList() {
@@ -42,16 +41,7 @@ export function SuggestionsList() {
     <FlatList
       data={suggestions}
       keyExtractor={(suggestion) => String(suggestion.user.id)}
-      renderItem={({ item: suggestion }) => (
-        <FriendRow
-          variant="suggestion"
-          name={`${suggestion.user.firstName} ${suggestion.user.lastName}`}
-          subtitle={mutualFriendsSubtitle(suggestion)}
-          avatarUrl={suggestion.user.avatarUrl}
-          onAdd={() => {}}
-          onDismiss={() => {}}
-        />
-      )}
+      renderItem={({ item }) => <SuggestionRow suggestion={item} />}
       ListHeaderComponent={
         <SectionLabel title="Suggestions" className="pb-2 pt-4" />
       }
