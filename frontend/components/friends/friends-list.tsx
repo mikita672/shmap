@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ActivityIndicator, SectionList, View } from "react-native";
 import { FriendRow } from "@/components/friends/friend-row";
 import { Button } from "@/components/ui/button";
+import { NoteCard } from "@/components/ui/note-card";
 import { SearchField } from "@/components/ui/search-field";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
@@ -78,6 +79,21 @@ export function FriendsList() {
         )}
         stickySectionHeadersEnabled={false}
         ItemSeparatorComponent={RowGap}
+        ListEmptyComponent={
+          friends.length === 0 ? (
+            <NoteCard
+              title="No friends yet"
+              description="Tap + to find people you know."
+              className="mt-4"
+            />
+          ) : (
+            <NoteCard
+              title="No friends found"
+              description="Try another name or @username."
+              className="mt-4"
+            />
+          )
+        }
         contentContainerClassName="px-6 pb-6"
       />
     </View>
