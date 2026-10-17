@@ -1,6 +1,7 @@
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { NoteCard } from "@/components/ui/note-card";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
@@ -28,6 +29,13 @@ export default function FriendsFeedScreen() {
           badge={requestCount}
           accessibilityLabel={friendsButtonLabel(requestCount)}
           onPress={() => router.push("/friends/hub")}
+        />
+      </View>
+
+      <View className="flex-1 justify-center px-6">
+        <NoteCard
+          title="No routes yet"
+          description="Routes your friends take will show up here."
         />
       </View>
     </View>
