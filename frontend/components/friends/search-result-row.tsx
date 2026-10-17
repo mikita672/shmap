@@ -1,4 +1,5 @@
 import { FriendRow } from "@/components/friends/friend-row";
+import { useSendFriendRequest } from "@/hooks/useFriendRequestMutations";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
 import type { UserSearchResultResponse } from "@/lib/types/api";
 
@@ -7,16 +8,20 @@ export interface SearchResultRowProps {
 }
 
 export function SearchResultRow({ result }: SearchResultRowProps) {
+  const send = useSendFriendRequest();
   const { user } = result;
   const row = {
     name: `${user.firstName} ${user.lastName}`,
     subtitle: mutualFriendsSubtitle(result),
     avatarUrl: user.avatarUrl,
+    disabled: send.isPending,
   };
 
   switch (result.relationship) {
     case "NONE":
-      return <FriendRow variant="add" {...row} onAdd={() => {}} />;
+      return (
+        <FriendRow variant="add" {...row} onAdd={() => send.mutate(user.id)} />
+      );
     case "REQUESTED":
       return (
         <FriendRow

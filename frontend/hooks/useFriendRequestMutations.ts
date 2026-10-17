@@ -22,7 +22,10 @@ export function useSendFriendRequest() {
       toast.error(getErrorMessage(error, "Couldn't send the request"));
     },
     onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+        queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
+      ]),
   });
 }
 
