@@ -4,6 +4,7 @@ import { ActivityItem } from "@/components/friends/activity-item";
 import { IncomingRequestRow } from "@/components/friends/incoming-request-row";
 import { SentRequestRow } from "@/components/friends/sent-request-row";
 import { Button } from "@/components/ui/button";
+import { NoteCard } from "@/components/ui/note-card";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import {
@@ -120,6 +121,13 @@ export function RequestsList() {
       )}
       stickySectionHeadersEnabled={false}
       ItemSeparatorComponent={RowGap}
+      ListEmptyComponent={
+        <NoteCard
+          title="No requests yet"
+          description="Friend requests you get and send will show up here."
+          className="mt-4"
+        />
+      }
       contentContainerClassName="px-6 pb-6"
     />
   );
