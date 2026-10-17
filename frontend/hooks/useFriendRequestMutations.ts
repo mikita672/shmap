@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { friendActivityQueryOptions } from "@/hooks/useFriendActivity";
 import { friendsQueryOptions } from "@/hooks/useFriends";
+import { friendSuggestionsQueryOptions } from "@/hooks/useFriendSuggestions";
 import {
   acceptFriendRequest,
   cancelFriendRequest,
@@ -18,14 +19,34 @@ export function useSendFriendRequest() {
       const { data } = await sendFriendRequest(receiverId);
       return data;
     },
+    onSuccess: (result) => {
+      if (result.outcome === "BECAME_FRIENDS") {
+        toast.success("You're now friends");
+      }
+    },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't send the request"));
     },
-    onSettled: () =>
-      Promise.all([
+    onSettled: (result) => {
+      const invalidations = [
         queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
         queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
-      ]),
+      ];
+      if (result?.outcome !== "REQUEST_SENT") {
+        invalidations.push(
+          queryClient.invalidateQueries({
+            queryKey: friendSuggestionsQueryOptions.queryKey,
+          }),
+          queryClient.invalidateQueries({
+            queryKey: friendsQueryOptions.queryKey,
+          }),
+          queryClient.invalidateQueries({
+            queryKey: friendActivityQueryOptions.queryKey,
+          }),
+        );
+      }
+      return Promise.all(invalidations);
+    },
   });
 }
 
