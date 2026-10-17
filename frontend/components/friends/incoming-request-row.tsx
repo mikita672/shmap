@@ -18,11 +18,20 @@ export function IncomingRequestRow({ request }: IncomingRequestRowProps) {
     <FriendRow
       variant="request"
       name={`${user.firstName} ${user.lastName}`}
-      subtitle={`@${user.username}`}
+      subtitle={incomingRequestSubtitle(request)}
       avatarUrl={user.avatarUrl}
       disabled={accept.isPending || decline.isPending}
       onAccept={() => accept.mutate(request.id)}
       onDecline={() => decline.mutate(request.id)}
     />
   );
+}
+
+function incomingRequestSubtitle({
+  user,
+  mutualFriendsCount,
+}: FriendRequestResponse) {
+  if (mutualFriendsCount <= 0) return `@${user.username}`;
+  const friends = mutualFriendsCount === 1 ? "friend" : "friends";
+  return `${mutualFriendsCount} mutual ${friends}`;
 }

@@ -127,6 +127,7 @@ export interface FriendRequestResponse {
   id: number;
   user: UserSummaryResponse;
   createdAt: string;
+  mutualFriendsCount: number;
 }
 
 export type FriendActivityType = "REQUEST_ACCEPTED" | "NEW_FRIENDSHIP";
