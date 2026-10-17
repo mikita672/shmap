@@ -110,3 +110,7 @@ export interface UsernameAvailabilityResponse {
   username: string;
   available: boolean;
 }
+
+export interface FriendRequestCountResponse {
+  count: number;
+}

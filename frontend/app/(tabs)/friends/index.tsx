@@ -3,10 +3,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
 
 export default function FriendsFeedScreen() {
   const insets = useSafeAreaInsets();
-  const requestCount = 3;
+  const { data: requestCount = 0 } = useIncomingRequestCount();
   const headerTop = Math.max(insets.top + 8, 48);
 
   return (
