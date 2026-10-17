@@ -7,6 +7,7 @@ import { SearchField } from "@/components/ui/search-field";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import { useFriends } from "@/hooks/useFriends";
+import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { matchesFriendSearch } from "@/lib/friend-search";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -14,6 +15,7 @@ import { getErrorMessage } from "@/lib/utils/error";
 export function FriendsList() {
   const { data: friends, isPending, error, refetch } = useFriends();
   useRefreshOnFocus(refetch);
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
   const [query, setQuery] = useState("");
 
   if (isPending) {
@@ -80,6 +82,8 @@ export function FriendsList() {
         stickySectionHeadersEnabled={false}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
+        refreshing={isRefetchingByUser}
+        onRefresh={refetchByUser}
         ItemSeparatorComponent={RowGap}
         ListEmptyComponent={
           friends.length === 0 ? (
