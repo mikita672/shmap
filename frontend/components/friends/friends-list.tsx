@@ -1,6 +1,7 @@
 import { ActivityIndicator, SectionList, View } from "react-native";
 import { FriendRow } from "@/components/friends/friend-row";
 import { Button } from "@/components/ui/button";
+import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import { useFriends } from "@/hooks/useFriends";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
@@ -33,7 +34,7 @@ export function FriendsList() {
 
   return (
     <SectionList
-      sections={[{ data: friends }]}
+      sections={[{ title: `All friends · ${friends.length}`, data: friends }]}
       keyExtractor={(friend) => String(friend.user.id)}
       renderItem={({ item: { user } }) => (
         <FriendRow
@@ -44,8 +45,12 @@ export function FriendsList() {
           onMore={() => {}}
         />
       )}
+      renderSectionHeader={({ section }) => (
+        <SectionLabel title={section.title} className="pb-2 pt-4" />
+      )}
+      stickySectionHeadersEnabled={false}
       ItemSeparatorComponent={RowGap}
-      contentContainerClassName="px-6 pt-4 pb-6"
+      contentContainerClassName="px-6 pb-6"
     />
   );
 }
