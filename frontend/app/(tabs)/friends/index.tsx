@@ -1,5 +1,6 @@
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 
@@ -19,7 +20,12 @@ export default function FriendsFeedScreen() {
         >
           Friends
         </Text>
-        <RoundButton icon="groups" size="lg" accessibilityLabel="Friends" />
+        <RoundButton
+          icon="groups"
+          size="lg"
+          accessibilityLabel="Friends"
+          onPress={() => router.push("/friends/hub")}
+        />
       </View>
     </View>
   );
