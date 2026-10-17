@@ -3,6 +3,7 @@ import {
   useCancelFriendRequest,
   useSendFriendRequest,
 } from "@/hooks/useFriendRequestMutations";
+import { useDismissFriendSuggestion } from "@/hooks/useFriendSuggestionMutations";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
 import type {
   FriendRequestResponse,
@@ -17,12 +18,13 @@ export interface SuggestionRowProps {
 export function SuggestionRow({ suggestion, sentRequest }: SuggestionRowProps) {
   const send = useSendFriendRequest();
   const cancel = useCancelFriendRequest();
+  const dismiss = useDismissFriendSuggestion();
   const { user } = suggestion;
   const row = {
     name: `${user.firstName} ${user.lastName}`,
     subtitle: mutualFriendsSubtitle(suggestion),
     avatarUrl: user.avatarUrl,
-    disabled: send.isPending || cancel.isPending,
+    disabled: send.isPending || cancel.isPending || dismiss.isPending,
   };
 
   if (sentRequest) {
@@ -41,7 +43,7 @@ export function SuggestionRow({ suggestion, sentRequest }: SuggestionRowProps) {
       variant="suggestion"
       {...row}
       onAdd={() => send.mutate(user.id)}
-      onDismiss={() => {}}
+      onDismiss={() => dismiss.mutate(user.id)}
     />
   );
 }
