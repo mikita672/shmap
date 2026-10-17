@@ -101,6 +101,30 @@ export function ComponentsPreview() {
         />
       </SettingsSection>
 
+      <SettingsSection title="Friend Row (request, sent)">
+        <FriendRow
+          name="Ola Wiśniewska"
+          subtitle="3 mutual friends"
+          variant="request"
+          onAccept={() => toast("Accept Ola")}
+          onDecline={() => toast("Decline Ola")}
+        />
+        <FriendRow
+          name="Piotr Kamiński"
+          subtitle="1 mutual friend"
+          variant="request"
+          onAccept={() => toast("Accept Piotr")}
+          onDecline={() => toast("Decline Piotr")}
+          disabled
+        />
+        <FriendRow
+          name="Zofia Dąbrowska"
+          subtitle="@zofia.d"
+          variant="sent"
+          onCancel={() => toast("Cancel request to Zofia")}
+        />
+      </SettingsSection>
+
       <SettingsSection title="Segmented Control">
         <SegmentedControl
           segments={[

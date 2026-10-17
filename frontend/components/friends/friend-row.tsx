@@ -1,15 +1,15 @@
 import { Pressable, View } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
+import { PillButton } from "@/components/ui/pill-button";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
-type FriendRowTrailingProps = {
-  variant: "actions";
-  onMessage: () => void;
-  onMore: () => void;
-};
+type FriendRowTrailingProps =
+  | { variant: "actions"; onMessage: () => void; onMore: () => void }
+  | { variant: "request"; onAccept: () => void; onDecline: () => void }
+  | { variant: "sent"; onCancel: () => void };
 
 export type FriendRowProps = FriendRowTrailingProps & {
   name: string;
@@ -80,8 +80,37 @@ function FriendRowTrailing(
           />
         </View>
       );
+    case "request":
+      return (
+        <View className="flex-row items-center gap-2">
+          <RoundButton
+            icon="check"
+            variant="filled"
+            accessibilityLabel={`Accept ${props.name}`}
+            disabled={props.disabled}
+            onPress={props.onAccept}
+          />
+          <RoundButton
+            icon="close"
+            variant="tonal"
+            accessibilityLabel={`Decline ${props.name}`}
+            disabled={props.disabled}
+            onPress={props.onDecline}
+          />
+        </View>
+      );
+    case "sent":
+      return (
+        <PillButton
+          label="Cancel"
+          variant="tonal"
+          accessibilityLabel={`Cancel request to ${props.name}`}
+          disabled={props.disabled}
+          onPress={props.onCancel}
+        />
+      );
     default:
-      return props.variant satisfies never;
+      return props satisfies never;
   }
 }
 
