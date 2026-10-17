@@ -1,6 +1,7 @@
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { SuggestionRow } from "@/components/friends/suggestion-row";
 import { Button } from "@/components/ui/button";
+import { NoteCard } from "@/components/ui/note-card";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import { useFriendSuggestions } from "@/hooks/useFriendSuggestions";
@@ -54,7 +55,16 @@ export function SuggestionsList() {
         />
       )}
       ListHeaderComponent={
-        <SectionLabel title="Suggestions" className="pb-2 pt-4" />
+        suggestions.length > 0 ? (
+          <SectionLabel title="Suggestions" className="pb-2 pt-4" />
+        ) : null
+      }
+      ListEmptyComponent={
+        <NoteCard
+          title="No suggestions yet"
+          description="Friends of your friends will show up here."
+          className="mt-4"
+        />
       }
       ItemSeparatorComponent={RowGap}
       keyboardShouldPersistTaps="handled"
