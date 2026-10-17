@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
+import { SearchResultsList } from "@/components/friends/search-results-list";
 import { SuggestionsList } from "@/components/friends/suggestions-list";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,11 @@ export default function AddFriendsScreen() {
         onChangeText={setQuery}
       />
 
-      {hasSearchText(query) ? <View className="flex-1" /> : <SuggestionsList />}
+      {hasSearchText(query) ? (
+        <SearchResultsList query={query} />
+      ) : (
+        <SuggestionsList />
+      )}
 
       <View className="flex-row gap-2 px-6 pb-4">
         <Button variant="secondary" size="xl" className="flex-1" disabled>

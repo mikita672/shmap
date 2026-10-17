@@ -12,7 +12,8 @@ type FriendRowTrailingProps =
   | { variant: "actions"; onMessage?: () => void; onMore: () => void }
   | { variant: "request"; onAccept: () => void; onDecline: () => void }
   | { variant: "sent"; label?: string; onCancel: () => void }
-  | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void };
+  | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void }
+  | { variant: "add"; onAdd: () => void };
 
 export type FriendRowProps = FriendRowTrailingProps & {
   name: string;
@@ -129,6 +130,15 @@ function FriendRowTrailing(
             onPress={props.onDismiss}
           />
         </View>
+      );
+    case "add":
+      return (
+        <PillButton
+          label="Add"
+          accessibilityLabel={`Add ${props.name}`}
+          disabled={props.disabled}
+          onPress={props.onAdd}
+        />
       );
     default:
       return props satisfies never;

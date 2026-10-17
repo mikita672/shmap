@@ -154,3 +154,12 @@ export interface FriendSuggestionResponse {
 export type SendFriendRequestResponse =
   | { outcome: "REQUEST_SENT"; requestId: number }
   | { outcome: "BECAME_FRIENDS"; requestId: null };
+
+export type Relationship = "NONE" | "REQUESTED" | "INCOMING" | "FRIENDS";
+
+export interface UserSearchResultResponse {
+  user: UserSummaryResponse;
+  relationship: Relationship;
+  requestId: number | null;
+  mutualFriendsCount: number;
+}
