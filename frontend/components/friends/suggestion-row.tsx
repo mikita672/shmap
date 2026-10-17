@@ -1,5 +1,8 @@
 import { FriendRow } from "@/components/friends/friend-row";
-import { useSendFriendRequest } from "@/hooks/useFriendRequestMutations";
+import {
+  useCancelFriendRequest,
+  useSendFriendRequest,
+} from "@/hooks/useFriendRequestMutations";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
 import type {
   FriendRequestResponse,
@@ -13,12 +16,13 @@ export interface SuggestionRowProps {
 
 export function SuggestionRow({ suggestion, sentRequest }: SuggestionRowProps) {
   const send = useSendFriendRequest();
+  const cancel = useCancelFriendRequest();
   const { user } = suggestion;
   const row = {
     name: `${user.firstName} ${user.lastName}`,
     subtitle: mutualFriendsSubtitle(suggestion),
     avatarUrl: user.avatarUrl,
-    disabled: send.isPending,
+    disabled: send.isPending || cancel.isPending,
   };
 
   if (sentRequest) {
@@ -27,7 +31,7 @@ export function SuggestionRow({ suggestion, sentRequest }: SuggestionRowProps) {
         variant="sent"
         label="Requested"
         {...row}
-        onCancel={() => {}}
+        onCancel={() => cancel.mutate(sentRequest.id)}
       />
     );
   }
