@@ -32,9 +32,22 @@ export function FriendsList() {
     );
   }
 
+  const sections = [
+    {
+      key: "favorites",
+      title: "Favorites",
+      data: friends.filter((friend) => friend.favorite),
+    },
+    {
+      key: "all",
+      title: `All friends · ${friends.length}`,
+      data: friends.filter((friend) => !friend.favorite),
+    },
+  ].filter((section) => section.data.length > 0);
+
   return (
     <SectionList
-      sections={[{ title: `All friends · ${friends.length}`, data: friends }]}
+      sections={sections}
       keyExtractor={(friend) => String(friend.user.id)}
       renderItem={({ item: { user } }) => (
         <FriendRow
