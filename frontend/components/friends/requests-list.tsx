@@ -13,6 +13,7 @@ import {
 import { useIncomingRequests } from "@/hooks/useIncomingRequests";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { useSentRequests } from "@/hooks/useSentRequests";
+import { formatTimeAgo } from "@/lib/time-ago";
 import type {
   FriendActivityResponse,
   FriendActivityType,
@@ -111,7 +112,9 @@ export function RequestsList() {
     <SectionList
       sections={sections.filter((section) => section.data.length > 0)}
       keyExtractor={(row) => row.key}
-      renderItem={({ item }) => <RequestsListRow row={item} />}
+      renderItem={({ item }) => (
+        <RequestsListRow row={item} now={activity.dataUpdatedAt} />
+      )}
       renderSectionHeader={({ section }) => (
         <SectionLabel title={section.title} className="pb-2 pt-4" />
       )}
@@ -122,18 +125,24 @@ export function RequestsList() {
   );
 }
 
-function RequestsListRow({ row }: { row: RequestsRow }) {
+interface RequestsListRowProps {
+  row: RequestsRow;
+  now: number;
+}
+
+function RequestsListRow({ row, now }: RequestsListRowProps) {
   switch (row.kind) {
     case "incoming":
       return <IncomingRequestRow request={row.request} />;
     case "sent":
       return <SentRequestRow request={row.request} />;
     case "activity": {
-      const { user, type } = row.activity;
+      const { user, type, createdAt } = row.activity;
       return (
         <ActivityItem
           name={`${user.firstName} ${user.lastName}`}
           action={ACTIVITY_ACTIONS[type]}
+          time={formatTimeAgo(createdAt, now)}
           avatarUrl={user.avatarUrl}
         />
       );
