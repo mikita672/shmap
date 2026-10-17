@@ -32,7 +32,10 @@ export function AnimatedTabBar({
   descriptors,
   navigation,
 }: TabBarProps) {
-  const colors = useTabColors();
+  const focusedRouteName = state.routes[state.index].name;
+  const colors = useTabColors(
+    focusedRouteName === "friends" ? "contrast" : "default",
+  );
   const insets = useSafeAreaInsets();
 
   const [containerWidth, setContainerWidth] = useState(0);
@@ -209,7 +212,7 @@ export function AnimatedTabBar({
                 <Text
                   style={[
                     styles.label,
-                    { color: isFocused ? colors.iconActive : colors.label },
+                    { color: isFocused ? colors.labelActive : colors.label },
                   ]}
                 >
                   {label}
@@ -217,7 +220,7 @@ export function AnimatedTabBar({
               ) : typeof label === "function" ? (
                 label({
                   focused: isFocused,
-                  color: isFocused ? colors.iconActive : colors.label,
+                  color: isFocused ? colors.labelActive : colors.label,
                   position: "below-icon",
                   children: route.name,
                 })
