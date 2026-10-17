@@ -12,6 +12,7 @@ import { PillButton } from "@/components/ui/pill-button";
 import { RoundButton } from "@/components/ui/round-button";
 import { SearchField } from "@/components/ui/search-field";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
 
 export function ComponentsPreview() {
@@ -133,6 +134,26 @@ export function ComponentsPreview() {
           onAdd={() => toast("Add Marta")}
           onDismiss={() => toast("Dismiss Marta")}
         />
+      </SettingsSection>
+
+      <SettingsSection title="Sheet Item (default, danger)">
+        <View className="rounded-[32px] bg-card py-2">
+          <SheetItem
+            label="Add to group"
+            onPress={() => toast("Add to group")}
+          />
+          <SheetItem label="Mute routes" onPress={() => toast("Mute")} />
+          <SheetItem
+            label="Remove friend"
+            tone="danger"
+            onPress={() => toast("Remove")}
+          />
+          <SheetItem
+            label="Block"
+            tone="danger"
+            onPress={() => toast("Block")}
+          />
+        </View>
       </SettingsSection>
 
       <SettingsSection title="Segmented Control">
