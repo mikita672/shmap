@@ -1,23 +1,26 @@
 import { Pressable, type PressableProps } from "react-native";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Badge } from "@/components/ui/badge";
 import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
-const roundButtonVariants = cva(
-  "h-10 w-10 items-center justify-center rounded-full",
-  {
-    variants: {
-      variant: {
-        filled: "bg-action-accent active:bg-action-accent/80",
-        tonal: "bg-action-tonal active:bg-action-tonal/80",
-        surface: "bg-action active:bg-action/80",
-      },
+const roundButtonVariants = cva("items-center justify-center rounded-full", {
+  variants: {
+    variant: {
+      filled: "bg-action-accent active:bg-action-accent/80",
+      tonal: "bg-action-tonal active:bg-action-tonal/80",
+      surface: "bg-action active:bg-action/80",
     },
-    defaultVariants: {
-      variant: "surface",
+    size: {
+      default: "h-10 w-10",
+      lg: "h-14 w-14",
     },
   },
-);
+  defaultVariants: {
+    variant: "surface",
+    size: "default",
+  },
+});
 
 const roundButtonIconVariants = cva("", {
   variants: {
@@ -38,12 +41,15 @@ export interface RoundButtonProps
     VariantProps<typeof roundButtonVariants> {
   icon: MaterialIconName;
   accessibilityLabel: string;
+  badge?: number;
   className?: string;
 }
 
 export function RoundButton({
   icon,
   variant,
+  size,
+  badge = 0,
   className,
   disabled,
   ...props
@@ -54,7 +60,7 @@ export function RoundButton({
       hitSlop={4}
       disabled={disabled}
       className={cn(
-        roundButtonVariants({ variant }),
+        roundButtonVariants({ variant, size }),
         disabled && "opacity-50",
         className,
       )}
@@ -65,6 +71,7 @@ export function RoundButton({
         size={24}
         className={roundButtonIconVariants({ variant })}
       />
+      <Badge count={badge} className="absolute -right-0.5 -top-0.5" />
     </Pressable>
   );
 }
