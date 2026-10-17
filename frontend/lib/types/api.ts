@@ -114,3 +114,18 @@ export interface UsernameAvailabilityResponse {
 export interface FriendRequestCountResponse {
   count: number;
 }
+
+export interface UserSummaryResponse {
+  id: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl: string | null;
+}
+
+export interface FriendResponse {
+  user: UserSummaryResponse;
+  favorite: boolean;
+  muted: boolean;
+  friendsSince: string;
+}

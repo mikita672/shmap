@@ -1,10 +1,13 @@
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { useFriends } from "@/hooks/useFriends";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
+import { getErrorMessage } from "@/lib/utils/error";
 
 export default function FriendsFeedScreen() {
   const insets = useSafeAreaInsets();
@@ -33,12 +36,46 @@ export default function FriendsFeedScreen() {
       </View>
 
       <View className="flex-1 justify-center px-6">
-        <NoteCard
-          title="No routes yet"
-          description="Routes your friends take will show up here."
-        />
+        <FeedBody />
       </View>
     </View>
+  );
+}
+
+function FeedBody() {
+  const { data: friends, isPending, error, refetch } = useFriends();
+
+  if (isPending) {
+    return <ActivityIndicator size="large" />;
+  }
+
+  if (!friends) {
+    return (
+      <View className="items-center gap-4">
+        <Text className="text-center">
+          {getErrorMessage(error, "Couldn't load your friends")}
+        </Text>
+        <Button onPress={() => refetch()}>
+          <Text>Retry</Text>
+        </Button>
+      </View>
+    );
+  }
+
+  if (friends.length === 0) {
+    return (
+      <NoteCard
+        title="Add friends to see their routes"
+        description="Tap the friends button above to find people you know."
+      />
+    );
+  }
+
+  return (
+    <NoteCard
+      title="No routes yet"
+      description="Routes your friends take will show up here."
+    />
   );
 }
 
