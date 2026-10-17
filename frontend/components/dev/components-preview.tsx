@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { toast } from "sonner-native";
+import { FriendRow } from "@/components/friends/friend-row";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Avatar } from "@/components/ui/avatar";
@@ -78,6 +80,25 @@ export function ComponentsPreview() {
           </View>
           <Avatar size={96} />
         </View>
+      </SettingsSection>
+
+      <SettingsSection title="Friend Row (actions)">
+        <FriendRow
+          name="Anna Kowalska"
+          subtitle="@anna.k"
+          variant="actions"
+          onPress={() => toast("Open Anna's profile")}
+          onMessage={() => toast("Message Anna")}
+          onMore={() => toast("More for Anna")}
+        />
+        <FriendRow
+          name="Konstantynopolitańczykiewiczówna Wiśniewska"
+          subtitle="@a.very.long.username.that.does.not.fit"
+          variant="actions"
+          onMessage={() => toast("Message")}
+          onMore={() => toast("More")}
+          disabled
+        />
       </SettingsSection>
 
       <SettingsSection title="Segmented Control">
