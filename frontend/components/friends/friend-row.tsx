@@ -6,10 +6,13 @@ import { Text } from "@/components/ui/text";
 import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
+const MIN_TOUCH_TARGET = 48;
+
 type FriendRowTrailingProps =
   | { variant: "actions"; onMessage: () => void; onMore: () => void }
   | { variant: "request"; onAccept: () => void; onDecline: () => void }
-  | { variant: "sent"; onCancel: () => void };
+  | { variant: "sent"; onCancel: () => void }
+  | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void };
 
 export type FriendRowProps = FriendRowTrailingProps & {
   name: string;
@@ -109,6 +112,24 @@ function FriendRowTrailing(
           onPress={props.onCancel}
         />
       );
+    case "suggestion":
+      return (
+        <View className="flex-row items-center gap-2">
+          <PillButton
+            label="Add"
+            accessibilityLabel={`Add ${props.name}`}
+            disabled={props.disabled}
+            onPress={props.onAdd}
+          />
+          <RowIconButton
+            icon="close"
+            size={20}
+            accessibilityLabel={`Dismiss ${props.name}`}
+            disabled={props.disabled}
+            onPress={props.onDismiss}
+          />
+        </View>
+      );
     default:
       return props satisfies never;
   }
@@ -129,11 +150,13 @@ function RowIconButton({
   disabled,
   onPress,
 }: RowIconButtonProps) {
+  const verticalSlop = (MIN_TOUCH_TARGET - size) / 2;
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      hitSlop={{ top: 12, bottom: 12, left: 4, right: 8 }}
+      hitSlop={{ top: verticalSlop, bottom: verticalSlop, left: 4, right: 8 }}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       className={cn("active:opacity-60", disabled && "opacity-50")}

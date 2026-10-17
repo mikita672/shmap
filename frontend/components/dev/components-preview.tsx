@@ -125,6 +125,16 @@ export function ComponentsPreview() {
         />
       </SettingsSection>
 
+      <SettingsSection title="Friend Row (suggestion)">
+        <FriendRow
+          name="Marta Kozłowska"
+          subtitle="4 mutual friends"
+          variant="suggestion"
+          onAdd={() => toast("Add Marta")}
+          onDismiss={() => toast("Dismiss Marta")}
+        />
+      </SettingsSection>
+
       <SettingsSection title="Segmented Control">
         <SegmentedControl
           segments={[
