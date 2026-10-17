@@ -1,6 +1,9 @@
-import { ComponentsPreview } from "@/components/dev/components-preview";
+import { View, Text } from "react-native";
 
-// TODO(SCRUM-82): replace the components preview with the friends tab
 export default function FriendsScreen() {
-  return <ComponentsPreview />;
+  return (
+    <View className="flex-1 justify-center items-center bg-background">
+      <Text className="text-3xl font-bold text-foreground">Friends</Text>
+    </View>
+  );
 }
