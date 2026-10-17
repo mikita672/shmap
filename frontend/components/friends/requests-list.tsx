@@ -1,7 +1,7 @@
 import { ActivityIndicator, SectionList, View } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
-import { FriendRow } from "@/components/friends/friend-row";
 import { IncomingRequestRow } from "@/components/friends/incoming-request-row";
+import { SentRequestRow } from "@/components/friends/sent-request-row";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
@@ -95,18 +95,8 @@ function RequestsListRow({ row }: { row: RequestsRow }) {
   switch (row.kind) {
     case "incoming":
       return <IncomingRequestRow request={row.request} />;
-    case "sent": {
-      const { user } = row.request;
-      return (
-        <FriendRow
-          variant="sent"
-          name={`${user.firstName} ${user.lastName}`}
-          subtitle={`@${user.username}`}
-          avatarUrl={user.avatarUrl}
-          onCancel={() => {}}
-        />
-      );
-    }
+    case "sent":
+      return <SentRequestRow request={row.request} />;
     default:
       return row satisfies never;
   }

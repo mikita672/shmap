@@ -3,6 +3,7 @@ import { toast } from "sonner-native";
 import { friendsQueryOptions } from "@/hooks/useFriends";
 import {
   acceptFriendRequest,
+  cancelFriendRequest,
   declineFriendRequest,
 } from "@/lib/api/friend-requests";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -32,6 +33,19 @@ export function useDeclineFriendRequest() {
     mutationFn: declineFriendRequest,
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't decline the request"));
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+  });
+}
+
+export function useCancelFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: cancelFriendRequest,
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't cancel the request"));
     },
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
