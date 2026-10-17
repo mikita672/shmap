@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { searchUsers } from "@/lib/api/users";
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 export function useUserSearch(query: string) {
-  const text = query.trim();
+  const text = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
 
   return useQuery({
     queryKey: ["users", "search", text],
