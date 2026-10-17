@@ -190,19 +190,10 @@ export function MapSearchBar({
             accessibilityRole="button"
           >
             <Avatar
-              size="lg"
               uri={profile?.avatarUrl}
-              fallbackText={
-                profile ? `${profile.firstName} ${profile.lastName}` : undefined
-              }
-              fallbackIcon={true}
-              style={{
-                width: searchBarHeight - AVATAR_RING_WIDTH * 2,
-                height: searchBarHeight - AVATAR_RING_WIDTH * 2,
-              }}
-              className="border-0 bg-searchbar"
+              size={searchBarHeight - AVATAR_RING_WIDTH * 2}
+              className="bg-searchbar"
               iconClassName="text-searchbar-placeholder"
-              textClassName="text-searchbar-placeholder"
             />
           </Pressable>
 

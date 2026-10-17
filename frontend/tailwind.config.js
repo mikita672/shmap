@@ -9,7 +9,10 @@ module.exports = {
       colors: {
         background: "hsl(var(--background))",
         surface: "hsl(var(--surface))",
-        brand: "hsl(var(--brand))",
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          foreground: "hsl(var(--brand-foreground))",
+        },
         "on-surface": "hsl(var(--on-surface))",
         "on-surface-muted": "hsl(var(--on-surface-muted))",
         border: "hsl(var(--border))",
@@ -49,6 +52,7 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
           title: "hsl(var(--card-title))",
           muted: "hsl(var(--card-muted))",
+          danger: "hsl(var(--card-danger))",
         },
         qr: {
           tile: "hsl(var(--qr-tile))",
@@ -62,6 +66,8 @@ module.exports = {
         avatar: {
           DEFAULT: "hsl(var(--avatar))",
           foreground: "hsl(var(--avatar-foreground))",
+          surface: "hsl(var(--avatar-surface))",
+          "surface-foreground": "hsl(var(--avatar-surface-foreground))",
         },
         action: {
           DEFAULT: "hsl(var(--action))",
@@ -70,6 +76,8 @@ module.exports = {
           "accent-foreground": "hsl(var(--action-accent-foreground))",
           chip: "hsl(var(--action-chip))",
           "chip-foreground": "hsl(var(--action-chip-foreground))",
+          tonal: "hsl(var(--action-tonal))",
+          "tonal-foreground": "hsl(var(--action-tonal-foreground))",
         },
       },
       borderWidth: {

@@ -29,6 +29,8 @@
 
     /* Logo / wordmark — Alloy Orange */
     --brand: 25.82 72.69% 44.51%;
+    /* Text on the brand color (badge count) — Cornsilk */
+    --brand-foreground: 52 93% 93%;
 
     /* Typed text on input / card surfaces — Dark Camel */
     --on-surface: 30 34% 38%;
@@ -60,6 +62,7 @@
     --card-foreground: 30 34% 38%;
     --card-title: 22.74 65.52% 28.43%; /* Russet */
     --card-muted: 93.1 15.03% 37.84%; /* Dark Olive Green */
+    --card-danger: 25.82 72.69% 44.51%; /* Alloy Orange — destructive menu item */
     /* QR code — dark-on-light in both modes so codes stay scannable */
     --qr-tile: 43 81% 88%; /* Lemon Meringue */
     --qr-code: 22.74 65.52% 28.43%; /* Russet */
@@ -72,6 +75,8 @@
     /* Avatar */
     --avatar: 43 81% 88%; /* Lemon Meringue */
     --avatar-foreground: 93.1 15.03% 37.84%; /* Dark Olive Green */
+    --avatar-surface: 52 93% 93%; /* Cornsilk — avatar on a row/card */
+    --avatar-surface-foreground: 93.1 15.03% 37.84%; /* Dark Olive Green */
 
     /* Profile action buttons */
     --action: 43 81% 88%; /* Lemon Meringue — pill background */
@@ -80,6 +85,8 @@
     --action-accent-foreground: 43 81% 88%; /* Lemon Meringue — QR icon */
     --action-chip: 30 34% 58%; /* Camel — selected theme pill, settings icon chip */
     --action-chip-foreground: 22.74 65.52% 18%; /* Dark Russet — content on the chip, 4.7:1 on Camel */
+    --action-tonal: 52 93% 93%; /* Cornsilk — tonal round/pill button */
+    --action-tonal-foreground: 22.74 65.52% 28.43%; /* Russet — content on the tonal button */
   }
 
   .dark:root {
@@ -108,6 +115,8 @@
 
     /* Logo / wordmark — Alloy Orange */
     --brand: 25.82 72.69% 44.51%;
+    /* Text on the brand color (badge count) — Cornsilk */
+    --brand-foreground: 52 93% 93%;
 
     /* Typed text on input surfaces — Russet */
     --on-surface: 22.74 65.52% 28.43%;
@@ -140,6 +149,7 @@
     --card-foreground: 22.74 65.52% 28.43%;
     --card-title: 22.74 65.52% 28.43%; /* Russet */
     --card-muted: 22.74 65.52% 28.43%; /* Russet */
+    --card-danger: 22.74 65.52% 28.43%; /* Russet — destructive menu item (bold) */
     --qr-tile: 43 81% 88%; /* Lemon Meringue */
     --qr-code: 22.74 65.52% 28.43%; /* Russet */
     --popover: 30 34% 58%;
@@ -150,8 +160,10 @@
     --searchbar-placeholder: 22.74 65.52% 28.43%; /* Russet */
 
     /* Avatar */
-    --avatar: 93.1 15.03% 37.84%; /* Dark Olive Green */
-    --avatar-foreground: 43 81% 88%; /* Lemon Meringue */
+    --avatar: 22.74 65.52% 28.43%; /* Russet */
+    --avatar-foreground: 30 34% 58%; /* Camel */
+    --avatar-surface: 30 34% 58%; /* Camel — avatar on a row/card */
+    --avatar-surface-foreground: 22.74 65.52% 28.43%; /* Russet */
 
     /* Profile action buttons */
     --action: 22.74 65.52% 28.43%; /* Russet — pill background */
@@ -160,5 +172,7 @@
     --action-accent-foreground: 22.74 65.52% 28.43%; /* Russet — QR icon */
     --action-chip: 30 34% 58%; /* Camel — selected theme pill, settings icon chip */
     --action-chip-foreground: 22.74 65.52% 18%; /* Dark Russet — content on the chip, 4.7:1 on Camel */
+    --action-tonal: 93.1 15.03% 37.84%; /* Dark Olive Green — tonal round/pill button */
+    --action-tonal-foreground: 30 34% 58%; /* Camel — content on the tonal button */
   }
 }
