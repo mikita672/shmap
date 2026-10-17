@@ -46,6 +46,7 @@ export function useAcceptFriendRequest() {
         queryClient.invalidateQueries({
           queryKey: friendActivityQueryOptions.queryKey,
         }),
+        queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
       ]),
   });
 }
@@ -72,6 +73,9 @@ export function useCancelFriendRequest() {
       toast.error(getErrorMessage(error, "Couldn't cancel the request"));
     },
     onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+        queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
+      ]),
   });
 }

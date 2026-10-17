@@ -1,5 +1,9 @@
 import { FriendRow } from "@/components/friends/friend-row";
-import { useSendFriendRequest } from "@/hooks/useFriendRequestMutations";
+import {
+  useAcceptFriendRequest,
+  useCancelFriendRequest,
+  useSendFriendRequest,
+} from "@/hooks/useFriendRequestMutations";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
 import type { UserSearchResultResponse } from "@/lib/types/api";
 
@@ -9,12 +13,14 @@ export interface SearchResultRowProps {
 
 export function SearchResultRow({ result }: SearchResultRowProps) {
   const send = useSendFriendRequest();
+  const accept = useAcceptFriendRequest();
+  const cancel = useCancelFriendRequest();
   const { user } = result;
   const row = {
     name: `${user.firstName} ${user.lastName}`,
     subtitle: mutualFriendsSubtitle(result),
     avatarUrl: user.avatarUrl,
-    disabled: send.isPending,
+    disabled: send.isPending || accept.isPending || cancel.isPending,
   };
 
   switch (result.relationship) {
@@ -28,11 +34,17 @@ export function SearchResultRow({ result }: SearchResultRowProps) {
           variant="sent"
           label="Requested"
           {...row}
-          onCancel={() => {}}
+          onCancel={() => cancel.mutate(result.requestId)}
         />
       );
     case "INCOMING":
-      return <FriendRow variant="accept" {...row} onAccept={() => {}} />;
+      return (
+        <FriendRow
+          variant="accept"
+          {...row}
+          onAccept={() => accept.mutate(result.requestId)}
+        />
+      );
     case "FRIENDS":
       return <FriendRow variant="friends" {...row} />;
     default:
