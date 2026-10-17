@@ -145,3 +145,8 @@ export interface FriendResponse {
   muted: boolean;
   friendsSince: string;
 }
+
+export interface FriendSuggestionResponse {
+  user: UserSummaryResponse;
+  mutualFriendsCount: number;
+}
