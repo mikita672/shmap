@@ -5,6 +5,7 @@ import { IncomingRequestRow } from "@/components/friends/incoming-request-row";
 import { SentRequestRow } from "@/components/friends/sent-request-row";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
+import { RefreshControl } from "@/components/ui/refresh-control";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import {
@@ -12,6 +13,7 @@ import {
   useFriendActivity,
 } from "@/hooks/useFriendActivity";
 import { useIncomingRequests } from "@/hooks/useIncomingRequests";
+import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { useSentRequests } from "@/hooks/useSentRequests";
 import { formatTimeAgo } from "@/lib/time-ago";
@@ -54,6 +56,7 @@ export function RequestsList() {
         queryKey: friendActivityQueryOptions.queryKey,
       }),
     ]);
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refreshAll);
 
   if (incoming.isPending || sent.isPending || activity.isPending) {
     return (
@@ -120,6 +123,13 @@ export function RequestsList() {
         <SectionLabel title={section.title} className="pb-2 pt-4" />
       )}
       stickySectionHeadersEnabled={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetchingByUser}
+          onRefresh={refetchByUser}
+          className="bg-action text-secondary"
+        />
+      }
       ItemSeparatorComponent={RowGap}
       ListEmptyComponent={
         <NoteCard
