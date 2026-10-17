@@ -13,6 +13,7 @@ const roundButtonVariants = cva("items-center justify-center rounded-full", {
     },
     size: {
       default: "h-10 w-10",
+      md: "h-12 w-12",
       lg: "h-14 w-14",
     },
   },
