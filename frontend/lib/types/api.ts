@@ -157,9 +157,10 @@ export type SendFriendRequestResponse =
 
 export type Relationship = "NONE" | "REQUESTED" | "INCOMING" | "FRIENDS";
 
-export interface UserSearchResultResponse {
+export type UserSearchResultResponse = {
   user: UserSummaryResponse;
-  relationship: Relationship;
-  requestId: number | null;
   mutualFriendsCount: number;
-}
+} & (
+  | { relationship: "NONE" | "FRIENDS"; requestId: null }
+  | { relationship: "REQUESTED" | "INCOMING"; requestId: number }
+);

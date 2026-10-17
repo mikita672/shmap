@@ -1,11 +1,10 @@
 import { ActivityIndicator, FlatList, View } from "react-native";
-import { FriendRow } from "@/components/friends/friend-row";
+import { SearchResultRow } from "@/components/friends/search-result-row";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { useUserSearch } from "@/hooks/useUserSearch";
-import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/utils/error";
 
@@ -49,15 +48,7 @@ export function SearchResultsList({ query }: SearchResultsListProps) {
       data={results}
       className={cn(isPlaceholderData && "opacity-60")}
       keyExtractor={(result) => String(result.user.id)}
-      renderItem={({ item: result }) => (
-        <FriendRow
-          variant="add"
-          name={`${result.user.firstName} ${result.user.lastName}`}
-          subtitle={mutualFriendsSubtitle(result)}
-          avatarUrl={result.user.avatarUrl}
-          onAdd={() => {}}
-        />
-      )}
+      renderItem={({ item }) => <SearchResultRow result={item} />}
       ListEmptyComponent={
         <NoteCard
           title="No people found"
