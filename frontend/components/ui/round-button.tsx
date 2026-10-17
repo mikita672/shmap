@@ -3,21 +3,23 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
-const roundButtonVariants = cva(
-  "h-10 w-10 items-center justify-center rounded-full",
-  {
-    variants: {
-      variant: {
-        filled: "bg-action-accent active:bg-action-accent/80",
-        tonal: "bg-action-tonal active:bg-action-tonal/80",
-        surface: "bg-action active:bg-action/80",
-      },
+const roundButtonVariants = cva("items-center justify-center rounded-full", {
+  variants: {
+    variant: {
+      filled: "bg-action-accent active:bg-action-accent/80",
+      tonal: "bg-action-tonal active:bg-action-tonal/80",
+      surface: "bg-action active:bg-action/80",
     },
-    defaultVariants: {
-      variant: "surface",
+    size: {
+      default: "h-10 w-10",
+      lg: "h-14 w-14",
     },
   },
-);
+  defaultVariants: {
+    variant: "surface",
+    size: "default",
+  },
+});
 
 const roundButtonIconVariants = cva("", {
   variants: {
@@ -44,6 +46,7 @@ export interface RoundButtonProps
 export function RoundButton({
   icon,
   variant,
+  size,
   className,
   disabled,
   ...props
@@ -54,7 +57,7 @@ export function RoundButton({
       hitSlop={4}
       disabled={disabled}
       className={cn(
-        roundButtonVariants({ variant }),
+        roundButtonVariants({ variant, size }),
         disabled && "opacity-50",
         className,
       )}
