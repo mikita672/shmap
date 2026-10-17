@@ -2,22 +2,28 @@ import { useState } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { FriendsList } from "@/components/friends/friends-list";
+import { RequestsList } from "@/components/friends/requests-list";
 import { RoundButton } from "@/components/ui/round-button";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import {
   SegmentedControl,
   type Segment,
 } from "@/components/ui/segmented-control";
+import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 
 type HubTab = "friends" | "requests";
 
-const HUB_TABS: readonly Segment<HubTab>[] = [
-  { value: "friends", label: "Friends" },
-  { value: "requests", label: "Requests" },
-];
-
 export default function FriendsHubScreen() {
   const [tab, setTab] = useState<HubTab>("friends");
+  const { data: requestCount = 0, refetch: refetchRequestCount } =
+    useIncomingRequestCount();
+  useRefreshOnFocus(refetchRequestCount);
+
+  const segments: Segment<HubTab>[] = [
+    { value: "friends", label: "Friends" },
+    { value: "requests", label: "Requests", badge: requestCount },
+  ];
 
   return (
     <View className="flex-1 bg-background">
@@ -25,7 +31,7 @@ export default function FriendsHubScreen() {
 
       <View className="flex-row items-center gap-2 px-6 pt-3">
         <SegmentedControl
-          segments={HUB_TABS}
+          segments={segments}
           value={tab}
           onValueChange={setTab}
           className="flex-1"
@@ -39,6 +45,7 @@ export default function FriendsHubScreen() {
       </View>
 
       {tab === "friends" && <FriendsList />}
+      {tab === "requests" && <RequestsList />}
     </View>
   );
 }
