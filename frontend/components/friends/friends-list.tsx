@@ -78,6 +78,8 @@ export function FriendsList() {
           <SectionLabel title={section.title} className="pb-2 pt-4" />
         )}
         stickySectionHeadersEnabled={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ItemSeparatorComponent={RowGap}
         ListEmptyComponent={
           friends.length === 0 ? (
