@@ -1,5 +1,5 @@
 import { ActivityIndicator, SectionList, View } from "react-native";
-import { FriendRow } from "@/components/friends/friend-row";
+import { IncomingRequestRow } from "@/components/friends/incoming-request-row";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
@@ -44,16 +44,7 @@ export function RequestsList() {
     <SectionList
       sections={sections}
       keyExtractor={(request) => String(request.id)}
-      renderItem={({ item: { user } }) => (
-        <FriendRow
-          variant="request"
-          name={`${user.firstName} ${user.lastName}`}
-          subtitle={`@${user.username}`}
-          avatarUrl={user.avatarUrl}
-          onAccept={() => {}}
-          onDecline={() => {}}
-        />
-      )}
+      renderItem={({ item }) => <IncomingRequestRow request={item} />}
       renderSectionHeader={({ section }) => (
         <SectionLabel title={section.title} className="pb-2 pt-4" />
       )}
