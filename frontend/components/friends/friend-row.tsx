@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const MIN_TOUCH_TARGET = 48;
 
 type FriendRowTrailingProps =
-  | { variant: "actions"; onMessage: () => void; onMore: () => void }
+  | { variant: "actions"; onMessage?: () => void; onMore: () => void }
   | { variant: "request"; onAccept: () => void; onDecline: () => void }
   | { variant: "sent"; onCancel: () => void }
   | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void };
@@ -71,7 +71,7 @@ function FriendRowTrailing(
             icon="chat-bubble-outline"
             variant="tonal"
             accessibilityLabel={`Message ${props.name}`}
-            disabled={props.disabled}
+            disabled={props.disabled || !props.onMessage}
             onPress={props.onMessage}
           />
           <RowIconButton
