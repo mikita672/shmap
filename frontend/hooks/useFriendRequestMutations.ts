@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { friendsQueryOptions } from "@/hooks/useFriends";
-import { acceptFriendRequest } from "@/lib/api/friend-requests";
+import {
+  acceptFriendRequest,
+  declineFriendRequest,
+} from "@/lib/api/friend-requests";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export function useAcceptFriendRequest() {
@@ -19,5 +22,18 @@ export function useAcceptFriendRequest() {
           queryKey: friendsQueryOptions.queryKey,
         }),
       ]),
+  });
+}
+
+export function useDeclineFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: declineFriendRequest,
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't decline the request"));
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
   });
 }

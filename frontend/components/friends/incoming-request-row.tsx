@@ -1,5 +1,8 @@
 import { FriendRow } from "@/components/friends/friend-row";
-import { useAcceptFriendRequest } from "@/hooks/useFriendRequestMutations";
+import {
+  useAcceptFriendRequest,
+  useDeclineFriendRequest,
+} from "@/hooks/useFriendRequestMutations";
 import type { FriendRequestResponse } from "@/lib/types/api";
 
 export interface IncomingRequestRowProps {
@@ -8,6 +11,7 @@ export interface IncomingRequestRowProps {
 
 export function IncomingRequestRow({ request }: IncomingRequestRowProps) {
   const accept = useAcceptFriendRequest();
+  const decline = useDeclineFriendRequest();
   const { user } = request;
 
   return (
@@ -16,9 +20,9 @@ export function IncomingRequestRow({ request }: IncomingRequestRowProps) {
       name={`${user.firstName} ${user.lastName}`}
       subtitle={`@${user.username}`}
       avatarUrl={user.avatarUrl}
-      disabled={accept.isPending}
+      disabled={accept.isPending || decline.isPending}
       onAccept={() => accept.mutate(request.id)}
-      onDecline={() => {}}
+      onDecline={() => decline.mutate(request.id)}
     />
   );
 }
