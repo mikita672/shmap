@@ -1,0 +1,20 @@
+import { Text as RNText, View } from "react-native";
+import { Avatar } from "@/components/ui/avatar";
+import { Text } from "@/components/ui/text";
+
+export interface ActivityItemProps {
+  name: string;
+  action: string;
+  avatarUrl?: string | null;
+}
+
+export function ActivityItem({ name, action, avatarUrl }: ActivityItemProps) {
+  return (
+    <View className="flex-row items-center gap-3 py-1 pl-3 pr-5">
+      <Avatar uri={avatarUrl} size={36} />
+      <Text className="flex-1 text-sm leading-5 tracking-[0.5px] text-action-foreground">
+        <RNText className="font-medium">{name}</RNText> {action}
+      </Text>
+    </View>
+  );
+}

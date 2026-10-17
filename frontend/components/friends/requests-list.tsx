@@ -1,19 +1,29 @@
 import { ActivityIndicator, SectionList, View } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { ActivityItem } from "@/components/friends/activity-item";
 import { IncomingRequestRow } from "@/components/friends/incoming-request-row";
 import { SentRequestRow } from "@/components/friends/sent-request-row";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
+import {
+  friendActivityQueryOptions,
+  useFriendActivity,
+} from "@/hooks/useFriendActivity";
 import { useIncomingRequests } from "@/hooks/useIncomingRequests";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { useSentRequests } from "@/hooks/useSentRequests";
-import type { FriendRequestResponse } from "@/lib/types/api";
+import type {
+  FriendActivityResponse,
+  FriendActivityType,
+  FriendRequestResponse,
+} from "@/lib/types/api";
 import { getErrorMessage } from "@/lib/utils/error";
 
 type RequestsRow =
   | { key: string; kind: "incoming"; request: FriendRequestResponse }
-  | { key: string; kind: "sent"; request: FriendRequestResponse };
+  | { key: string; kind: "sent"; request: FriendRequestResponse }
+  | { key: string; kind: "activity"; activity: FriendActivityResponse };
 
 interface RequestsSection {
   key: string;
@@ -21,17 +31,29 @@ interface RequestsSection {
   data: RequestsRow[];
 }
 
+const ACTIVITY_ACTIONS: Record<FriendActivityType, string> = {
+  REQUEST_ACCEPTED: "accepted your request",
+  NEW_FRIENDSHIP: "is now your friend",
+};
+
 export function RequestsList() {
   const queryClient = useQueryClient();
   const incoming = useIncomingRequests();
   const sent = useSentRequests();
+  const activity = useFriendActivity();
   useRefreshOnFocus(incoming.refetch);
   useRefreshOnFocus(sent.refetch);
+  useRefreshOnFocus(activity.refetch);
 
   const refreshAll = () =>
-    queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+      queryClient.invalidateQueries({
+        queryKey: friendActivityQueryOptions.queryKey,
+      }),
+    ]);
 
-  if (incoming.isPending || sent.isPending) {
+  if (incoming.isPending || sent.isPending || activity.isPending) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
@@ -39,12 +61,12 @@ export function RequestsList() {
     );
   }
 
-  if (!incoming.data || !sent.data) {
+  if (!incoming.data || !sent.data || !activity.data) {
     return (
       <View className="flex-1 items-center justify-center gap-4 px-6">
         <Text className="text-center">
           {getErrorMessage(
-            incoming.error ?? sent.error,
+            incoming.error ?? sent.error ?? activity.error,
             "Couldn't load your requests",
           )}
         </Text>
@@ -74,6 +96,15 @@ export function RequestsList() {
         request,
       })),
     },
+    {
+      key: "activity",
+      title: "Recent activity",
+      data: activity.data.map((item) => ({
+        key: `activity-${item.id}`,
+        kind: "activity",
+        activity: item,
+      })),
+    },
   ];
 
   return (
@@ -97,6 +128,16 @@ function RequestsListRow({ row }: { row: RequestsRow }) {
       return <IncomingRequestRow request={row.request} />;
     case "sent":
       return <SentRequestRow request={row.request} />;
+    case "activity": {
+      const { user, type } = row.activity;
+      return (
+        <ActivityItem
+          name={`${user.firstName} ${user.lastName}`}
+          action={ACTIVITY_ACTIONS[type]}
+          avatarUrl={user.avatarUrl}
+        />
+      );
+    }
     default:
       return row satisfies never;
   }

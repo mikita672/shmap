@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
+import { friendActivityQueryOptions } from "@/hooks/useFriendActivity";
 import { friendsQueryOptions } from "@/hooks/useFriends";
 import {
   acceptFriendRequest,
@@ -21,6 +22,9 @@ export function useAcceptFriendRequest() {
         queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
         queryClient.invalidateQueries({
           queryKey: friendsQueryOptions.queryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: friendActivityQueryOptions.queryKey,
         }),
       ]),
   });

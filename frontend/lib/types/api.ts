@@ -129,6 +129,15 @@ export interface FriendRequestResponse {
   createdAt: string;
 }
 
+export type FriendActivityType = "REQUEST_ACCEPTED" | "NEW_FRIENDSHIP";
+
+export interface FriendActivityResponse {
+  id: number;
+  type: FriendActivityType;
+  user: UserSummaryResponse;
+  createdAt: string;
+}
+
 export interface FriendResponse {
   user: UserSummaryResponse;
   favorite: boolean;
