@@ -7,6 +7,9 @@ import type {
 export const getIncomingRequests = () =>
   apiClient.get<FriendRequestResponse[]>("/api/v1/friend-requests/incoming");
 
+export const getSentRequests = () =>
+  apiClient.get<FriendRequestResponse[]>("/api/v1/friend-requests/sent");
+
 export const acceptFriendRequest = (requestId: number) =>
   apiClient.post<void>(`/api/v1/friend-requests/${requestId}/accept`);
 
