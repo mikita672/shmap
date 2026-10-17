@@ -8,16 +8,21 @@ import {
   SegmentedControl,
   type Segment,
 } from "@/components/ui/segmented-control";
+import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 
 type HubTab = "friends" | "requests";
 
-const HUB_TABS: readonly Segment<HubTab>[] = [
-  { value: "friends", label: "Friends" },
-  { value: "requests", label: "Requests" },
-];
-
 export default function FriendsHubScreen() {
   const [tab, setTab] = useState<HubTab>("friends");
+  const { data: requestCount = 0, refetch: refetchRequestCount } =
+    useIncomingRequestCount();
+  useRefreshOnFocus(refetchRequestCount);
+
+  const segments: Segment<HubTab>[] = [
+    { value: "friends", label: "Friends" },
+    { value: "requests", label: "Requests", badge: requestCount },
+  ];
 
   return (
     <View className="flex-1 bg-background">
@@ -25,7 +30,7 @@ export default function FriendsHubScreen() {
 
       <View className="flex-row items-center gap-2 px-6 pt-3">
         <SegmentedControl
-          segments={HUB_TABS}
+          segments={segments}
           value={tab}
           onValueChange={setTab}
           className="flex-1"
