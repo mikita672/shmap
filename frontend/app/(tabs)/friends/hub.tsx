@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
+import { FriendsList } from "@/components/friends/friends-list";
 import { RoundButton } from "@/components/ui/round-button";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import {
@@ -36,6 +37,8 @@ export default function FriendsHubScreen() {
           onPress={() => router.push("/friends/add")}
         />
       </View>
+
+      {tab === "friends" && <FriendsList />}
     </View>
   );
 }
