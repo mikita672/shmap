@@ -11,7 +11,7 @@ const MIN_TOUCH_TARGET = 48;
 type FriendRowTrailingProps =
   | { variant: "actions"; onMessage?: () => void; onMore: () => void }
   | { variant: "request"; onAccept: () => void; onDecline: () => void }
-  | { variant: "sent"; onCancel: () => void }
+  | { variant: "sent"; label?: string; onCancel: () => void }
   | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void };
 
 export type FriendRowProps = FriendRowTrailingProps & {
@@ -105,7 +105,7 @@ function FriendRowTrailing(
     case "sent":
       return (
         <PillButton
-          label="Cancel"
+          label={props.label ?? "Cancel"}
           variant="tonal"
           accessibilityLabel={`Cancel request to ${props.name}`}
           disabled={props.disabled}

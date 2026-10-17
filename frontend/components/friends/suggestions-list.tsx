@@ -5,6 +5,7 @@ import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import { useFriendSuggestions } from "@/hooks/useFriendSuggestions";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { useSentRequests } from "@/hooks/useSentRequests";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export function SuggestionsList() {
@@ -15,6 +16,7 @@ export function SuggestionsList() {
     refetch,
   } = useFriendSuggestions();
   useRefreshOnFocus(refetch);
+  const { data: sentRequests = [] } = useSentRequests();
 
   if (isPending) {
     return (
@@ -37,11 +39,20 @@ export function SuggestionsList() {
     );
   }
 
+  const sentByUserId = new Map(
+    sentRequests.map((request) => [request.user.id, request]),
+  );
+
   return (
     <FlatList
       data={suggestions}
       keyExtractor={(suggestion) => String(suggestion.user.id)}
-      renderItem={({ item }) => <SuggestionRow suggestion={item} />}
+      renderItem={({ item }) => (
+        <SuggestionRow
+          suggestion={item}
+          sentRequest={sentByUserId.get(item.user.id)}
+        />
+      )}
       ListHeaderComponent={
         <SectionLabel title="Suggestions" className="pb-2 pt-4" />
       }

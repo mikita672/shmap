@@ -1,23 +1,41 @@
 import { FriendRow } from "@/components/friends/friend-row";
 import { useSendFriendRequest } from "@/hooks/useFriendRequestMutations";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
-import type { FriendSuggestionResponse } from "@/lib/types/api";
+import type {
+  FriendRequestResponse,
+  FriendSuggestionResponse,
+} from "@/lib/types/api";
 
 export interface SuggestionRowProps {
   suggestion: FriendSuggestionResponse;
+  sentRequest?: FriendRequestResponse;
 }
 
-export function SuggestionRow({ suggestion }: SuggestionRowProps) {
+export function SuggestionRow({ suggestion, sentRequest }: SuggestionRowProps) {
   const send = useSendFriendRequest();
   const { user } = suggestion;
+  const row = {
+    name: `${user.firstName} ${user.lastName}`,
+    subtitle: mutualFriendsSubtitle(suggestion),
+    avatarUrl: user.avatarUrl,
+    disabled: send.isPending,
+  };
+
+  if (sentRequest) {
+    return (
+      <FriendRow
+        variant="sent"
+        label="Requested"
+        {...row}
+        onCancel={() => {}}
+      />
+    );
+  }
 
   return (
     <FriendRow
       variant="suggestion"
-      name={`${user.firstName} ${user.lastName}`}
-      subtitle={mutualFriendsSubtitle(suggestion)}
-      avatarUrl={user.avatarUrl}
-      disabled={send.isPending}
+      {...row}
       onAdd={() => send.mutate(user.id)}
       onDismiss={() => {}}
     />
