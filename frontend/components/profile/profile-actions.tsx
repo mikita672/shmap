@@ -1,7 +1,7 @@
 import { View, type StyleProp, type ViewStyle } from "react-native";
 import { Button } from "@/components/ui/button";
+import { QrCodeButton } from "@/components/ui/qr-code-button";
 import { Text } from "@/components/ui/text";
-import { MaterialIcons } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 export interface ProfileActionsProps {
@@ -32,18 +32,10 @@ export function ProfileActions({
         >
           <Text>Share profile</Text>
         </Button>
-        <Button
-          size="icon-xl"
-          className="bg-action-accent active:bg-action-accent/80"
-          onPress={onShowQrCode}
+        <QrCodeButton
           accessibilityLabel="Show profile QR code"
-        >
-          <MaterialIcons
-            name="qr-code-2"
-            size={36}
-            className="text-action-accent-foreground"
-          />
-        </Button>
+          onPress={onShowQrCode}
+        />
       </View>
 
       <Button variant="secondary" size="xl" onPress={onOpenSettings}>
