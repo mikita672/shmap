@@ -123,6 +123,12 @@ export interface UserSummaryResponse {
   avatarUrl: string | null;
 }
 
+export interface FriendRequestResponse {
+  id: number;
+  user: UserSummaryResponse;
+  createdAt: string;
+}
+
 export interface FriendResponse {
   user: UserSummaryResponse;
   favorite: boolean;
