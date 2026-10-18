@@ -31,6 +31,7 @@ export function useSendFriendRequest() {
       const invalidations = [
         queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
         queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
+        queryClient.invalidateQueries({ queryKey: ["profiles"] }),
       ];
       if (result?.outcome !== "REQUEST_SENT") {
         invalidations.push(
@@ -68,6 +69,7 @@ export function useAcceptFriendRequest() {
           queryKey: friendActivityQueryOptions.queryKey,
         }),
         queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
+        queryClient.invalidateQueries({ queryKey: ["profiles"] }),
       ]),
   });
 }
@@ -81,7 +83,10 @@ export function useDeclineFriendRequest() {
       toast.error(getErrorMessage(error, "Couldn't decline the request"));
     },
     onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+        queryClient.invalidateQueries({ queryKey: ["profiles"] }),
+      ]),
   });
 }
 
@@ -97,6 +102,7 @@ export function useCancelFriendRequest() {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
         queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
+        queryClient.invalidateQueries({ queryKey: ["profiles"] }),
       ]),
   });
 }

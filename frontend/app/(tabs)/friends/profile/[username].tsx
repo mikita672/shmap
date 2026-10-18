@@ -1,6 +1,7 @@
 import { ActivityIndicator, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useLocalSearchParams } from "expo-router";
+import { RelationshipButton } from "@/components/friends/relationship-button";
 import { Avatar } from "@/components/ui/avatar";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
@@ -53,24 +54,30 @@ export default function UserProfileScreen() {
           )}
         </View>
       ) : (
-        <View className="items-center gap-4 px-6" style={{ paddingTop: top }}>
-          <Avatar uri={profile.user.avatarUrl} size={150} />
+        <>
+          <View className="items-center gap-4 px-6" style={{ paddingTop: top }}>
+            <Avatar uri={profile.user.avatarUrl} size={150} />
 
-          <View className="items-center gap-1 self-stretch">
-            <Text className="text-center text-[28px] leading-9 tracking-[0.5px] text-action-foreground">
-              {profile.user.firstName} {profile.user.lastName}
-            </Text>
-            <Text className="text-center leading-6 tracking-[0.5px] text-secondary">
-              @{profile.user.username}
-            </Text>
+            <View className="items-center gap-1 self-stretch">
+              <Text className="text-center text-[28px] leading-9 tracking-[0.5px] text-action-foreground">
+                {profile.user.firstName} {profile.user.lastName}
+              </Text>
+              <Text className="text-center leading-6 tracking-[0.5px] text-secondary">
+                @{profile.user.username}
+              </Text>
+            </View>
+
+            {profile.bio ? (
+              <Text className="text-center leading-6 tracking-[0.5px] text-action-foreground">
+                {profile.bio}
+              </Text>
+            ) : null}
           </View>
 
-          {profile.bio ? (
-            <Text className="text-center leading-6 tracking-[0.5px] text-action-foreground">
-              {profile.bio}
-            </Text>
-          ) : null}
-        </View>
+          <View className="mt-auto px-6 pb-4">
+            <RelationshipButton profile={profile} />
+          </View>
+        </>
       )}
     </View>
   );
