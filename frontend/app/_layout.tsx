@@ -56,6 +56,8 @@ function RootNavigator() {
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
+
+          <Stack.Screen name="u/[username]" />
         </Stack>
         <StatusBar style={isDark ? "light" : "dark"} />
         <PortalHost />
