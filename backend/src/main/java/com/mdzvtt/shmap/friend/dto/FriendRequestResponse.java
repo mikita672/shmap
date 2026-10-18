@@ -4,5 +4,5 @@ import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 
 import java.time.Instant;
 
-public record FriendRequestResponse(Long id, UserSummaryResponse user, Instant createdAt) {
+public record FriendRequestResponse(Long id, UserSummaryResponse user, Instant createdAt, long mutualFriendsCount) {
 }

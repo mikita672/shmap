@@ -15,4 +15,7 @@ cssInterop(Ionicons, {
   },
 });
 
+type MaterialIconName = keyof typeof MaterialIcons.glyphMap;
+
 export { MaterialIcons, Ionicons };
+export type { MaterialIconName };

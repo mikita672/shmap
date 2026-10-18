@@ -35,6 +35,9 @@ interface AuthContextValue {
   signUp: (response: AuthenticationResponse) => Promise<void>;
   signOut: (options?: SignOutOptions) => Promise<void>;
   clearPendingRedirect: () => void;
+  pendingLink: Href | null;
+  setPendingLink: (link: Href) => void;
+  clearPendingLink: () => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -62,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pendingRedirect, setPendingRedirect] = useState<Href | null>(null);
+  const [pendingLink, setPendingLink] = useState<Href | null>(null);
 
   useEffect(() => {
     SecureStore.getItemAsync(ACCESS_TOKEN_KEY)
@@ -98,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const clearPendingRedirect = useCallback(() => setPendingRedirect(null), []);
+  const clearPendingLink = useCallback(() => setPendingLink(null), []);
 
   useEffect(() => {
     setOnSessionClear(clearSession);
@@ -118,6 +123,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp: handleAuth,
       signOut,
       clearPendingRedirect,
+      pendingLink,
+      setPendingLink,
+      clearPendingLink,
     }),
     [
       isLoading,
@@ -126,6 +134,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       handleAuth,
       signOut,
       clearPendingRedirect,
+      pendingLink,
+      clearPendingLink,
     ],
   );
 

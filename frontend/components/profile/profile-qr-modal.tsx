@@ -4,8 +4,8 @@ import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
-import { MaterialIcons } from "@/lib/icons";
 import { getProfileUrl } from "@/lib/profile-link";
 import { QRCode } from "@/lib/qr-code";
 import type { ProfileResponse } from "@/lib/types/api";
@@ -56,25 +56,15 @@ export function ProfileQrModal({
           accessibilityViewIsModal
           className="w-full max-w-[344px] items-center gap-4 rounded-[32px] bg-card px-6 pt-8 pb-6"
         >
-          <Pressable
-            onPress={onClose}
-            hitSlop={8}
-            accessibilityRole="button"
+          <RoundButton
+            icon="close"
             accessibilityLabel="Close"
-            className="absolute right-4 top-4 h-10 w-10 items-center justify-center rounded-full bg-action active:opacity-70"
-          >
-            <MaterialIcons
-              name="close"
-              size={24}
-              className="text-action-foreground"
-            />
-          </Pressable>
-
-          <Avatar
-            uri={profile.avatarUrl}
-            fallbackText={fullName}
-            className="h-[72px] w-[72px]"
+            hitSlop={8}
+            onPress={onClose}
+            className="absolute right-4 top-4"
           />
+
+          <Avatar uri={profile.avatarUrl} size={72} tone="surface" />
 
           <View className="items-center gap-0.5">
             <Text className="text-card-title text-2xl leading-8 tracking-[0.5px] text-center">

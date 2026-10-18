@@ -1,0 +1,247 @@
+:root {
+  color-scheme: light dark;
+
+  --background: 74 22% 62%;
+  --primary: 30 34% 58%;
+  --primary-foreground: 93.1 15.03% 37.84%;
+  --secondary: 93.1 15.03% 37.84%;
+  --brand: 25.82 72.69% 44.51%;
+  --action: 43 81% 88%;
+  --action-foreground: 22.74 65.52% 28.43%;
+  --avatar-surface: 52 93% 93%;
+  --avatar-surface-foreground: 93.1 15.03% 37.84%;
+  --qr-tile: 43 81% 88%;
+  --qr-code: 22.74 65.52% 28.43%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 93 15% 38%;
+    --primary: 22.74 65.52% 28.43%;
+    --primary-foreground: 74 22% 62%;
+    --secondary: 74 22% 62%;
+    --brand: 25.82 72.69% 44.51%;
+    --action: 22.74 65.52% 28.43%;
+    --action-foreground: 30 34% 58%;
+    --avatar-surface: 30 34% 58%;
+    --avatar-surface-foreground: 22.74 65.52% 28.43%;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: hsl(var(--background));
+  font-family:
+    Roboto,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  letter-spacing: 0.5px;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+  max-width: 408px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.logo {
+  color: hsl(var(--brand));
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 28px;
+  letter-spacing: 0.1em;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px 24px;
+  border-radius: 28px;
+  background: hsl(var(--action));
+}
+
+.card-note {
+  gap: 4px;
+  padding: 20px 24px;
+}
+
+.card-profile {
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: hsl(var(--avatar-surface));
+  color: hsl(var(--avatar-surface-foreground));
+}
+
+.avatar svg {
+  width: 112.5px;
+  height: 112.5px;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  color: hsl(var(--action-foreground));
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 36px;
+  overflow-wrap: anywhere;
+}
+
+.title-sm {
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.text {
+  color: hsl(var(--secondary));
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.text-sm {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.pitch {
+  color: hsl(var(--action-foreground));
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  padding: 0 24px;
+  border-radius: 9999px;
+  font-size: 20px;
+  line-height: 24px;
+  text-decoration: none;
+}
+
+.button:focus-visible {
+  outline: 3px solid hsl(var(--action-foreground) / 0.5);
+  outline-offset: 2px;
+}
+
+.button-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.button-primary:hover {
+  background: hsl(var(--primary) / 0.9);
+}
+
+.button-secondary {
+  background: hsl(var(--action));
+  color: hsl(var(--action-foreground));
+}
+
+.button-secondary:hover {
+  background: hsl(var(--action) / 0.8);
+}
+
+.hint {
+  color: hsl(var(--secondary));
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.profile-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.qr-card {
+  display: none;
+  align-items: center;
+  gap: 16px;
+  padding: 32px;
+}
+
+.qr-tile {
+  width: 248px;
+  height: 248px;
+  padding: 20px;
+  border-radius: 24px;
+  background: hsl(var(--qr-tile));
+  color: hsl(var(--qr-code));
+}
+
+.qr-tile svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.qr-tile path {
+  stroke: currentColor;
+}
+
+@media (min-width: 800px) {
+  .page-profile {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    max-width: none;
+  }
+
+  .profile-column {
+    width: 360px;
+  }
+
+  .qr-card {
+    display: flex;
+  }
+}

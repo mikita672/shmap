@@ -110,3 +110,73 @@ export interface UsernameAvailabilityResponse {
   username: string;
   available: boolean;
 }
+
+export interface FriendRequestCountResponse {
+  count: number;
+}
+
+export interface UserSummaryResponse {
+  id: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl: string | null;
+}
+
+export interface FriendRequestResponse {
+  id: number;
+  user: UserSummaryResponse;
+  createdAt: string;
+  mutualFriendsCount: number;
+}
+
+export type FriendActivityType = "REQUEST_ACCEPTED" | "NEW_FRIENDSHIP";
+
+export interface FriendActivityResponse {
+  id: number;
+  type: FriendActivityType;
+  user: UserSummaryResponse;
+  createdAt: string;
+}
+
+export interface FriendResponse {
+  user: UserSummaryResponse;
+  favorite: boolean;
+  muted: boolean;
+  friendsSince: string;
+}
+
+export interface FriendSuggestionResponse {
+  user: UserSummaryResponse;
+  mutualFriendsCount: number;
+}
+
+export type SendFriendRequestResponse =
+  | { outcome: "REQUEST_SENT"; requestId: number }
+  | { outcome: "BECAME_FRIENDS"; requestId: null };
+
+export type Relationship =
+  "NONE" | "REQUESTED" | "INCOMING" | "FRIENDS" | "SELF";
+
+export type UserSearchResultResponse = {
+  user: UserSummaryResponse;
+  mutualFriendsCount: number;
+} & (
+  | { relationship: "NONE" | "FRIENDS"; requestId: null }
+  | { relationship: "REQUESTED" | "INCOMING"; requestId: number }
+);
+
+export type PublicProfileResponse = {
+  user: UserSummaryResponse;
+  bio: string | null;
+  favorite: boolean;
+  muted: boolean;
+  friendsSince: string | null;
+  mutualFriendsCount: number;
+  previewOnly: boolean;
+  friendsCount: number | null;
+  friendsListVisible: boolean;
+} & (
+  | { relationship: "NONE" | "FRIENDS" | "SELF"; requestId: null }
+  | { relationship: "REQUESTED" | "INCOMING"; requestId: number }
+);

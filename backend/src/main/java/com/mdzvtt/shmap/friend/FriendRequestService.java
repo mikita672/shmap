@@ -18,12 +18,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendshipRepository friendshipRepository;
+    private final FriendActivityRepository friendActivityRepository;
     private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
@@ -53,7 +57,7 @@ public class FriendRequestService {
         User sender = userRepository.getReferenceById(senderId);
 
         if (friendRequestRepository.existsBySenderIdAndReceiverId(receiverId, senderId)) {
-            becomeFriends(sender, receiver);
+            becomeFriends(receiver, sender);
             return SendFriendRequestResponse.becameFriends();
         }
 
@@ -64,16 +68,14 @@ public class FriendRequestService {
 
     @Transactional(readOnly = true)
     public List<FriendRequestResponse> getIncoming(Integer userId) {
-        return friendRequestRepository.findByReceiverIdOrderByCreatedAtDesc(userId).stream()
-                .map(request -> toResponse(request, request.getSender()))
-                .toList();
+        return toResponses(userId, friendRequestRepository.findByReceiverIdOrderByCreatedAtDesc(userId),
+                request -> request.getSender());
     }
 
     @Transactional(readOnly = true)
     public List<FriendRequestResponse> getSent(Integer userId) {
-        return friendRequestRepository.findBySenderIdOrderByCreatedAtDesc(userId).stream()
-                .map(request -> toResponse(request, request.getReceiver()))
-                .toList();
+        return toResponses(userId, friendRequestRepository.findBySenderIdOrderByCreatedAtDesc(userId),
+                request -> request.getReceiver());
     }
 
     @Transactional(readOnly = true)
@@ -100,12 +102,15 @@ public class FriendRequestService {
         becomeFriends(request.getSender(), request.getReceiver());
     }
 
-    private void becomeFriends(User first, User second) {
-        friendRequestRepository.deleteBySenderIdAndReceiverId(first.getId(), second.getId());
-        friendRequestRepository.deleteBySenderIdAndReceiverId(second.getId(), first.getId());
+    private void becomeFriends(User requester, User accepter) {
+        friendRequestRepository.deleteBySenderIdAndReceiverId(requester.getId(), accepter.getId());
+        friendRequestRepository.deleteBySenderIdAndReceiverId(accepter.getId(), requester.getId());
         friendshipRepository.saveAll(List.of(
-                new Friendship(first, second),
-                new Friendship(second, first)));
+                new Friendship(requester, accepter),
+                new Friendship(accepter, requester)));
+        friendActivityRepository.saveAll(List.of(
+                new FriendActivity(requester, accepter, FriendActivityType.REQUEST_ACCEPTED),
+                new FriendActivity(accepter, requester, FriendActivityType.NEW_FRIENDSHIP)));
     }
 
     private FriendRequest findIncomingRequest(Integer userId, Long requestId) {
@@ -113,11 +118,31 @@ public class FriendRequestService {
                 .orElseThrow(FriendRequestNotFoundException::new);
     }
 
-    private FriendRequestResponse toResponse(FriendRequest request, User otherUser) {
+    private List<FriendRequestResponse> toResponses(Integer userId, List<FriendRequest> requests,
+            Function<FriendRequest, User> otherUser) {
+        if (requests.isEmpty()) {
+            return List.of();
+        }
+
+        List<Integer> otherUserIds = requests.stream().map(request -> otherUser.apply(request).getId()).toList();
+        Map<Integer, Long> mutualFriendsCounts = friendshipRepository
+                .countMutualFriends(userId, otherUserIds).stream()
+                .collect(Collectors.toMap(mutual -> mutual.userId(), mutual -> mutual.count()));
+
+        return requests.stream()
+                .map(request -> {
+                    User other = otherUser.apply(request);
+                    return toResponse(request, other, mutualFriendsCounts.getOrDefault(other.getId(), 0L));
+                })
+                .toList();
+    }
+
+    private FriendRequestResponse toResponse(FriendRequest request, User otherUser, long mutualFriendsCount) {
         String avatarUrl = storageService.publicUrl(otherUser.getAvatarKey());
         return new FriendRequestResponse(
                 request.getId(),
                 UserSummaryResponse.from(otherUser, avatarUrl),
-                request.getCreatedAt());
+                request.getCreatedAt(),
+                mutualFriendsCount);
     }
 }

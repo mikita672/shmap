@@ -20,6 +20,14 @@ export const PROFILE_LIMITS = {
 const USERNAME_PATTERN = /^[a-zA-Z0-9_.-]+$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export function isValidUsername(value: string): boolean {
+  return (
+    value.length >= PROFILE_LIMITS.usernameMinLength &&
+    value.length <= PROFILE_LIMITS.usernameMaxLength &&
+    USERNAME_PATTERN.test(value)
+  );
+}
+
 const validators: Record<
   ProfileTextField,
   (value: string) => string | undefined

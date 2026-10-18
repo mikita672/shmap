@@ -13,6 +13,7 @@ import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
+import { ScreenHeader } from "@/components/ui/screen-header";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
@@ -67,7 +68,6 @@ interface EditProfileFormProps {
 
 function EditProfileForm({ profile }: EditProfileFormProps) {
   const insets = useSafeAreaInsets();
-  const headerTop = Math.max(insets.top + 8, 48);
   const updateProfile = useUpdateProfile();
   const changeEmail = useChangeEmail();
   const avatar = useAvatarActions();
@@ -131,18 +131,7 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-background"
     >
-      <View
-        className="h-[52px] items-center justify-center"
-        style={{ marginTop: headerTop }}
-      >
-        <Text
-          role="heading"
-          className="text-heading text-2xl leading-8 tracking-[0.5px]"
-        >
-          Edit profile
-        </Text>
-        <BackButton className="absolute left-6 top-0" />
-      </View>
+      <ScreenHeader title="Edit profile" />
 
       <ScrollView
         className="flex-1"
@@ -151,7 +140,6 @@ function EditProfileForm({ profile }: EditProfileFormProps) {
       >
         <EditableAvatar
           uri={profile.avatarUrl}
-          fallbackText={`${values.firstName} ${values.lastName}`}
           isLoading={avatar.isPending}
           onEdit={() => setAvatarSheetVisible(true)}
         />

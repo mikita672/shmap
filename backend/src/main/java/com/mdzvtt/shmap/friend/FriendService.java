@@ -15,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FriendService {
     private final FriendshipRepository friendshipRepository;
+    private final FriendActivityRepository friendActivityRepository;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -35,6 +36,7 @@ public class FriendService {
         if (friendshipRepository.deleteBetween(userId, friendId) == 0) {
             throw new FriendNotFoundException();
         }
+        friendActivityRepository.deleteBetween(userId, friendId);
     }
 
     @Transactional
@@ -45,6 +47,16 @@ public class FriendService {
     @Transactional
     public void removeFavorite(Integer userId, Integer friendId) {
         findFriendship(userId, friendId).unmarkFavorite();
+    }
+
+    @Transactional
+    public void mute(Integer userId, Integer friendId) {
+        findFriendship(userId, friendId).mute();
+    }
+
+    @Transactional
+    public void unmute(Integer userId, Integer friendId) {
+        findFriendship(userId, friendId).unmute();
     }
 
     private Friendship findFriendship(Integer userId, Integer friendId) {
@@ -58,6 +70,7 @@ public class FriendService {
         return new FriendResponse(
                 UserSummaryResponse.from(friend, avatarUrl),
                 friendship.isFavorite(),
+                friendship.isMuted(),
                 friendship.getCreatedAt());
     }
 }

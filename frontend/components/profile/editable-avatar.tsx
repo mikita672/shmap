@@ -5,14 +5,13 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
-import { Avatar, type AvatarSize } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Ionicons } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 export interface EditableAvatarProps {
   uri?: string | null;
-  fallbackText?: string;
-  size?: AvatarSize;
+  size?: number;
   isLoading?: boolean;
   onEdit?: () => void;
   className?: string;
@@ -21,8 +20,7 @@ export interface EditableAvatarProps {
 
 export function EditableAvatar({
   uri,
-  fallbackText,
-  size = "3xl",
+  size = 128,
   isLoading = false,
   onEdit,
   className,
@@ -38,12 +36,7 @@ export function EditableAvatar({
         accessibilityLabel="Change avatar"
         accessibilityState={{ busy: isLoading, disabled: isLoading }}
       >
-        <Avatar
-          size={size}
-          uri={uri}
-          fallbackText={fallbackText}
-          fallbackIcon={true}
-        />
+        <Avatar size={size} uri={uri} />
         {isLoading ? (
           <View className="absolute inset-0 rounded-full bg-black/40 items-center justify-center">
             <ActivityIndicator color="#fff" />
