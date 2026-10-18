@@ -43,6 +43,8 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/username-availability")
                                                 .permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/v1/public/**")
+                                                .permitAll()
                                                 .anyRequest()
                                                 .authenticated())
                                 .sessionManagement(session -> session
