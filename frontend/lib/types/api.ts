@@ -155,12 +155,28 @@ export type SendFriendRequestResponse =
   | { outcome: "REQUEST_SENT"; requestId: number }
   | { outcome: "BECAME_FRIENDS"; requestId: null };
 
-export type Relationship = "NONE" | "REQUESTED" | "INCOMING" | "FRIENDS";
+export type Relationship =
+  "NONE" | "REQUESTED" | "INCOMING" | "FRIENDS" | "SELF";
 
 export type UserSearchResultResponse = {
   user: UserSummaryResponse;
   mutualFriendsCount: number;
 } & (
   | { relationship: "NONE" | "FRIENDS"; requestId: null }
+  | { relationship: "REQUESTED" | "INCOMING"; requestId: number }
+);
+
+export type PublicProfileResponse = {
+  user: UserSummaryResponse;
+  bio: string | null;
+  favorite: boolean;
+  muted: boolean;
+  friendsSince: string | null;
+  mutualFriendsCount: number;
+  previewOnly: boolean;
+  friendsCount: number | null;
+  friendsListVisible: boolean;
+} & (
+  | { relationship: "NONE" | "FRIENDS" | "SELF"; requestId: null }
   | { relationship: "REQUESTED" | "INCOMING"; requestId: number }
 );
