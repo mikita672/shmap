@@ -17,7 +17,8 @@ type CardResult =
 
 export default {
   async fetch(request, env): Promise<Response> {
-    const match = new URL(request.url).pathname.match(PROFILE_PATH);
+    const url = new URL(request.url);
+    const match = url.pathname.match(PROFILE_PATH);
     if (!match) {
       return env.ASSETS.fetch(request);
     }
@@ -28,6 +29,7 @@ export default {
     }
 
     return renderProfile(
+      url.origin,
       match[1],
       result.status === "found" ? result.card : null,
     );
@@ -63,12 +65,17 @@ async function fetchProfileCard(
   }
 }
 
-function renderProfile(username: string, card: ProfileCard | null): Response {
+function renderProfile(
+  origin: string,
+  username: string,
+  card: ProfileCard | null,
+): Response {
   const handle = `@${card?.username ?? username}`;
   const name = [card?.firstName, card?.lastName]
     .filter(Boolean)
     .join(" ")
     .trim();
+  const title = name ? `${name} (${handle}) on Shmap` : `${handle} on Shmap`;
   const avatarUrl = card?.avatarUrl;
 
   const page = new Response(profileTemplate, {
@@ -78,9 +85,26 @@ function renderProfile(username: string, card: ProfileCard | null): Response {
   return new HTMLRewriter()
     .on("title", {
       element(element) {
-        element.setInnerContent(
-          name ? `${name} (${handle}) on Shmap` : `${handle} on Shmap`,
-        );
+        element.setInnerContent(title);
+      },
+    })
+    .on('meta[property="og:title"]', {
+      element(element) {
+        element.setAttribute("content", title);
+      },
+    })
+    .on('meta[property="og:url"]', {
+      element(element) {
+        element.setAttribute("content", `${origin}/u/${username}`);
+      },
+    })
+    .on('meta[property="og:image"]', {
+      element(element) {
+        if (avatarUrl) {
+          element.setAttribute("content", avatarUrl);
+        } else {
+          element.remove();
+        }
       },
     })
     .on("#name", {
