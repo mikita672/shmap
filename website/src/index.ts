@@ -2,6 +2,8 @@ import profileTemplate from "./profile.html";
 
 const PROFILE_PATH = /^\/u\/([A-Za-z0-9_.-]{3,30})\/?$/;
 const CARD_TIMEOUT_MS = 2500;
+const CARD_CACHE_TTL_BY_STATUS = { "200-299": 300, "404": 60, "500-599": 0 };
+const PAGE_CACHE_CONTROL = "public, max-age=60";
 
 type ProfileCard = {
   username: string;
@@ -43,7 +45,13 @@ async function fetchProfileCard(
   try {
     const response = await fetch(
       `${env.API_BASE_URL}/api/v1/public/profiles/${username}`,
-      { signal: AbortSignal.timeout(CARD_TIMEOUT_MS) },
+      {
+        signal: AbortSignal.timeout(CARD_TIMEOUT_MS),
+        cf: {
+          cacheEverything: true,
+          cacheTtlByStatus: CARD_CACHE_TTL_BY_STATUS,
+        },
+      },
     );
 
     if (response.ok) {
@@ -79,7 +87,10 @@ function renderProfile(
   const avatarUrl = card?.avatarUrl;
 
   const page = new Response(profileTemplate, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": PAGE_CACHE_CONTROL,
+    },
   });
 
   return new HTMLRewriter()
