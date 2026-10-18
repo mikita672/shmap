@@ -8,6 +8,8 @@
   --brand: 25.82 72.69% 44.51%;
   --action: 43 81% 88%;
   --action-foreground: 22.74 65.52% 28.43%;
+  --avatar-surface: 52 93% 93%;
+  --avatar-surface-foreground: 93.1 15.03% 37.84%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,6 +21,8 @@
     --brand: 25.82 72.69% 44.51%;
     --action: 22.74 65.52% 28.43%;
     --action-foreground: 30 34% 58%;
+    --avatar-surface: 30 34% 58%;
+    --avatar-surface-foreground: 22.74 65.52% 28.43%;
   }
 }
 
@@ -74,11 +78,40 @@ p {
   padding: 20px 24px;
 }
 
+.card-profile {
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: hsl(var(--avatar-surface));
+  color: hsl(var(--avatar-surface-foreground));
+}
+
+.avatar svg {
+  width: 112.5px;
+  height: 112.5px;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .title {
   color: hsl(var(--action-foreground));
   font-size: 28px;
   font-weight: 400;
   line-height: 36px;
+  overflow-wrap: anywhere;
 }
 
 .title-sm {
@@ -93,6 +126,12 @@ p {
 }
 
 .text-sm {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.pitch {
+  color: hsl(var(--action-foreground));
   font-size: 14px;
   line-height: 20px;
 }
