@@ -69,6 +69,11 @@ p {
   background: hsl(var(--action));
 }
 
+.card-note {
+  gap: 4px;
+  padding: 20px 24px;
+}
+
 .title {
   color: hsl(var(--action-foreground));
   font-size: 28px;
@@ -76,10 +81,20 @@ p {
   line-height: 36px;
 }
 
+.title-sm {
+  font-size: 20px;
+  line-height: 28px;
+}
+
 .text {
   color: hsl(var(--secondary));
   font-size: 16px;
   line-height: 24px;
+}
+
+.text-sm {
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .actions {
@@ -112,6 +127,15 @@ p {
 
 .button-primary:hover {
   background: hsl(var(--primary) / 0.9);
+}
+
+.button-secondary {
+  background: hsl(var(--action));
+  color: hsl(var(--action-foreground));
+}
+
+.button-secondary:hover {
+  background: hsl(var(--action) / 0.8);
 }
 
 .hint {
