@@ -1,18 +1,46 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AppState, Linking, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { CameraView, useCameraPermissions } from "expo-camera";
+import {
+  CameraView,
+  useCameraPermissions,
+  type BarcodeScanningResult,
+} from "expo-camera";
+import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { toast } from "sonner-native";
 
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { getProfileHref, parseProfileLink } from "@/lib/profile-link";
 
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();
   const [permission, requestPermission, getPermission] = useCameraPermissions();
+  const isLockedRef = useRef(false);
+  const lastRejectedRef = useRef<string | null>(null);
+
+  function handleBarcodeScanned({ data }: BarcodeScanningResult) {
+    if (isLockedRef.current) {
+      return;
+    }
+
+    const username = parseProfileLink(data);
+    if (!username) {
+      if (lastRejectedRef.current !== data) {
+        lastRejectedRef.current = data;
+        toast.error("That's not a Shmap QR code");
+      }
+      return;
+    }
+
+    isLockedRef.current = true;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    router.replace(getProfileHref(username));
+  }
 
   useEffect(() => {
     if (permission?.status === "undetermined") {
@@ -71,6 +99,7 @@ export default function ScanScreen() {
           style={StyleSheet.absoluteFill}
           facing="back"
           barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+          onBarcodeScanned={handleBarcodeScanned}
         />
       )}
       {closeButton}
