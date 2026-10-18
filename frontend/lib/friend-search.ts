@@ -14,3 +14,9 @@ export function matchesFriendSearch(
   const fullName = `${user.firstName} ${user.lastName}`.toLocaleLowerCase();
   return fullName.includes(text) || username.includes(text);
 }
+
+export function hasSearchText(query: string): boolean {
+  const text = query.trim();
+  const searchText = text.startsWith("@") ? text.slice(1).trim() : text;
+  return searchText !== "";
+}

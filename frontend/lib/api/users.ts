@@ -9,6 +9,7 @@ import type {
   ProfileResponse,
   UpdateProfileRequest,
   UsernameAvailabilityResponse,
+  UserSearchResultResponse,
 } from "@/lib/types/api";
 
 export const getMe = () => apiClient.get<ProfileResponse>("/api/v1/users/me");
@@ -39,3 +40,8 @@ export const confirmAvatar = (data: ConfirmAvatarRequest) =>
 
 export const removeAvatar = () =>
   apiClient.delete<ProfileResponse>("/api/v1/users/me/avatar");
+
+export const searchUsers = (query: string) =>
+  apiClient.get<UserSearchResultResponse[]>("/api/v1/users/search", {
+    params: { q: query },
+  });

@@ -2,7 +2,13 @@ import { apiClient } from "./client";
 import type {
   FriendRequestCountResponse,
   FriendRequestResponse,
+  SendFriendRequestResponse,
 } from "@/lib/types/api";
+
+export const sendFriendRequest = (receiverId: number) =>
+  apiClient.post<SendFriendRequestResponse>("/api/v1/friend-requests", {
+    receiverId,
+  });
 
 export const getIncomingRequests = () =>
   apiClient.get<FriendRequestResponse[]>("/api/v1/friend-requests/incoming");

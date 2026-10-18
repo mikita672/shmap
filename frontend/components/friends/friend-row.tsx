@@ -11,8 +11,11 @@ const MIN_TOUCH_TARGET = 48;
 type FriendRowTrailingProps =
   | { variant: "actions"; onMessage?: () => void; onMore: () => void }
   | { variant: "request"; onAccept: () => void; onDecline: () => void }
-  | { variant: "sent"; onCancel: () => void }
-  | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void };
+  | { variant: "sent"; label?: string; onCancel: () => void }
+  | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void }
+  | { variant: "add"; onAdd: () => void }
+  | { variant: "accept"; onAccept: () => void }
+  | { variant: "friends" };
 
 export type FriendRowProps = FriendRowTrailingProps & {
   name: string;
@@ -105,7 +108,7 @@ function FriendRowTrailing(
     case "sent":
       return (
         <PillButton
-          label="Cancel"
+          label={props.label ?? "Cancel"}
           variant="tonal"
           accessibilityLabel={`Cancel request to ${props.name}`}
           disabled={props.disabled}
@@ -129,6 +132,30 @@ function FriendRowTrailing(
             onPress={props.onDismiss}
           />
         </View>
+      );
+    case "add":
+      return (
+        <PillButton
+          label="Add"
+          accessibilityLabel={`Add ${props.name}`}
+          disabled={props.disabled}
+          onPress={props.onAdd}
+        />
+      );
+    case "accept":
+      return (
+        <PillButton
+          label="Accept"
+          accessibilityLabel={`Accept ${props.name}`}
+          disabled={props.disabled}
+          onPress={props.onAccept}
+        />
+      );
+    case "friends":
+      return (
+        <Text className="px-4 text-sm font-medium leading-5 tracking-[0.5px] text-secondary">
+          Friends
+        </Text>
       );
     default:
       return props satisfies never;

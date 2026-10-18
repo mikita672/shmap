@@ -145,3 +145,22 @@ export interface FriendResponse {
   muted: boolean;
   friendsSince: string;
 }
+
+export interface FriendSuggestionResponse {
+  user: UserSummaryResponse;
+  mutualFriendsCount: number;
+}
+
+export type SendFriendRequestResponse =
+  | { outcome: "REQUEST_SENT"; requestId: number }
+  | { outcome: "BECAME_FRIENDS"; requestId: null };
+
+export type Relationship = "NONE" | "REQUESTED" | "INCOMING" | "FRIENDS";
+
+export type UserSearchResultResponse = {
+  user: UserSummaryResponse;
+  mutualFriendsCount: number;
+} & (
+  | { relationship: "NONE" | "FRIENDS"; requestId: null }
+  | { relationship: "REQUESTED" | "INCOMING"; requestId: number }
+);

@@ -3,6 +3,7 @@ import {
   useAcceptFriendRequest,
   useDeclineFriendRequest,
 } from "@/hooks/useFriendRequestMutations";
+import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
 import type { FriendRequestResponse } from "@/lib/types/api";
 
 export interface IncomingRequestRowProps {
@@ -18,20 +19,11 @@ export function IncomingRequestRow({ request }: IncomingRequestRowProps) {
     <FriendRow
       variant="request"
       name={`${user.firstName} ${user.lastName}`}
-      subtitle={incomingRequestSubtitle(request)}
+      subtitle={mutualFriendsSubtitle(request)}
       avatarUrl={user.avatarUrl}
       disabled={accept.isPending || decline.isPending}
       onAccept={() => accept.mutate(request.id)}
       onDecline={() => decline.mutate(request.id)}
     />
   );
-}
-
-function incomingRequestSubtitle({
-  user,
-  mutualFriendsCount,
-}: FriendRequestResponse) {
-  if (mutualFriendsCount <= 0) return `@${user.username}`;
-  const friends = mutualFriendsCount === 1 ? "friend" : "friends";
-  return `${mutualFriendsCount} mutual ${friends}`;
 }
