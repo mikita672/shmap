@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { ViewfinderOverlay } from "@/components/scan/viewfinder-overlay";
 import { getProfileHref, parseProfileLink } from "@/lib/profile-link";
 
 export default function ScanScreen() {
@@ -95,12 +96,15 @@ export default function ScanScreen() {
     <View className="flex-1 bg-black">
       <StatusBar style="light" />
       {permission?.granted && (
-        <CameraView
-          style={StyleSheet.absoluteFill}
-          facing="back"
-          barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-          onBarcodeScanned={handleBarcodeScanned}
-        />
+        <>
+          <CameraView
+            style={StyleSheet.absoluteFill}
+            facing="back"
+            barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+            onBarcodeScanned={handleBarcodeScanned}
+          />
+          <ViewfinderOverlay />
+        </>
       )}
       {closeButton}
     </View>
