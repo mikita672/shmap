@@ -1,9 +1,10 @@
 import { Platform, Share, type ShareContent } from "react-native";
 
+const SHARE_ORIGIN = "https://shmap.dev";
 const SHARE_MESSAGE = "Add me on Shmap!";
 
 export function getProfileUrl(username: string): string {
-  return `https://shmap.app/u/${encodeURIComponent(username)}`;
+  return `${SHARE_ORIGIN}/u/${encodeURIComponent(username)}`;
 }
 
 export function shareProfile(username: string) {
