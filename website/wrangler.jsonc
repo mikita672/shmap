@@ -3,6 +3,9 @@
   "name": "shmap-website",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-12",
+  "vars": {
+    "API_BASE_URL": "https://shmap-backend-761707913997.europe-central2.run.app"
+  },
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",

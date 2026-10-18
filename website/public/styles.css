@@ -35,7 +35,12 @@
 body {
   margin: 0;
   background: hsl(var(--background));
-  font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    Roboto,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   letter-spacing: 0.5px;
 }
 
@@ -98,6 +103,12 @@ p {
 .avatar svg {
   width: 112.5px;
   height: 112.5px;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .identity {
