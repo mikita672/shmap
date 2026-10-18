@@ -51,6 +51,10 @@ function RootNavigator() {
             <Stack.Screen name="settings" />
             <Stack.Screen name="edit-profile" />
             <Stack.Screen name="change-password" />
+            <Stack.Screen
+              name="scan"
+              options={{ presentation: "fullScreenModal" }}
+            />
           </Stack.Protected>
 
           <Stack.Protected guard={!isAuthenticated}>
