@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
+import { router } from "expo-router";
 import { SearchResultsList } from "@/components/friends/search-results-list";
 import { SuggestionsList } from "@/components/friends/suggestions-list";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
@@ -35,7 +36,12 @@ export default function AddFriendsScreen() {
       )}
 
       <View className="flex-row gap-2 px-6 pb-4">
-        <Button variant="secondary" size="xl" className="flex-1" disabled>
+        <Button
+          variant="secondary"
+          size="xl"
+          className="flex-1"
+          onPress={() => router.push("/scan")}
+        >
           <Text>Scan QR code</Text>
         </Button>
         <QrCodeButton

@@ -350,10 +350,49 @@ jobs:
             --update-env-vars "GOOGLE_CLIENT_ID=761707913997-vnqsvcfranhri32css64rdqbc399qrel.apps.googleusercontent.com,STORAGE_ENDPOINT=${{ secrets.STORAGE_ENDPOINT }},STORAGE_BUCKET=${{ secrets.STORAGE_BUCKET }},STORAGE_PUBLIC_BASE_URL=${{ secrets.STORAGE_PUBLIC_BASE_URL }}" \
             --update-secrets "RESEND_API_KEY=RESEND_API_KEY:latest,STORAGE_ACCESS_KEY_ID=STORAGE_ACCESS_KEY_ID:latest,STORAGE_SECRET_ACCESS_KEY=STORAGE_SECRET_ACCESS_KEY:latest"
 
+  deploy_website:
+    name: Deploy Website to Cloudflare
+    needs: [lint-and-typecheck]
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run deploy
+
   release:
     name: Create Release
     needs:
-      [version, build_android, build_ios, build_ios_unsigned, deploy_backend]
+      [
+        version,
+        build_android,
+        build_ios,
+        build_ios_unsigned,
+        deploy_backend,
+        deploy_website,
+      ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
