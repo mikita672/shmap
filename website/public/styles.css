@@ -10,6 +10,8 @@
   --action-foreground: 22.74 65.52% 28.43%;
   --avatar-surface: 52 93% 93%;
   --avatar-surface-foreground: 93.1 15.03% 37.84%;
+  --qr-tile: 43 81% 88%;
+  --qr-code: 22.74 65.52% 28.43%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -192,4 +194,54 @@ p {
   color: hsl(var(--secondary));
   font-size: 14px;
   line-height: 20px;
+}
+
+.profile-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.qr-card {
+  display: none;
+  align-items: center;
+  gap: 16px;
+  padding: 32px;
+}
+
+.qr-tile {
+  width: 248px;
+  height: 248px;
+  padding: 20px;
+  border-radius: 24px;
+  background: hsl(var(--qr-tile));
+  color: hsl(var(--qr-code));
+}
+
+.qr-tile svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.qr-tile path {
+  stroke: currentColor;
+}
+
+@media (min-width: 800px) {
+  .page-profile {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    max-width: none;
+  }
+
+  .profile-column {
+    width: 360px;
+  }
+
+  .qr-card {
+    display: flex;
+  }
 }

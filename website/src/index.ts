@@ -1,3 +1,5 @@
+import QRCode from "qrcode";
+
 import profileTemplate from "./profile.html";
 
 const PROFILE_PATH = /^\/u\/([A-Za-z0-9_.-]{3,30})\/?$/;
@@ -73,11 +75,17 @@ async function fetchProfileCard(
   }
 }
 
-function renderProfile(
+async function renderProfile(
   origin: string,
   username: string,
   card: ProfileCard | null,
-): Response {
+): Promise<Response> {
+  const profileUrl = `${origin}/u/${username}`;
+  const qrSvg = await QRCode.toString(profileUrl, {
+    type: "svg",
+    margin: 0,
+    color: { light: "#0000" },
+  });
   const handle = `@${card?.username ?? username}`;
   const name = [card?.firstName, card?.lastName]
     .filter(Boolean)
@@ -106,7 +114,7 @@ function renderProfile(
     })
     .on('meta[property="og:url"]', {
       element(element) {
-        element.setAttribute("content", `${origin}/u/${username}`);
+        element.setAttribute("content", profileUrl);
       },
     })
     .on('meta[property="og:image"]', {
@@ -152,6 +160,12 @@ function renderProfile(
     .on("#open-link", {
       element(element) {
         element.setAttribute("href", `shmap://u/${username}`);
+      },
+    })
+    .on("#qr-code", {
+      element(element) {
+        element.setAttribute("aria-label", `QR code linking to ${profileUrl}`);
+        element.setInnerContent(qrSvg, { html: true });
       },
     })
     .transform(page);
