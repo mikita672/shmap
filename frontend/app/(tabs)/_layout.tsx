@@ -1,8 +1,18 @@
-import { Tabs } from "expo-router";
+import { useEffect } from "react";
+import { router, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AnimatedTabBar } from "@/components/animated-tab-bar";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function TabsLayout() {
+  const { pendingLink, clearPendingLink } = useAuth();
+
+  useEffect(() => {
+    if (!pendingLink) return;
+    router.push(pendingLink, { withAnchor: true });
+    clearPendingLink();
+  }, [pendingLink, clearPendingLink]);
+
   return (
     <Tabs
       tabBar={(props) => <AnimatedTabBar {...props} />}
