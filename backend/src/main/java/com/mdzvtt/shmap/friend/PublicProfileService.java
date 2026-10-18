@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.exception.FriendsListHiddenException;
 import com.mdzvtt.shmap.exception.PrivateAccountException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.friend.dto.ProfileCardResponse;
 import com.mdzvtt.shmap.friend.dto.PublicProfileResponse;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
@@ -56,6 +57,12 @@ public class PublicProfileService {
                 previewOnly,
                 friendsCount,
                 canSeeFriendsList(viewerId, user, friendship != null));
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileCardResponse getProfileCard(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+        return ProfileCardResponse.from(user, storageService.publicUrl(user.getAvatarKey()));
     }
 
     @Transactional(readOnly = true)
