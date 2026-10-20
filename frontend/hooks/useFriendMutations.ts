@@ -1,7 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { friendsQueryOptions } from "@/hooks/useFriends";
-import { addFavorite, removeFavorite } from "@/lib/api/friends";
+import {
+  addFavorite,
+  muteFriend,
+  removeFavorite,
+  unmuteFriend,
+} from "@/lib/api/friends";
+import type { UserSummaryResponse } from "@/lib/types/api";
 import { getErrorMessage } from "@/lib/utils/error";
 
 interface SetFavoriteVariables {
@@ -17,6 +23,35 @@ export function useSetFavorite() {
       favorite ? addFavorite(friendId) : removeFavorite(friendId),
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't update favorites"));
+    },
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["profiles"] }),
+        queryClient.invalidateQueries({
+          queryKey: friendsQueryOptions.queryKey,
+        }),
+      ]),
+  });
+}
+
+interface SetMutedVariables {
+  friend: UserSummaryResponse;
+  muted: boolean;
+}
+
+export function useSetMuted() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ friend, muted }: SetMutedVariables) =>
+      muted ? muteFriend(friend.id) : unmuteFriend(friend.id),
+    onSuccess: (_, { friend, muted }) => {
+      toast.success(
+        `${friend.firstName}'s routes ${muted ? "muted" : "unmuted"}`,
+      );
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't update muted routes"));
     },
     onSettled: () =>
       Promise.all([

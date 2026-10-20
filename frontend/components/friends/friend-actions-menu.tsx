@@ -7,7 +7,7 @@ import { RoundButton } from "@/components/ui/round-button";
 import { Separator } from "@/components/ui/separator";
 import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
-import { useSetFavorite } from "@/hooks/useFriendMutations";
+import { useSetFavorite, useSetMuted } from "@/hooks/useFriendMutations";
 import { shareProfile } from "@/lib/profile-link";
 import type { UserSummaryResponse } from "@/lib/types/api";
 
@@ -32,9 +32,15 @@ export function FriendActionsMenu({
   const { user } = person;
   const fullName = `${user.firstName} ${user.lastName}`;
   const setFavorite = useSetFavorite();
+  const setMuted = useSetMuted();
 
   const handleToggleFavorite = () => {
     setFavorite.mutate({ friendId: user.id, favorite: !person.favorite });
+    onClose();
+  };
+
+  const handleToggleMuted = () => {
+    setMuted.mutate({ friend: user, muted: !person.muted });
     onClose();
   };
 
@@ -72,7 +78,7 @@ export function FriendActionsMenu({
           <SheetItem label="Add to group" disabled />
           <SheetItem
             label={person.muted ? "Unmute routes" : "Mute routes"}
-            disabled
+            onPress={handleToggleMuted}
           />
         </>
       )}
