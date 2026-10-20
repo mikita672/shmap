@@ -7,6 +7,7 @@ import { RoundButton } from "@/components/ui/round-button";
 import { Separator } from "@/components/ui/separator";
 import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
+import { useSetFavorite } from "@/hooks/useFriendMutations";
 import { shareProfile } from "@/lib/profile-link";
 import type { UserSummaryResponse } from "@/lib/types/api";
 
@@ -30,6 +31,12 @@ export function FriendActionsMenu({
 }: FriendActionsMenuProps) {
   const { user } = person;
   const fullName = `${user.firstName} ${user.lastName}`;
+  const setFavorite = useSetFavorite();
+
+  const handleToggleFavorite = () => {
+    setFavorite.mutate({ friendId: user.id, favorite: !person.favorite });
+    onClose();
+  };
 
   const handleShare = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -60,7 +67,7 @@ export function FriendActionsMenu({
             label={
               person.favorite ? "Remove from favorites" : "Add to favorites"
             }
-            disabled
+            onPress={handleToggleFavorite}
           />
           <SheetItem label="Add to group" disabled />
           <SheetItem
