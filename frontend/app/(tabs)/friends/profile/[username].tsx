@@ -10,6 +10,7 @@ import { NoteCard } from "@/components/ui/note-card";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
+import { formatMonthYear } from "@/lib/format-date";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
@@ -97,6 +98,12 @@ export default function UserProfileScreen() {
                   },
                 ]}
               />
+            )}
+
+            {profile.friendsSince && (
+              <Text className="text-center text-sm leading-5 tracking-[0.5px] text-secondary">
+                Friends since {formatMonthYear(profile.friendsSince)}
+              </Text>
             )}
 
             {profile.previewOnly && (
