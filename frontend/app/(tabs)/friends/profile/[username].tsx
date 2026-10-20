@@ -85,6 +85,14 @@ export default function UserProfileScreen() {
                 {profile.bio}
               </Text>
             ) : null}
+
+            {profile.previewOnly && (
+              <NoteCard
+                className="self-stretch"
+                title="This account is private"
+                description="Become friends to see their routes, stats and friends."
+              />
+            )}
           </View>
 
           <View className="mt-auto px-6 pb-4 pt-6">
