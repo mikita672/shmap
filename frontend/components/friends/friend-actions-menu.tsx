@@ -95,7 +95,10 @@ export function FriendActionsMenu({
   }
 
   if (step === "block") {
-    const message = `${user.firstName} won't be able to find you, see your profile or send you requests, and won't be notified`;
+    const friendNote = person.isFriend
+      ? ` This also removes ${user.firstName} from your friends.`
+      : "";
+    const message = `${user.firstName} won't be able to find you, see your profile or send you requests, and won't be notified.${friendNote} You can unblock ${user.firstName} in Settings.`;
 
     return (
       <Popup visible={visible} onClose={handleClose}>
@@ -103,11 +106,7 @@ export function FriendActionsMenu({
           <ConfirmCard
             icon="block"
             title={`Block ${user.firstName}?`}
-            message={
-              person.isFriend
-                ? `${message} This also removes ${user.firstName} from your friends`
-                : message
-            }
+            message={message}
             confirmLabel="Block"
             pendingLabel="Blocking…"
             isPending={block.isPending}
