@@ -53,7 +53,7 @@ export default function UserProfileScreen() {
             <NoteCard
               className="self-stretch"
               title="This profile doesn't exist"
-              description="The link may be broken, or the username has changed."
+              description="The link may be broken, or the username has changed"
             />
           ) : (
             <>
@@ -90,7 +90,7 @@ export default function UserProfileScreen() {
               <NoteCard
                 className="self-stretch"
                 title="This account is private"
-                description="Become friends to see their routes, stats and friends."
+                description="Become friends to see their routes, stats and friends"
               />
             )}
           </View>
