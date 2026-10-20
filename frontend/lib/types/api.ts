@@ -129,6 +129,11 @@ export interface UserSummaryResponse {
   avatarUrl: string | null;
 }
 
+export interface BlockedUserResponse {
+  user: UserSummaryResponse;
+  blockedAt: string;
+}
+
 export interface FriendRequestResponse {
   id: number;
   user: UserSummaryResponse;
