@@ -10,14 +10,14 @@ import { SettingsRow } from "@/components/settings/settings-row";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { signOut } = useAuth();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [privateAccount, setPrivateAccount] = useState(false);
-  const [friendsListHidden, setFriendsListHidden] = useState(false);
+  const { data: profile } = useProfile();
 
   const handleLogout = async () => {
     setIsSigningOut(true);
@@ -49,16 +49,18 @@ export default function SettingsScreen() {
               icon="lock-person"
               label="Private account"
               subtitle="Only friends see your full profile"
-              value={privateAccount}
-              onValueChange={setPrivateAccount}
+              value={profile?.privateAccount ?? false}
+              onValueChange={() => {}}
+              disabled={!profile}
             />
             <SettingsRow
               variant="switch"
               icon="visibility-off"
               label="Hide friends list"
               subtitle="Only you can see your friends"
-              value={friendsListHidden}
-              onValueChange={setFriendsListHidden}
+              value={profile?.friendsListHidden ?? false}
+              onValueChange={() => {}}
+              disabled={!profile}
             />
           </SettingsSection>
 

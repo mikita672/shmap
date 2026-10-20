@@ -75,6 +75,8 @@ export interface ProfileResponse {
   bio: string | null;
   avatarUrl: string | null;
   createdAt: string;
+  privateAccount: boolean;
+  friendsListHidden: boolean;
 }
 
 export interface UpdateProfileRequest {
@@ -82,6 +84,8 @@ export interface UpdateProfileRequest {
   lastName?: string;
   username?: string;
   bio?: string;
+  privateAccount?: boolean;
+  friendsListHidden?: boolean;
 }
 
 export interface ChangeEmailRequest {
