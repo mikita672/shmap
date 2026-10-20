@@ -16,6 +16,8 @@ export default function SettingsScreen() {
   const { signOut } = useAuth();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [privateAccount, setPrivateAccount] = useState(false);
+  const [friendsListHidden, setFriendsListHidden] = useState(false);
 
   const handleLogout = async () => {
     setIsSigningOut(true);
@@ -39,6 +41,25 @@ export default function SettingsScreen() {
         <View className="gap-6">
           <SettingsSection title="Appearance">
             <ThemeSwitch />
+          </SettingsSection>
+
+          <SettingsSection title="Privacy">
+            <SettingsRow
+              variant="switch"
+              icon="lock-person"
+              label="Private account"
+              subtitle="Only friends see your full profile"
+              value={privateAccount}
+              onValueChange={setPrivateAccount}
+            />
+            <SettingsRow
+              variant="switch"
+              icon="visibility-off"
+              label="Hide friends list"
+              subtitle="Only you can see your friends"
+              value={friendsListHidden}
+              onValueChange={setFriendsListHidden}
+            />
           </SettingsSection>
 
           <SettingsSection title="Account">
