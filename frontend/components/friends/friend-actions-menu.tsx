@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { Avatar } from "@/components/ui/avatar";
@@ -26,6 +27,8 @@ export interface FriendActionsPerson {
 }
 
 type MenuStep = "menu" | "remove" | "block";
+
+const CONFIRM_ENTERING = FadeIn.duration(200);
 
 export interface FriendActionsMenuProps {
   person: FriendActionsPerson;
@@ -75,16 +78,18 @@ export function FriendActionsMenu({
   if (step === "remove") {
     return (
       <Popup visible={visible} onClose={handleClose}>
-        <ConfirmCard
-          icon="person-remove"
-          title={`Remove ${user.firstName}?`}
-          message={`${user.firstName} will be removed from your friends and won't be notified. You can send a new request later.`}
-          confirmLabel="Remove"
-          pendingLabel="Removing…"
-          isPending={remove.isPending}
-          onConfirm={() => remove.mutate(user.id, { onSuccess: onClose })}
-          onCancel={handleClose}
-        />
+        <Animated.View entering={CONFIRM_ENTERING}>
+          <ConfirmCard
+            icon="person-remove"
+            title={`Remove ${user.firstName}?`}
+            message={`${user.firstName} will be removed from your friends and won't be notified. You can send a new request later.`}
+            confirmLabel="Remove"
+            pendingLabel="Removing…"
+            isPending={remove.isPending}
+            onConfirm={() => remove.mutate(user.id, { onSuccess: onClose })}
+            onCancel={handleClose}
+          />
+        </Animated.View>
       </Popup>
     );
   }
@@ -94,27 +99,29 @@ export function FriendActionsMenu({
 
     return (
       <Popup visible={visible} onClose={handleClose}>
-        <ConfirmCard
-          icon="block"
-          title={`Block ${user.firstName}?`}
-          message={
-            person.isFriend
-              ? `${message} This also removes ${user.firstName} from your friends`
-              : message
-          }
-          confirmLabel="Block"
-          pendingLabel="Blocking…"
-          isPending={block.isPending}
-          onConfirm={() =>
-            block.mutate(user, {
-              onSuccess: () => {
-                onClose();
-                onBlocked?.();
-              },
-            })
-          }
-          onCancel={handleClose}
-        />
+        <Animated.View entering={CONFIRM_ENTERING}>
+          <ConfirmCard
+            icon="block"
+            title={`Block ${user.firstName}?`}
+            message={
+              person.isFriend
+                ? `${message} This also removes ${user.firstName} from your friends`
+                : message
+            }
+            confirmLabel="Block"
+            pendingLabel="Blocking…"
+            isPending={block.isPending}
+            onConfirm={() =>
+              block.mutate(user, {
+                onSuccess: () => {
+                  onClose();
+                  onBlocked?.();
+                },
+              })
+            }
+            onCancel={handleClose}
+          />
+        </Animated.View>
       </Popup>
     );
   }
