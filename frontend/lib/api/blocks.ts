@@ -6,3 +6,6 @@ export const getBlockedUsers = () =>
 
 export const blockUser = (userId: number) =>
   apiClient.put<void>(`/api/v1/blocks/${userId}`);
+
+export const unblockUser = (userId: number) =>
+  apiClient.delete<void>(`/api/v1/blocks/${userId}`);
