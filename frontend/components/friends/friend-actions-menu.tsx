@@ -1,10 +1,13 @@
 import { View } from "react-native";
+import * as Haptics from "expo-haptics";
+import { toast } from "sonner-native";
 import { Avatar } from "@/components/ui/avatar";
 import { Popup } from "@/components/ui/popup";
 import { RoundButton } from "@/components/ui/round-button";
 import { Separator } from "@/components/ui/separator";
 import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
+import { shareProfile } from "@/lib/profile-link";
 import type { UserSummaryResponse } from "@/lib/types/api";
 
 export interface FriendActionsPerson {
@@ -26,13 +29,24 @@ export function FriendActionsMenu({
   onClose,
 }: FriendActionsMenuProps) {
   const { user } = person;
+  const fullName = `${user.firstName} ${user.lastName}`;
+
+  const handleShare = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await shareProfile(user.username, fullName);
+    } catch {
+      toast.error("Couldn't open the share dialog");
+    }
+    onClose();
+  };
 
   return (
     <Popup visible={visible} onClose={onClose} className="pt-6 pb-3">
       <View className="items-center gap-1 px-6 pb-4">
         <Avatar uri={user.avatarUrl} size={56} />
         <Text className="text-center text-xl leading-7 tracking-[0.5px] text-card-title">
-          {user.firstName} {user.lastName}
+          {fullName}
         </Text>
         <Text className="text-center text-sm leading-5 tracking-[0.5px] text-card-muted">
           @{user.username}
@@ -55,7 +69,7 @@ export function FriendActionsMenu({
           />
         </>
       )}
-      <SheetItem label="Share profile" disabled />
+      <SheetItem label="Share profile" onPress={handleShare} />
       <MenuDivider />
       {person.isFriend && (
         <SheetItem label="Remove friend" tone="danger" disabled />
