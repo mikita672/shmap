@@ -54,6 +54,7 @@ module.exports = {
           title: "hsl(var(--card-title))",
           muted: "hsl(var(--card-muted))",
           danger: "hsl(var(--card-danger))",
+          divider: "hsl(var(--card-divider))",
         },
         qr: {
           tile: "hsl(var(--qr-tile))",

@@ -2,6 +2,8 @@ import { View } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { Popup } from "@/components/ui/popup";
 import { RoundButton } from "@/components/ui/round-button";
+import { Separator } from "@/components/ui/separator";
+import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
 import type { UserSummaryResponse } from "@/lib/types/api";
 
@@ -37,6 +39,21 @@ export function FriendActionsMenu({
         </Text>
       </View>
 
+      <MenuDivider />
+      <SheetItem
+        label={person.favorite ? "Remove from favorites" : "Add to favorites"}
+        disabled
+      />
+      <SheetItem label="Add to group" disabled />
+      <SheetItem
+        label={person.muted ? "Unmute routes" : "Mute routes"}
+        disabled
+      />
+      <SheetItem label="Share profile" disabled />
+      <MenuDivider />
+      <SheetItem label="Remove friend" tone="danger" disabled />
+      <SheetItem label="Block" tone="danger" disabled />
+
       <RoundButton
         icon="close"
         accessibilityLabel="Close"
@@ -45,5 +62,13 @@ export function FriendActionsMenu({
         className="absolute right-4 top-4"
       />
     </Popup>
+  );
+}
+
+function MenuDivider() {
+  return (
+    <View className="px-6 py-1">
+      <Separator className="bg-card-divider/40" />
+    </View>
   );
 }
