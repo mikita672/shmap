@@ -1,8 +1,7 @@
 import { FlatList, View } from "react-native";
-import { router } from "expo-router";
 import { FriendRow } from "@/components/friends/friend-row";
 import { NoteCard } from "@/components/ui/note-card";
-import { getProfileHref } from "@/lib/profile-link";
+import { useOpenProfile } from "@/hooks/useOpenProfile";
 import type { UserSummaryResponse } from "@/lib/types/api";
 
 export interface UserListProps {
@@ -16,6 +15,8 @@ export function UserList({
   emptyTitle,
   emptyDescription,
 }: UserListProps) {
+  const openProfile = useOpenProfile();
+
   return (
     <FlatList
       data={users}
@@ -26,7 +27,7 @@ export function UserList({
           name={`${user.firstName} ${user.lastName}`}
           subtitle={`@${user.username}`}
           avatarUrl={user.avatarUrl}
-          onPress={() => router.push(getProfileHref(user.username))}
+          onPress={() => openProfile(user)}
         />
       )}
       ListEmptyComponent={
