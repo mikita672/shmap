@@ -1,3 +1,5 @@
+import { Keyboard } from "react-native";
+import { router } from "expo-router";
 import { FriendRow } from "@/components/friends/friend-row";
 import {
   useCancelFriendRequest,
@@ -5,6 +7,7 @@ import {
 } from "@/hooks/useFriendRequestMutations";
 import { useDismissFriendSuggestion } from "@/hooks/useFriendSuggestionMutations";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
+import { getProfileHref } from "@/lib/profile-link";
 import type {
   FriendRequestResponse,
   FriendSuggestionResponse,
@@ -25,6 +28,10 @@ export function SuggestionRow({ suggestion, sentRequest }: SuggestionRowProps) {
     subtitle: mutualFriendsSubtitle(suggestion),
     avatarUrl: user.avatarUrl,
     disabled: send.isPending || cancel.isPending || dismiss.isPending,
+    onPress: () => {
+      Keyboard.dismiss();
+      router.push(getProfileHref(user.username));
+    },
   };
 
   if (sentRequest) {
