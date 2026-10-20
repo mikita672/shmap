@@ -1,6 +1,7 @@
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useLocalSearchParams } from "expo-router";
+import { FriendActions } from "@/components/friends/friend-actions";
 import { MutualFriendsPreview } from "@/components/friends/mutual-friends-preview";
 import { ProfileStats } from "@/components/friends/profile-stats";
 import { RelationshipButton } from "@/components/friends/relationship-button";
@@ -132,7 +133,11 @@ export default function UserProfileScreen() {
           </View>
 
           <View className="mt-auto px-6 pb-4 pt-6">
-            <RelationshipButton profile={profile} />
+            {profile.relationship === "FRIENDS" ? (
+              <FriendActions />
+            ) : (
+              <RelationshipButton profile={profile} />
+            )}
           </View>
         </ScrollView>
       )}

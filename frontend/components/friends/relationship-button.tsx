@@ -51,11 +51,6 @@ export function RelationshipButton({ profile }: RelationshipButtonProps) {
         </Button>
       );
     case "FRIENDS":
-      return (
-        <Button variant="secondary" size="xl" disabled>
-          <Text className="text-2xl">Friends</Text>
-        </Button>
-      );
     case "SELF":
       return null;
     default:
