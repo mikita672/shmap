@@ -1,5 +1,7 @@
+import { router } from "expo-router";
 import { FriendRow } from "@/components/friends/friend-row";
 import { useCancelFriendRequest } from "@/hooks/useFriendRequestMutations";
+import { getProfileHref } from "@/lib/profile-link";
 import type { FriendRequestResponse } from "@/lib/types/api";
 
 export interface SentRequestRowProps {
@@ -17,6 +19,7 @@ export function SentRequestRow({ request }: SentRequestRowProps) {
       subtitle={`@${user.username}`}
       avatarUrl={user.avatarUrl}
       disabled={cancel.isPending}
+      onPress={() => router.push(getProfileHref(user.username))}
       onCancel={() => cancel.mutate(request.id)}
     />
   );
