@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { ActivityIndicator, SectionList, View } from "react-native";
+import { ActivityIndicator, Keyboard, SectionList, View } from "react-native";
 import { router } from "expo-router";
+import {
+  FriendActionsMenu,
+  type FriendActionsPerson,
+} from "@/components/friends/friend-actions-menu";
 import { FriendRow } from "@/components/friends/friend-row";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
@@ -20,6 +24,10 @@ export function FriendsList() {
   useRefreshOnFocus(refetch);
   const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
   const [query, setQuery] = useState("");
+  const [menuPerson, setMenuPerson] = useState<FriendActionsPerson | null>(
+    null,
+  );
+  const [menuVisible, setMenuVisible] = useState(false);
 
   if (isPending) {
     return (
@@ -70,14 +78,18 @@ export function FriendsList() {
       <SectionList
         sections={sections}
         keyExtractor={(friend) => String(friend.user.id)}
-        renderItem={({ item: { user } }) => (
+        renderItem={({ item: { user, favorite, muted } }) => (
           <FriendRow
             variant="actions"
             name={`${user.firstName} ${user.lastName}`}
             subtitle={`@${user.username}`}
             avatarUrl={user.avatarUrl}
             onPress={() => router.push(getProfileHref(user.username))}
-            onMore={() => {}}
+            onMore={() => {
+              Keyboard.dismiss();
+              setMenuPerson({ user, isFriend: true, favorite, muted });
+              setMenuVisible(true);
+            }}
           />
         )}
         renderSectionHeader={({ section }) => (
@@ -111,6 +123,14 @@ export function FriendsList() {
         }
         contentContainerClassName="px-6 pb-6"
       />
+
+      {menuPerson && (
+        <FriendActionsMenu
+          person={menuPerson}
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+        />
+      )}
     </View>
   );
 }
