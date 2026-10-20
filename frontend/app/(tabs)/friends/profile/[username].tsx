@@ -1,6 +1,7 @@
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useLocalSearchParams } from "expo-router";
+import { MutualFriendsPreview } from "@/components/friends/mutual-friends-preview";
 import { ProfileStats } from "@/components/friends/profile-stats";
 import { RelationshipButton } from "@/components/friends/relationship-button";
 import { Avatar } from "@/components/ui/avatar";
@@ -100,10 +101,17 @@ export default function UserProfileScreen() {
               />
             )}
 
-            {profile.friendsSince && (
-              <Text className="text-center text-sm leading-5 tracking-[0.5px] text-secondary">
-                Friends since {formatMonthYear(profile.friendsSince)}
-              </Text>
+            {(profile.friendsSince || profile.mutualFriendsCount > 0) && (
+              <View className="items-center gap-2 self-stretch">
+                {profile.friendsSince && (
+                  <Text className="text-center text-sm leading-5 tracking-[0.5px] text-secondary">
+                    Friends since {formatMonthYear(profile.friendsSince)}
+                  </Text>
+                )}
+                {profile.mutualFriendsCount > 0 && (
+                  <MutualFriendsPreview count={profile.mutualFriendsCount} />
+                )}
+              </View>
             )}
 
             {profile.previewOnly && (
