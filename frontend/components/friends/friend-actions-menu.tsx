@@ -9,6 +9,7 @@ import { RoundButton } from "@/components/ui/round-button";
 import { Separator } from "@/components/ui/separator";
 import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
+import { useBlockUser } from "@/hooks/useBlockMutations";
 import {
   useRemoveFriend,
   useSetFavorite,
@@ -30,22 +31,25 @@ export interface FriendActionsMenuProps {
   person: FriendActionsPerson;
   visible: boolean;
   onClose: () => void;
+  onBlocked?: () => void;
 }
 
 export function FriendActionsMenu({
   person,
   visible,
   onClose,
+  onBlocked,
 }: FriendActionsMenuProps) {
   const { user } = person;
   const fullName = `${user.firstName} ${user.lastName}`;
   const setFavorite = useSetFavorite();
   const setMuted = useSetMuted();
   const remove = useRemoveFriend();
+  const block = useBlockUser();
   const [step, setStep] = useState<MenuStep>("menu");
 
   const handleClose = () => {
-    if (!remove.isPending) onClose();
+    if (!remove.isPending && !block.isPending) onClose();
   };
 
   const handleToggleFavorite = () => {
@@ -100,7 +104,15 @@ export function FriendActionsMenu({
           }
           confirmLabel="Block"
           pendingLabel="Blocking…"
-          onConfirm={() => {}}
+          isPending={block.isPending}
+          onConfirm={() =>
+            block.mutate(user, {
+              onSuccess: () => {
+                onClose();
+                onBlocked?.();
+              },
+            })
+          }
           onCancel={handleClose}
         />
       </Popup>
