@@ -81,6 +81,11 @@ export default function SettingsScreen() {
               }
               disabled={!profile}
             />
+            <SettingsRow
+              icon="block"
+              label="Blocked users"
+              onPress={() => router.push("/blocked-users")}
+            />
           </SettingsSection>
 
           <SettingsSection title="Account">
