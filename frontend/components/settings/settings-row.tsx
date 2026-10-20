@@ -1,5 +1,6 @@
 import * as Haptics from "expo-haptics";
-import { Platform, Pressable, Switch, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
+import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
 import { cn } from "@/lib/utils";
