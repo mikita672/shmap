@@ -15,6 +15,7 @@ type FriendRowTrailingProps =
   | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void }
   | { variant: "add"; onAdd: () => void }
   | { variant: "accept"; onAccept: () => void }
+  | { variant: "unblock"; onUnblock: () => void }
   | { variant: "friends" }
   | { variant: "plain" };
 
@@ -150,6 +151,16 @@ function FriendRowTrailing(
           accessibilityLabel={`Accept ${props.name}`}
           disabled={props.disabled}
           onPress={props.onAccept}
+        />
+      );
+    case "unblock":
+      return (
+        <PillButton
+          label="Unblock"
+          variant="tonal"
+          accessibilityLabel={`Unblock ${props.name}`}
+          disabled={props.disabled}
+          onPress={props.onUnblock}
         />
       );
     case "friends":

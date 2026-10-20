@@ -49,6 +49,7 @@ function RootNavigator() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="profile" />
             <Stack.Screen name="settings" />
+            <Stack.Screen name="blocked-users" />
             <Stack.Screen name="edit-profile" />
             <Stack.Screen name="change-password" />
             <Stack.Screen

@@ -11,6 +11,7 @@ export const AuthErrorCode = {
   USER_NOT_FOUND: "USER_NOT_FOUND",
   PRIVATE_ACCOUNT: "PRIVATE_ACCOUNT",
   FRIENDS_LIST_HIDDEN: "FRIENDS_LIST_HIDDEN",
+  BLOCK_NOT_FOUND: "BLOCK_NOT_FOUND",
   UNAUTHORIZED: "UNAUTHORIZED",
   INVALID_REFRESH_TOKEN: "INVALID_REFRESH_TOKEN",
   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
@@ -75,6 +76,8 @@ export interface ProfileResponse {
   bio: string | null;
   avatarUrl: string | null;
   createdAt: string;
+  privateAccount: boolean;
+  friendsListHidden: boolean;
 }
 
 export interface UpdateProfileRequest {
@@ -82,6 +85,8 @@ export interface UpdateProfileRequest {
   lastName?: string;
   username?: string;
   bio?: string;
+  privateAccount?: boolean;
+  friendsListHidden?: boolean;
 }
 
 export interface ChangeEmailRequest {
@@ -123,6 +128,11 @@ export interface UserSummaryResponse {
   firstName: string;
   lastName: string;
   avatarUrl: string | null;
+}
+
+export interface BlockedUserResponse {
+  user: UserSummaryResponse;
+  blockedAt: string;
 }
 
 export interface FriendRequestResponse {

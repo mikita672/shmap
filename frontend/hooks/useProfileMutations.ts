@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { File } from "expo-file-system";
 import type { ImagePickerAsset } from "expo-image-picker";
+import { toast } from "sonner-native";
 import { useAuth } from "@/hooks/useAuth";
 import { profileQueryOptions } from "@/hooks/useProfile";
 import { uploadFile } from "@/lib/api/upload";
@@ -15,7 +16,8 @@ import {
   removeAvatar,
   updateMe,
 } from "@/lib/api/users";
-import type { ProfileResponse } from "@/lib/types/api";
+import type { ProfileResponse, UpdateProfileRequest } from "@/lib/types/api";
+import { getErrorMessage } from "@/lib/utils/error";
 import { validateAvatar } from "@/lib/validation/avatar";
 
 async function setCachedProfile(
@@ -32,6 +34,23 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: updateMe,
     onSuccess: (response) => setCachedProfile(queryClient, response.data),
+  });
+}
+
+export type PrivacySettings = Pick<
+  UpdateProfileRequest,
+  "privateAccount" | "friendsListHidden"
+>;
+
+export function useUpdatePrivacy() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (settings: PrivacySettings) => updateMe(settings),
+    onSuccess: (response) => setCachedProfile(queryClient, response.data),
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't update privacy settings"));
+    },
   });
 }
 
