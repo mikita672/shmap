@@ -40,18 +40,26 @@ export function FriendActionsMenu({
       </View>
 
       <MenuDivider />
-      <SheetItem
-        label={person.favorite ? "Remove from favorites" : "Add to favorites"}
-        disabled
-      />
-      <SheetItem label="Add to group" disabled />
-      <SheetItem
-        label={person.muted ? "Unmute routes" : "Mute routes"}
-        disabled
-      />
+      {person.isFriend && (
+        <>
+          <SheetItem
+            label={
+              person.favorite ? "Remove from favorites" : "Add to favorites"
+            }
+            disabled
+          />
+          <SheetItem label="Add to group" disabled />
+          <SheetItem
+            label={person.muted ? "Unmute routes" : "Mute routes"}
+            disabled
+          />
+        </>
+      )}
       <SheetItem label="Share profile" disabled />
       <MenuDivider />
-      <SheetItem label="Remove friend" tone="danger" disabled />
+      {person.isFriend && (
+        <SheetItem label="Remove friend" tone="danger" disabled />
+      )}
       <SheetItem label="Block" tone="danger" disabled />
 
       <RoundButton
