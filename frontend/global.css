@@ -31,6 +31,8 @@
     --brand: 25.82 72.69% 44.51%;
     /* Text on the brand color (badge count) — Cornsilk */
     --brand-foreground: 52 93% 93%;
+    /* Filled favorite star — Alloy Orange */
+    --favorite: 25.82 72.69% 44.51%;
 
     /* Typed text on input / card surfaces — Dark Camel */
     --on-surface: 30 34% 38%;
@@ -117,6 +119,8 @@
     --brand: 25.82 72.69% 44.51%;
     /* Text on the brand color (badge count) — Cornsilk */
     --brand-foreground: 52 93% 93%;
+    /* Filled favorite star — Lemon Meringue */
+    --favorite: 43 81% 88%;
 
     /* Typed text on input surfaces — Russet */
     --on-surface: 22.74 65.52% 28.43%;

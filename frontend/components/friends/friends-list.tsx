@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, SectionList, View } from "react-native";
+import { router } from "expo-router";
 import { FriendRow } from "@/components/friends/friend-row";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
@@ -11,6 +12,7 @@ import { useFriends } from "@/hooks/useFriends";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { matchesFriendSearch } from "@/lib/friend-search";
+import { getProfileHref } from "@/lib/profile-link";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export function FriendsList() {
@@ -74,6 +76,7 @@ export function FriendsList() {
             name={`${user.firstName} ${user.lastName}`}
             subtitle={`@${user.username}`}
             avatarUrl={user.avatarUrl}
+            onPress={() => router.push(getProfileHref(user.username))}
             onMore={() => {}}
           />
         )}

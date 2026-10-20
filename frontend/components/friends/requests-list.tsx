@@ -1,5 +1,6 @@
 import { ActivityIndicator, SectionList, View } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { ActivityItem } from "@/components/friends/activity-item";
 import { IncomingRequestRow } from "@/components/friends/incoming-request-row";
 import { SentRequestRow } from "@/components/friends/sent-request-row";
@@ -16,6 +17,7 @@ import { useIncomingRequests } from "@/hooks/useIncomingRequests";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { useSentRequests } from "@/hooks/useSentRequests";
+import { getProfileHref } from "@/lib/profile-link";
 import { formatTimeAgo } from "@/lib/time-ago";
 import type {
   FriendActivityResponse,
@@ -162,6 +164,7 @@ function RequestsListRow({ row, now }: RequestsListRowProps) {
           action={ACTIVITY_ACTIONS[type]}
           time={formatTimeAgo(createdAt, now)}
           avatarUrl={user.avatarUrl}
+          onPress={() => router.push(getProfileHref(user.username))}
         />
       );
     }

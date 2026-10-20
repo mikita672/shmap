@@ -1,3 +1,5 @@
+import { Keyboard } from "react-native";
+import { router } from "expo-router";
 import { FriendRow } from "@/components/friends/friend-row";
 import {
   useAcceptFriendRequest,
@@ -5,6 +7,7 @@ import {
   useSendFriendRequest,
 } from "@/hooks/useFriendRequestMutations";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
+import { getProfileHref } from "@/lib/profile-link";
 import type { UserSearchResultResponse } from "@/lib/types/api";
 
 export interface SearchResultRowProps {
@@ -21,6 +24,10 @@ export function SearchResultRow({ result }: SearchResultRowProps) {
     subtitle: mutualFriendsSubtitle(result),
     avatarUrl: user.avatarUrl,
     disabled: send.isPending || accept.isPending || cancel.isPending,
+    onPress: () => {
+      Keyboard.dismiss();
+      router.push(getProfileHref(user.username));
+    },
   };
 
   switch (result.relationship) {
