@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { ActivityIndicator, Keyboard, SectionList, View } from "react-native";
+import { ActivityIndicator, SectionList, View } from "react-native";
 import { router } from "expo-router";
-import {
-  FriendActionsMenu,
-  type FriendActionsPerson,
-} from "@/components/friends/friend-actions-menu";
+import { FriendActionsMenu } from "@/components/friends/friend-actions-menu";
 import { FriendRow } from "@/components/friends/friend-row";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
@@ -12,6 +9,7 @@ import { RefreshControl } from "@/components/ui/refresh-control";
 import { SearchField } from "@/components/ui/search-field";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
+import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
@@ -24,10 +22,7 @@ export function FriendsList() {
   useRefreshOnFocus(refetch);
   const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
   const [query, setQuery] = useState("");
-  const [menuPerson, setMenuPerson] = useState<FriendActionsPerson | null>(
-    null,
-  );
-  const [menuVisible, setMenuVisible] = useState(false);
+  const menu = useFriendActionsMenu();
 
   if (isPending) {
     return (
@@ -85,11 +80,7 @@ export function FriendsList() {
             subtitle={`@${user.username}`}
             avatarUrl={user.avatarUrl}
             onPress={() => router.push(getProfileHref(user.username))}
-            onMore={() => {
-              Keyboard.dismiss();
-              setMenuPerson({ user, isFriend: true, favorite, muted });
-              setMenuVisible(true);
-            }}
+            onMore={() => menu.open({ user, isFriend: true, favorite, muted })}
           />
         )}
         renderSectionHeader={({ section }) => (
@@ -124,11 +115,11 @@ export function FriendsList() {
         contentContainerClassName="px-6 pb-6"
       />
 
-      {menuPerson && (
+      {menu.person && (
         <FriendActionsMenu
-          person={menuPerson}
-          visible={menuVisible}
-          onClose={() => setMenuVisible(false)}
+          person={menu.person}
+          visible={menu.visible}
+          onClose={menu.close}
         />
       )}
     </View>
