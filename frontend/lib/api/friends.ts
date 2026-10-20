@@ -9,3 +9,12 @@ export const addFavorite = (friendId: number) =>
 
 export const removeFavorite = (friendId: number) =>
   apiClient.delete<void>(`/api/v1/friends/${friendId}/favorite`);
+
+export const muteFriend = (friendId: number) =>
+  apiClient.put<void>(`/api/v1/friends/${friendId}/mute`);
+
+export const unmuteFriend = (friendId: number) =>
+  apiClient.delete<void>(`/api/v1/friends/${friendId}/mute`);
+
+export const removeFriend = (friendId: number) =>
+  apiClient.delete<void>(`/api/v1/friends/${friendId}`);

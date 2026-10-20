@@ -1,8 +1,5 @@
-import { Modal, Pressable, View } from "react-native";
-import { Button } from "@/components/ui/button";
-import { Text } from "@/components/ui/text";
-import { LogoutButton } from "@/components/settings/logout-button";
-import { MaterialIcons } from "@/lib/icons";
+import { ConfirmCard } from "@/components/ui/confirm-card";
+import { Popup } from "@/components/ui/popup";
 
 export interface LogoutDialogProps {
   visible: boolean;
@@ -22,62 +19,17 @@ export function LogoutDialog({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={handleCancel}
-    >
-      <View className="flex-1 items-center justify-center px-6">
-        <Pressable
-          className="absolute inset-0 bg-black/60"
-          onPress={handleCancel}
-          accessible={false}
-          importantForAccessibility="no"
-        />
-
-        <View
-          accessibilityViewIsModal
-          className="w-full max-w-[344px] items-center rounded-[32px] bg-card px-6 pt-8 pb-6"
-        >
-          <View className="h-14 w-14 items-center justify-center rounded-full bg-action">
-            <MaterialIcons
-              name="logout"
-              size={28}
-              className="text-action-foreground"
-            />
-          </View>
-
-          <View className="w-full items-center gap-2 pt-4 pb-6">
-            <Text className="text-card-title text-[22px] text-center">
-              Log out?
-            </Text>
-            <Text className="text-card-muted text-sm leading-5 text-center">
-              You will need to sign in again to see your routes and friends.
-            </Text>
-          </View>
-
-          <View className="w-full gap-2">
-            <LogoutButton
-              className="w-full"
-              label={isPending ? "Logging out…" : "Log out"}
-              disabled={isPending}
-              onPress={onConfirm}
-            />
-            <Button
-              variant="secondary"
-              size="xl"
-              className="w-full"
-              disabled={isPending}
-              onPress={handleCancel}
-            >
-              <Text>Cancel</Text>
-            </Button>
-          </View>
-        </View>
-      </View>
-    </Modal>
+    <Popup visible={visible} onClose={handleCancel}>
+      <ConfirmCard
+        icon="logout"
+        title="Log out?"
+        message="You will need to sign in again to see your routes and friends."
+        confirmLabel="Log out"
+        pendingLabel="Logging out…"
+        isPending={isPending}
+        onConfirm={onConfirm}
+        onCancel={handleCancel}
+      />
+    </Popup>
   );
 }

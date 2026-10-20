@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { FriendActions } from "@/components/friends/friend-actions";
+import { FriendActionsMenu } from "@/components/friends/friend-actions-menu";
 import { MutualFriendsPreview } from "@/components/friends/mutual-friends-preview";
 import { ProfileStats } from "@/components/friends/profile-stats";
 import { RelationshipButton } from "@/components/friends/relationship-button";
@@ -13,6 +14,7 @@ import { NoteCard } from "@/components/ui/note-card";
 import { RefreshControl } from "@/components/ui/refresh-control";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useMutualFriends } from "@/hooks/useMutualFriends";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
@@ -37,6 +39,7 @@ export default function UserProfileScreen() {
   const { isRefetchingByUser, refetchByUser } = useRefreshByUser(() =>
     queryClient.invalidateQueries({ queryKey: ["profiles", username] }),
   );
+  const menu = useFriendActionsMenu();
   const top = Math.max(insets.top + 8, 48);
 
   if (profile?.relationship === "SELF") {
@@ -54,7 +57,14 @@ export default function UserProfileScreen() {
           <RoundButton
             icon="more-vert"
             accessibilityLabel={`More actions for ${profile.user.firstName} ${profile.user.lastName}`}
-            disabled
+            onPress={() =>
+              menu.open({
+                user: profile.user,
+                isFriend: profile.relationship === "FRIENDS",
+                favorite: profile.favorite,
+                muted: profile.muted,
+              })
+            }
           />
         )}
       </View>
@@ -174,6 +184,16 @@ export default function UserProfileScreen() {
             )}
           </View>
         </ScrollView>
+      )}
+
+      {menu.person && (
+        <FriendActionsMenu
+          key={menu.key}
+          person={menu.person}
+          visible={menu.visible}
+          onClose={menu.close}
+          onBlocked={() => router.back()}
+        />
       )}
     </View>
   );
