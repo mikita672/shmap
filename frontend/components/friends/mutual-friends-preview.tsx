@@ -2,17 +2,20 @@ import { View } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { Text } from "@/components/ui/text";
 import { mutualFriendsLabel } from "@/lib/mutual-friends";
+import type { UserSummaryResponse } from "@/lib/types/api";
 import { cn } from "@/lib/utils";
 
 const MAX_AVATARS = 3;
 
 export interface MutualFriendsPreviewProps {
   count: number;
+  users?: UserSummaryResponse[];
   className?: string;
 }
 
 export function MutualFriendsPreview({
   count,
+  users,
   className,
 }: MutualFriendsPreviewProps) {
   const avatarCount = Math.min(count, MAX_AVATARS);
@@ -23,6 +26,7 @@ export function MutualFriendsPreview({
         {Array.from({ length: avatarCount }, (_, index) => (
           <Avatar
             key={index}
+            uri={users?.[index]?.avatarUrl}
             size={28}
             className={cn("border-2 border-background", index > 0 && "-ml-2")}
           />

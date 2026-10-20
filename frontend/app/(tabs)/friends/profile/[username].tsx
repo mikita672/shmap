@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { useMutualFriends } from "@/hooks/useMutualFriends";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { formatMonthYear } from "@/lib/format-date";
 import { AuthErrorCode } from "@/lib/types/api";
@@ -24,6 +25,10 @@ export default function UserProfileScreen() {
     error,
     refetch,
   } = usePublicProfile(username);
+  const { data: mutualFriends } = useMutualFriends(
+    username,
+    (profile?.mutualFriendsCount ?? 0) > 0,
+  );
   const top = Math.max(insets.top + 8, 48);
 
   if (profile?.relationship === "SELF") {
@@ -109,7 +114,10 @@ export default function UserProfileScreen() {
                   </Text>
                 )}
                 {profile.mutualFriendsCount > 0 && (
-                  <MutualFriendsPreview count={profile.mutualFriendsCount} />
+                  <MutualFriendsPreview
+                    count={profile.mutualFriendsCount}
+                    users={mutualFriends}
+                  />
                 )}
               </View>
             )}
