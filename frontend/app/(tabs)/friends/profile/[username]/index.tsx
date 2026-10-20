@@ -102,6 +102,13 @@ export default function UserProfileScreen() {
                   {
                     value: String(profile.friendsCount),
                     label: profile.friendsCount === 1 ? "friend" : "friends",
+                    onPress: profile.friendsListVisible
+                      ? () =>
+                          router.push({
+                            pathname: "/friends/profile/[username]/friends",
+                            params: { username },
+                          })
+                      : undefined,
                   },
                 ]}
               />
