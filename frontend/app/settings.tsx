@@ -11,6 +11,10 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import {
+  type PrivacySettings,
+  useUpdatePrivacy,
+} from "@/hooks/useProfileMutations";
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -18,6 +22,17 @@ export default function SettingsScreen() {
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { data: profile } = useProfile();
+  const privacy = useUpdatePrivacy();
+
+  const pending = privacy.isPending ? privacy.variables : undefined;
+  const privateAccount =
+    pending?.privateAccount ?? profile?.privateAccount ?? false;
+  const friendsListHidden =
+    pending?.friendsListHidden ?? profile?.friendsListHidden ?? false;
+
+  const updatePrivacy = (settings: PrivacySettings) => {
+    if (!privacy.isPending) privacy.mutate(settings);
+  };
 
   const handleLogout = async () => {
     setIsSigningOut(true);
@@ -49,8 +64,10 @@ export default function SettingsScreen() {
               icon="lock-person"
               label="Private account"
               subtitle="Only friends see your full profile"
-              value={profile?.privateAccount ?? false}
-              onValueChange={() => {}}
+              value={privateAccount}
+              onValueChange={(value) =>
+                updatePrivacy({ privateAccount: value })
+              }
               disabled={!profile}
             />
             <SettingsRow
@@ -58,8 +75,10 @@ export default function SettingsScreen() {
               icon="visibility-off"
               label="Hide friends list"
               subtitle="Only you can see your friends"
-              value={profile?.friendsListHidden ?? false}
-              onValueChange={() => {}}
+              value={friendsListHidden}
+              onValueChange={(value) =>
+                updatePrivacy({ friendsListHidden: value })
+              }
               disabled={!profile}
             />
           </SettingsSection>
