@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { toast } from "sonner-native";
 import { Avatar } from "@/components/ui/avatar";
+import { ConfirmCard } from "@/components/ui/confirm-card";
 import { Popup } from "@/components/ui/popup";
 import { RoundButton } from "@/components/ui/round-button";
 import { Separator } from "@/components/ui/separator";
@@ -18,6 +20,8 @@ export interface FriendActionsPerson {
   muted: boolean;
 }
 
+type MenuStep = "menu" | "remove";
+
 export interface FriendActionsMenuProps {
   person: FriendActionsPerson;
   visible: boolean;
@@ -33,6 +37,7 @@ export function FriendActionsMenu({
   const fullName = `${user.firstName} ${user.lastName}`;
   const setFavorite = useSetFavorite();
   const setMuted = useSetMuted();
+  const [step, setStep] = useState<MenuStep>("menu");
 
   const handleToggleFavorite = () => {
     setFavorite.mutate({ friendId: user.id, favorite: !person.favorite });
@@ -53,6 +58,22 @@ export function FriendActionsMenu({
     }
     onClose();
   };
+
+  if (step === "remove") {
+    return (
+      <Popup visible={visible} onClose={onClose}>
+        <ConfirmCard
+          icon="person-remove"
+          title={`Remove ${user.firstName}?`}
+          message={`${user.firstName} will be removed from your friends and won't be notified. You can send a new request later.`}
+          confirmLabel="Remove"
+          pendingLabel="Removing…"
+          onConfirm={() => {}}
+          onCancel={onClose}
+        />
+      </Popup>
+    );
+  }
 
   return (
     <Popup visible={visible} onClose={onClose} className="pt-6 pb-3">
@@ -85,7 +106,11 @@ export function FriendActionsMenu({
       <SheetItem label="Share profile" onPress={handleShare} />
       <MenuDivider />
       {person.isFriend && (
-        <SheetItem label="Remove friend" tone="danger" disabled />
+        <SheetItem
+          label="Remove friend"
+          tone="danger"
+          onPress={() => setStep("remove")}
+        />
       )}
       <SheetItem label="Block" tone="danger" disabled />
 

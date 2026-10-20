@@ -117,6 +117,7 @@ export function FriendsList() {
 
       {menu.person && (
         <FriendActionsMenu
+          key={menu.key}
           person={menu.person}
           visible={menu.visible}
           onClose={menu.close}
