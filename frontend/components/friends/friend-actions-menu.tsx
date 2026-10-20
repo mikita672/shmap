@@ -24,7 +24,7 @@ export interface FriendActionsPerson {
   muted: boolean;
 }
 
-type MenuStep = "menu" | "remove";
+type MenuStep = "menu" | "remove" | "block";
 
 export interface FriendActionsMenuProps {
   person: FriendActionsPerson;
@@ -85,6 +85,28 @@ export function FriendActionsMenu({
     );
   }
 
+  if (step === "block") {
+    const message = `${user.firstName} won't be able to find you, see your profile or send you requests, and won't be notified`;
+
+    return (
+      <Popup visible={visible} onClose={handleClose}>
+        <ConfirmCard
+          icon="block"
+          title={`Block ${user.firstName}?`}
+          message={
+            person.isFriend
+              ? `${message} This also removes ${user.firstName} from your friends`
+              : message
+          }
+          confirmLabel="Block"
+          pendingLabel="Blocking…"
+          onConfirm={() => {}}
+          onCancel={handleClose}
+        />
+      </Popup>
+    );
+  }
+
   return (
     <Popup visible={visible} onClose={onClose} className="pt-6 pb-3">
       <View className="items-center gap-1 px-6 pb-4">
@@ -122,7 +144,7 @@ export function FriendActionsMenu({
           onPress={() => setStep("remove")}
         />
       )}
-      <SheetItem label="Block" tone="danger" disabled />
+      <SheetItem label="Block" tone="danger" onPress={() => setStep("block")} />
 
       <RoundButton
         icon="close"
