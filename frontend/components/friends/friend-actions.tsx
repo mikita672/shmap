@@ -1,19 +1,29 @@
 import { View } from "react-native";
 import { Button } from "@/components/ui/button";
+import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
 
 export interface FriendActionsProps {
+  favorite: boolean;
   className?: string;
 }
 
-export function FriendActions({ className }: FriendActionsProps) {
+export function FriendActions({ favorite, className }: FriendActionsProps) {
   return (
     <View className={cn("gap-3", className)}>
       <View className="flex-row items-center gap-2">
         <Button size="xl" className="flex-1" disabled>
           <Text className="text-2xl">Message</Text>
         </Button>
+        <RoundButton
+          icon={favorite ? "star" : "star-border"}
+          size="lg"
+          iconClassName={favorite ? "text-favorite" : undefined}
+          accessibilityLabel={
+            favorite ? "Remove from favorites" : "Add to favorites"
+          }
+        />
       </View>
 
       <Button variant="secondary" size="xl" disabled>

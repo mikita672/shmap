@@ -134,7 +134,7 @@ export default function UserProfileScreen() {
 
           <View className="mt-auto px-6 pb-4 pt-6">
             {profile.relationship === "FRIENDS" ? (
-              <FriendActions />
+              <FriendActions favorite={profile.favorite} />
             ) : (
               <RelationshipButton profile={profile} />
             )}

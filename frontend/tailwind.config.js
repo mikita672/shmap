@@ -13,6 +13,7 @@ module.exports = {
           DEFAULT: "hsl(var(--brand))",
           foreground: "hsl(var(--brand-foreground))",
         },
+        favorite: "hsl(var(--favorite))",
         "on-surface": "hsl(var(--on-surface))",
         "on-surface-muted": "hsl(var(--on-surface-muted))",
         border: "hsl(var(--border))",
