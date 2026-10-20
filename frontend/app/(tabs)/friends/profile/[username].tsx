@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
+import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { AuthErrorCode } from "@/lib/types/api";
@@ -28,7 +29,19 @@ export default function UserProfileScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <BackButton className="absolute left-6 z-10" style={{ top }} />
+      <View
+        className="pointer-events-box-none absolute left-6 right-6 z-10 flex-row items-center justify-between"
+        style={{ top }}
+      >
+        <BackButton className="relative" />
+        {profile && (
+          <RoundButton
+            icon="more-vert"
+            accessibilityLabel={`More actions for ${profile.user.firstName} ${profile.user.lastName}`}
+            disabled
+          />
+        )}
+      </View>
 
       {isPending ? (
         <View className="flex-1 items-center justify-center">
