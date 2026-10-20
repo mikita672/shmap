@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { toast } from "sonner-native";
@@ -32,23 +32,28 @@ export default function SettingsScreen() {
     <View className="flex-1 bg-background">
       <ScreenHeader title="Settings" />
 
-      <View className="flex-1 gap-6 px-6 pt-3">
-        <SettingsSection title="Appearance">
-          <ThemeSwitch />
-        </SettingsSection>
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="grow justify-between gap-6 px-6 pt-3"
+      >
+        <View className="gap-6">
+          <SettingsSection title="Appearance">
+            <ThemeSwitch />
+          </SettingsSection>
 
-        <SettingsSection title="Account">
-          <SettingsRow
-            icon="lock"
-            label="Change password"
-            onPress={() => router.push("/change-password")}
-          />
-        </SettingsSection>
-      </View>
+          <SettingsSection title="Account">
+            <SettingsRow
+              icon="lock"
+              label="Change password"
+              onPress={() => router.push("/change-password")}
+            />
+          </SettingsSection>
+        </View>
 
-      <View className="px-6" style={{ paddingBottom: insets.bottom + 24 }}>
-        <LogoutButton onPress={() => setLogoutDialogVisible(true)} />
-      </View>
+        <View style={{ paddingBottom: insets.bottom + 24 }}>
+          <LogoutButton onPress={() => setLogoutDialogVisible(true)} />
+        </View>
+      </ScrollView>
 
       <LogoutDialog
         visible={logoutDialogVisible}
