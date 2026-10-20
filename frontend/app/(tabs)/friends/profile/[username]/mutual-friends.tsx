@@ -1,12 +1,10 @@
-import { ActivityIndicator, FlatList, View } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import { FriendRow } from "@/components/friends/friend-row";
+import { ActivityIndicator, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { UserList } from "@/components/friends/user-list";
 import { Button } from "@/components/ui/button";
-import { NoteCard } from "@/components/ui/note-card";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Text } from "@/components/ui/text";
 import { useMutualFriends } from "@/hooks/useMutualFriends";
-import { getProfileHref } from "@/lib/profile-link";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export default function MutualFriendsScreen() {
@@ -31,32 +29,12 @@ export default function MutualFriendsScreen() {
           </Button>
         </View>
       ) : (
-        <FlatList
-          data={users}
-          keyExtractor={(user) => String(user.id)}
-          renderItem={({ item: user }) => (
-            <FriendRow
-              variant="plain"
-              name={`${user.firstName} ${user.lastName}`}
-              subtitle={`@${user.username}`}
-              avatarUrl={user.avatarUrl}
-              onPress={() => router.push(getProfileHref(user.username))}
-            />
-          )}
-          ListEmptyComponent={
-            <NoteCard
-              title="No mutual friends"
-              description="You don't share any friends yet"
-            />
-          }
-          ItemSeparatorComponent={RowGap}
-          contentContainerClassName="px-6 pb-6 pt-4"
+        <UserList
+          users={users}
+          emptyTitle="No mutual friends"
+          emptyDescription="You don't share any friends yet"
         />
       )}
     </View>
   );
-}
-
-function RowGap() {
-  return <View className="h-2" />;
 }
