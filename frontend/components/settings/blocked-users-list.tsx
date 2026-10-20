@@ -1,5 +1,5 @@
 import { FlatList, View } from "react-native";
-import { FriendRow } from "@/components/friends/friend-row";
+import { BlockedUserRow } from "@/components/settings/blocked-user-row";
 import { NoteCard } from "@/components/ui/note-card";
 import type { BlockedUserResponse } from "@/lib/types/api";
 
@@ -12,14 +12,7 @@ export function BlockedUsersList({ blockedUsers }: BlockedUsersListProps) {
     <FlatList
       data={blockedUsers}
       keyExtractor={({ user }) => String(user.id)}
-      renderItem={({ item: { user } }) => (
-        <FriendRow
-          variant="plain"
-          name={`${user.firstName} ${user.lastName}`}
-          subtitle={`@${user.username}`}
-          avatarUrl={user.avatarUrl}
-        />
-      )}
+      renderItem={({ item }) => <BlockedUserRow blocked={item} />}
       ListEmptyComponent={
         <NoteCard
           title="No blocked users"
