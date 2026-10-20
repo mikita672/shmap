@@ -192,6 +192,7 @@ export default function UserProfileScreen() {
           person={menu.person}
           visible={menu.visible}
           onClose={menu.close}
+          onBlocked={() => router.back()}
         />
       )}
     </View>
