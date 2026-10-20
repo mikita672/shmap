@@ -33,6 +33,9 @@ export function useBlockUser() {
         }),
         queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
         queryClient.invalidateQueries({ queryKey: ["friend-requests"] }),
+        queryClient.invalidateQueries({
+          queryKey: blockedUsersQueryOptions.queryKey,
+        }),
       ]),
   });
 }
