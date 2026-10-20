@@ -15,3 +15,6 @@ export const muteFriend = (friendId: number) =>
 
 export const unmuteFriend = (friendId: number) =>
   apiClient.delete<void>(`/api/v1/friends/${friendId}/mute`);
+
+export const removeFriend = (friendId: number) =>
+  apiClient.delete<void>(`/api/v1/friends/${friendId}`);

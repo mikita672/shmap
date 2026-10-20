@@ -9,7 +9,11 @@ import { RoundButton } from "@/components/ui/round-button";
 import { Separator } from "@/components/ui/separator";
 import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
-import { useSetFavorite, useSetMuted } from "@/hooks/useFriendMutations";
+import {
+  useRemoveFriend,
+  useSetFavorite,
+  useSetMuted,
+} from "@/hooks/useFriendMutations";
 import { shareProfile } from "@/lib/profile-link";
 import type { UserSummaryResponse } from "@/lib/types/api";
 
@@ -37,7 +41,12 @@ export function FriendActionsMenu({
   const fullName = `${user.firstName} ${user.lastName}`;
   const setFavorite = useSetFavorite();
   const setMuted = useSetMuted();
+  const remove = useRemoveFriend();
   const [step, setStep] = useState<MenuStep>("menu");
+
+  const handleClose = () => {
+    if (!remove.isPending) onClose();
+  };
 
   const handleToggleFavorite = () => {
     setFavorite.mutate({ friendId: user.id, favorite: !person.favorite });
@@ -61,15 +70,16 @@ export function FriendActionsMenu({
 
   if (step === "remove") {
     return (
-      <Popup visible={visible} onClose={onClose}>
+      <Popup visible={visible} onClose={handleClose}>
         <ConfirmCard
           icon="person-remove"
           title={`Remove ${user.firstName}?`}
           message={`${user.firstName} will be removed from your friends and won't be notified. You can send a new request later.`}
           confirmLabel="Remove"
           pendingLabel="Removing…"
-          onConfirm={() => {}}
-          onCancel={onClose}
+          isPending={remove.isPending}
+          onConfirm={() => remove.mutate(user.id, { onSuccess: onClose })}
+          onCancel={handleClose}
         />
       </Popup>
     );
