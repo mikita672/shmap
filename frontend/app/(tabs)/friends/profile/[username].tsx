@@ -1,4 +1,4 @@
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { RelationshipButton } from "@/components/friends/relationship-button";
@@ -67,7 +67,7 @@ export default function UserProfileScreen() {
           )}
         </View>
       ) : (
-        <>
+        <ScrollView className="flex-1" contentContainerClassName="flex-grow">
           <View className="items-center gap-4 px-6" style={{ paddingTop: top }}>
             <Avatar uri={profile.user.avatarUrl} size={150} />
 
@@ -87,10 +87,10 @@ export default function UserProfileScreen() {
             ) : null}
           </View>
 
-          <View className="mt-auto px-6 pb-4">
+          <View className="mt-auto px-6 pb-4 pt-6">
             <RelationshipButton profile={profile} />
           </View>
-        </>
+        </ScrollView>
       )}
     </View>
   );
