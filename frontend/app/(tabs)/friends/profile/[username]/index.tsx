@@ -1,6 +1,6 @@
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Redirect, useLocalSearchParams } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { FriendActions } from "@/components/friends/friend-actions";
 import { MutualFriendsPreview } from "@/components/friends/mutual-friends-preview";
 import { ProfileStats } from "@/components/friends/profile-stats";
@@ -118,6 +118,12 @@ export default function UserProfileScreen() {
                   <MutualFriendsPreview
                     count={profile.mutualFriendsCount}
                     users={mutualFriends}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/friends/profile/[username]/mutual-friends",
+                        params: { username },
+                      })
+                    }
                   />
                 )}
               </View>

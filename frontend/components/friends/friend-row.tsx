@@ -15,7 +15,8 @@ type FriendRowTrailingProps =
   | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void }
   | { variant: "add"; onAdd: () => void }
   | { variant: "accept"; onAccept: () => void }
-  | { variant: "friends" };
+  | { variant: "friends" }
+  | { variant: "plain" };
 
 export type FriendRowProps = FriendRowTrailingProps & {
   name: string;
@@ -157,6 +158,8 @@ function FriendRowTrailing(
           Friends
         </Text>
       );
+    case "plain":
+      return null;
     default:
       return props satisfies never;
   }
