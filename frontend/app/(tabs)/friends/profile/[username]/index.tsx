@@ -1,5 +1,6 @@
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { FriendActions } from "@/components/friends/friend-actions";
 import { MutualFriendsPreview } from "@/components/friends/mutual-friends-preview";
@@ -9,10 +10,12 @@ import { Avatar } from "@/components/ui/avatar";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
+import { RefreshControl } from "@/components/ui/refresh-control";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { useMutualFriends } from "@/hooks/useMutualFriends";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
+import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { formatMonthYear } from "@/lib/format-date";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -29,6 +32,10 @@ export default function UserProfileScreen() {
   const { data: mutualFriends } = useMutualFriends(
     username,
     (profile?.mutualFriendsCount ?? 0) > 0,
+  );
+  const queryClient = useQueryClient();
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(() =>
+    queryClient.invalidateQueries({ queryKey: ["profiles", username] }),
   );
   const top = Math.max(insets.top + 8, 48);
 
@@ -76,7 +83,18 @@ export default function UserProfileScreen() {
           )}
         </View>
       ) : (
-        <ScrollView className="flex-1" contentContainerClassName="flex-grow">
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="flex-grow"
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetchingByUser}
+              onRefresh={refetchByUser}
+              progressViewOffset={top}
+              className="bg-action text-secondary"
+            />
+          }
+        >
           <View className="items-center gap-4 px-6" style={{ paddingTop: top }}>
             <Avatar uri={profile.user.avatarUrl} size={150} />
 
