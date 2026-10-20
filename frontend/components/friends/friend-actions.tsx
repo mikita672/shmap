@@ -17,6 +17,9 @@ export function FriendActions({
   className,
 }: FriendActionsProps) {
   const setFavorite = useSetFavorite();
+  const shownFavorite = setFavorite.isPending
+    ? setFavorite.variables.favorite
+    : favorite;
 
   return (
     <View className={cn("gap-3", className)}>
@@ -25,14 +28,16 @@ export function FriendActions({
           <Text className="text-2xl">Message</Text>
         </Button>
         <RoundButton
-          icon={favorite ? "star" : "star-border"}
+          icon={shownFavorite ? "star" : "star-border"}
           size="lg"
-          iconClassName={favorite ? "text-favorite" : undefined}
+          iconClassName={shownFavorite ? "text-favorite" : undefined}
           accessibilityLabel={
-            favorite ? "Remove from favorites" : "Add to favorites"
+            shownFavorite ? "Remove from favorites" : "Add to favorites"
           }
-          disabled={setFavorite.isPending}
-          onPress={() => setFavorite.mutate({ friendId, favorite: !favorite })}
+          onPress={() => {
+            if (setFavorite.isPending) return;
+            setFavorite.mutate({ friendId, favorite: !favorite });
+          }}
         />
       </View>
 
