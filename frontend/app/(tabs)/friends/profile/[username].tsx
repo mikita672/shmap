@@ -1,6 +1,7 @@
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Redirect, useLocalSearchParams } from "expo-router";
+import { ProfileStats } from "@/components/friends/profile-stats";
 import { RelationshipButton } from "@/components/friends/relationship-button";
 import { Avatar } from "@/components/ui/avatar";
 import { BackButton } from "@/components/ui/back-button";
@@ -85,6 +86,18 @@ export default function UserProfileScreen() {
                 {profile.bio}
               </Text>
             ) : null}
+
+            {profile.friendsCount !== null && (
+              <ProfileStats
+                className="self-stretch"
+                stats={[
+                  {
+                    value: String(profile.friendsCount),
+                    label: profile.friendsCount === 1 ? "friend" : "friends",
+                  },
+                ]}
+              />
+            )}
 
             {profile.previewOnly && (
               <NoteCard
