@@ -27,7 +27,7 @@ export default function BlockedUsersScreen() {
           </Button>
         </View>
       ) : (
-        <BlockedUsersList blockedUsers={blockedUsers} />
+        <BlockedUsersList blockedUsers={blockedUsers} onRefresh={refetch} />
       )}
     </View>
   );
