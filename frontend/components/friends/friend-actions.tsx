@@ -2,14 +2,22 @@ import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { useSetFavorite } from "@/hooks/useFriendMutations";
 import { cn } from "@/lib/utils";
 
 export interface FriendActionsProps {
+  friendId: number;
   favorite: boolean;
   className?: string;
 }
 
-export function FriendActions({ favorite, className }: FriendActionsProps) {
+export function FriendActions({
+  friendId,
+  favorite,
+  className,
+}: FriendActionsProps) {
+  const setFavorite = useSetFavorite();
+
   return (
     <View className={cn("gap-3", className)}>
       <View className="flex-row items-center gap-2">
@@ -23,6 +31,8 @@ export function FriendActions({ favorite, className }: FriendActionsProps) {
           accessibilityLabel={
             favorite ? "Remove from favorites" : "Add to favorites"
           }
+          disabled={setFavorite.isPending}
+          onPress={() => setFavorite.mutate({ friendId, favorite: !favorite })}
         />
       </View>
 
