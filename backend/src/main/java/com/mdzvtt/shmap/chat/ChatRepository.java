@@ -1,6 +1,8 @@
 package com.mdzvtt.shmap.chat;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -8,6 +10,10 @@ import java.util.Optional;
 
 public interface ChatRepository extends JpaRepository<Chat, Long> {
   Optional<Chat> findByDirectUserLowIdAndDirectUserHighId(Integer lowId, Integer highId);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select c from Chat c where c.id = :id")
+  Optional<Chat> findByIdForUpdate(Long id);
 
   @Query("""
       select c from Chat c

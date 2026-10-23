@@ -74,6 +74,7 @@ public class ChatService {
 
     @Transactional
     public ChatResponse addMembers(Integer userId, Long chatId, Set<Integer> userIds) {
+        lockChat(chatId);
         Chat chat = findGroupChat(userId, chatId);
 
         Set<Integer> newIds = new LinkedHashSet<>(userIds);
@@ -89,6 +90,7 @@ public class ChatService {
 
     @Transactional
     public void leave(Integer userId, Long chatId) {
+        lockChat(chatId);
         Chat chat = findGroupChat(userId, chatId);
         chatMemberRepository.deleteByChatIdAndUserId(chatId, userId);
 
@@ -130,6 +132,10 @@ public class ChatService {
 
     private Chat findChat(Integer userId, Long chatId) {
         return chatRepository.findForMember(chatId, userId).orElseThrow(ChatNotFoundException::new);
+    }
+
+    private void lockChat(Long chatId) {
+        chatRepository.findByIdForUpdate(chatId).orElseThrow(ChatNotFoundException::new);
     }
 
     private Chat findGroupChat(Integer userId, Long chatId) {
