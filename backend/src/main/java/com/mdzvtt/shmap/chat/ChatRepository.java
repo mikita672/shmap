@@ -18,12 +18,16 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     Optional<Chat> findForMember(Long chatId, Integer userId);
 
     @Query("""
-            select c from ChatMember mine
+            select new com.mdzvtt.shmap.chat.ChatListRow(c, low, high, last, sender)
+            from ChatMember mine
             join mine.chat c
-            left join fetch c.directUserLow
-            left join fetch c.directUserHigh
+            left join c.directUserLow low
+            left join c.directUserHigh high
+            left join ChatMessage last on last.chat = c
+                and last.id = (select max(m.id) from ChatMessage m where m.chat = c)
+            left join last.sender sender
             where mine.user.id = :userId
             order by mine.joinedAt desc, c.id desc
             """)
-    List<Chat> findMyChats(Integer userId);
+    List<ChatListRow> findMyChats(Integer userId);
 }

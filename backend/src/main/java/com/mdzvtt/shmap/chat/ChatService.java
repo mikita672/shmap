@@ -49,7 +49,7 @@ public class ChatService {
     @Transactional(readOnly = true)
     public List<ChatSummaryResponse> getChats(Integer userId) {
         return chatRepository.findMyChats(userId).stream()
-                .map(chat -> toSummaryResponse(chat, userId))
+                .map(row -> toSummaryResponse(row, userId))
                 .toList();
     }
 
@@ -96,25 +96,31 @@ public class ChatService {
         return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members);
     }
 
-    private ChatSummaryResponse toSummaryResponse(Chat chat, Integer userId) {
+    private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId) {
+        Chat chat = row.chat();
         User otherUser = null;
         if (chat.getType() == ChatType.DIRECT) {
-            otherUser = chat.getDirectUserLow().getId().equals(userId)
-                    ? chat.getDirectUserHigh()
-                    : chat.getDirectUserLow();
+            otherUser = row.directUserLow().getId().equals(userId)
+                    ? row.directUserHigh()
+                    : row.directUserLow();
         }
+        ChatMessage lastMessage = row.lastMessage();
         return new ChatSummaryResponse(
                 chat.getId(),
                 chat.getType(),
                 chat.getName(),
                 otherUser == null ? null : toSummary(otherUser),
-                null);
+                lastMessage == null ? null : toMessageResponse(lastMessage, row.lastMessageSender()));
     }
 
     private ChatMessageResponse toMessageResponse(ChatMessage message) {
+        return toMessageResponse(message, message.getSender());
+    }
+
+    private ChatMessageResponse toMessageResponse(ChatMessage message, User sender) {
         return new ChatMessageResponse(
                 message.getId(),
-                toSummary(message.getSender()),
+                toSummary(sender),
                 message.getText(),
                 message.getCreatedAt());
     }
