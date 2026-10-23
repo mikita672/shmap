@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
+import com.mdzvtt.shmap.exception.NotGroupChatException;
 import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.storage.StorageService;
@@ -71,6 +72,21 @@ public class ChatService {
         return toResponse(chat, userId);
     }
 
+    @Transactional
+    public ChatResponse addMembers(Integer userId, Long chatId, Set<Integer> userIds) {
+        Chat chat = findGroupChat(userId, chatId);
+
+        Set<Integer> newIds = new LinkedHashSet<>(userIds);
+        newIds.removeAll(chatMemberRepository.findUserIdsByChatId(chatId));
+
+        List<ChatMember> newMembers = findUsers(newIds).stream()
+                .map(user -> new ChatMember(chat, user))
+                .toList();
+        chatMemberRepository.saveAll(newMembers);
+
+        return toResponse(chat, userId);
+    }
+
     @Transactional(readOnly = true)
     public List<ChatSummaryResponse> getChats(Integer userId) {
         return chatRepository.findMyChats(userId).stream()
@@ -104,6 +120,14 @@ public class ChatService {
 
     private Chat findChat(Integer userId, Long chatId) {
         return chatRepository.findForMember(chatId, userId).orElseThrow(ChatNotFoundException::new);
+    }
+
+    private Chat findGroupChat(Integer userId, Long chatId) {
+        Chat chat = findChat(userId, chatId);
+        if (chat.getType() != ChatType.GROUP) {
+            throw new NotGroupChatException();
+        }
+        return chat;
     }
 
     private List<User> findUsers(Set<Integer> ids) {

@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.chat;
 
+import com.mdzvtt.shmap.chat.dto.AddChatMembersRequest;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
@@ -48,6 +49,12 @@ public class ChatController {
     @GetMapping("/{chatId}")
     public ChatResponse getChat(@AuthenticationPrincipal User user, @PathVariable Long chatId) {
         return chatService.getChat(user.getId(), chatId);
+    }
+
+    @PostMapping("/{chatId}/members")
+    public ChatResponse addMembers(@AuthenticationPrincipal User user, @PathVariable Long chatId,
+            @Valid @RequestBody AddChatMembersRequest request) {
+        return chatService.addMembers(user.getId(), chatId, request.userIds());
     }
 
     @GetMapping("/{chatId}/messages")
