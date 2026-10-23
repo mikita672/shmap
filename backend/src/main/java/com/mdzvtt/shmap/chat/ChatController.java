@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,6 +26,11 @@ public class ChatController {
     @PutMapping("/direct/{userId}")
     public ChatResponse openDirect(@AuthenticationPrincipal User user, @PathVariable Integer userId) {
         return chatService.openDirect(user.getId(), userId);
+    }
+
+    @GetMapping("/{chatId}")
+    public ChatResponse getChat(@AuthenticationPrincipal User user, @PathVariable Long chatId) {
+        return chatService.getChat(user.getId(), chatId);
     }
 
     @PostMapping("/{chatId}/messages")

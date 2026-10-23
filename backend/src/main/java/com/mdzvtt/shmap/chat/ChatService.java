@@ -42,6 +42,11 @@ public class ChatService {
         return toResponse(chat, userId);
     }
 
+    @Transactional(readOnly = true)
+    public ChatResponse getChat(Integer userId, Long chatId) {
+        return toResponse(findChat(userId, chatId), userId);
+    }
+
     @Transactional
     public ChatMessageResponse send(Integer userId, Long chatId, String text) {
         Chat chat = findChat(userId, chatId);
