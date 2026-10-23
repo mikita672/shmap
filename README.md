@@ -28,6 +28,7 @@ The project is in early development. Accounts, profiles, friends and the map wor
 - Get "People you may know" suggestions: friends of your friends, ranked by mutual friends. You can dismiss any suggestion.
 - See your recent friend activity: who accepted your requests and whose requests you accepted.
 - Mute friends and block users. Blocking removes the friendship, its activity and any pending requests, and the two users stop seeing each other in search and on profiles.
+- Chat one-on-one or in groups through the API: open a chat with anyone, create a group, add people, leave, send text messages, page back through the history, and list your chats with their last message. The app screens come later.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
 - Use the Settings screen to pick a light, dark or system theme, change your password, and log out.
 
@@ -171,6 +172,7 @@ All routes live under `/api/v1`:
 | `/friend-suggestions`         | "People you may know" and dismissing suggestions                        |
 | `/friend-activity`            | Your recent friend activity, newest first                               |
 | `/blocks`                     | Blocking and unblocking users, and the list of users you blocked        |
+| `/chats`                      | Your chats, 1:1 and group chats, members, and messages                  |
 
 ## CI and releases
 
