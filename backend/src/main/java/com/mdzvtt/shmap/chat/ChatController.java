@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/chats")
 @RequiredArgsConstructor
@@ -31,6 +33,11 @@ public class ChatController {
     @GetMapping("/{chatId}")
     public ChatResponse getChat(@AuthenticationPrincipal User user, @PathVariable Long chatId) {
         return chatService.getChat(user.getId(), chatId);
+    }
+
+    @GetMapping("/{chatId}/messages")
+    public List<ChatMessageResponse> getMessages(@AuthenticationPrincipal User user, @PathVariable Long chatId) {
+        return chatService.getMessages(user.getId(), chatId);
     }
 
     @PostMapping("/{chatId}/messages")

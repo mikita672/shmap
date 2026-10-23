@@ -10,6 +10,7 @@ import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
+    private static final Limit PAGE_SIZE = Limit.of(30);
+
     private final ChatRepository chatRepository;
     private final ChatMemberRepository chatMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
@@ -45,6 +48,14 @@ public class ChatService {
     @Transactional(readOnly = true)
     public ChatResponse getChat(Integer userId, Long chatId) {
         return toResponse(findChat(userId, chatId), userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponse> getMessages(Integer userId, Long chatId) {
+        findChat(userId, chatId);
+        return chatMessageRepository.findByChatIdOrderByIdDesc(chatId, PAGE_SIZE).stream()
+                .map(this::toMessageResponse)
+                .toList();
     }
 
     @Transactional
