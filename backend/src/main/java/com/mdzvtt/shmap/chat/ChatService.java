@@ -58,11 +58,13 @@ public class ChatService {
             throw new GroupWithoutMembersException();
         }
 
+        List<User> others = findUsers(otherIds);
+
         Chat chat = chatRepository.save(Chat.group(name));
         List<ChatMember> members = new ArrayList<>();
         members.add(new ChatMember(chat, userRepository.getReferenceById(userId)));
-        for (Integer otherId : otherIds) {
-            members.add(new ChatMember(chat, userRepository.getReferenceById(otherId)));
+        for (User other : others) {
+            members.add(new ChatMember(chat, other));
         }
         chatMemberRepository.saveAll(members);
 
@@ -102,6 +104,14 @@ public class ChatService {
 
     private Chat findChat(Integer userId, Long chatId) {
         return chatRepository.findForMember(chatId, userId).orElseThrow(ChatNotFoundException::new);
+    }
+
+    private List<User> findUsers(Set<Integer> ids) {
+        List<User> users = userRepository.findAllById(ids);
+        if (users.size() != ids.size()) {
+            throw new UserNotFoundException();
+        }
+        return users;
     }
 
     private Chat createDirect(User user, User other) {
