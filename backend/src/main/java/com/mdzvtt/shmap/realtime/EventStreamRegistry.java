@@ -24,7 +24,10 @@ public class EventStreamRegistry {
 
         Runnable remove = () -> remove(userId, emitter);
         emitter.onCompletion(remove);
-        emitter.onTimeout(remove);
+        emitter.onTimeout(() -> {
+            remove.run();
+            emitter.complete();
+        });
         emitter.onError(error -> remove.run());
 
         try {
