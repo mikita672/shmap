@@ -87,6 +87,12 @@ public class ChatService {
         return toResponse(chat, userId);
     }
 
+    @Transactional
+    public void leave(Integer userId, Long chatId) {
+        findGroupChat(userId, chatId);
+        chatMemberRepository.deleteByChatIdAndUserId(chatId, userId);
+    }
+
     @Transactional(readOnly = true)
     public List<ChatSummaryResponse> getChats(Integer userId) {
         return chatRepository.findMyChats(userId).stream()

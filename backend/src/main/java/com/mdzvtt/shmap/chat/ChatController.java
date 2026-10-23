@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,6 +56,12 @@ public class ChatController {
     public ChatResponse addMembers(@AuthenticationPrincipal User user, @PathVariable Long chatId,
             @Valid @RequestBody AddChatMembersRequest request) {
         return chatService.addMembers(user.getId(), chatId, request.userIds());
+    }
+
+    @DeleteMapping("/{chatId}/members/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void leave(@AuthenticationPrincipal User user, @PathVariable Long chatId) {
+        chatService.leave(user.getId(), chatId);
     }
 
     @GetMapping("/{chatId}/messages")
