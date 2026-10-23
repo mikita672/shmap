@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
+import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
@@ -22,6 +23,10 @@ public class ChatService {
 
     @Transactional
     public ChatResponse openDirect(Integer userId, Integer otherUserId) {
+        if (userId.equals(otherUserId)) {
+            throw new SelfChatException();
+        }
+
         User other = userRepository.findById(otherUserId).orElseThrow(UserNotFoundException::new);
 
         Chat chat = chatRepository
