@@ -51,9 +51,12 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatMessageResponse> getMessages(Integer userId, Long chatId) {
+    public List<ChatMessageResponse> getMessages(Integer userId, Long chatId, Long before) {
         findChat(userId, chatId);
-        return chatMessageRepository.findByChatIdOrderByIdDesc(chatId, PAGE_SIZE).stream()
+        List<ChatMessage> messages = before == null
+                ? chatMessageRepository.findByChatIdOrderByIdDesc(chatId, PAGE_SIZE)
+                : chatMessageRepository.findByChatIdAndIdLessThanOrderByIdDesc(chatId, before, PAGE_SIZE);
+        return messages.stream()
                 .map(this::toMessageResponse)
                 .toList();
     }

@@ -9,4 +9,7 @@ import java.util.List;
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     @EntityGraph(attributePaths = "sender")
     List<ChatMessage> findByChatIdOrderByIdDesc(Long chatId, Limit limit);
+
+    @EntityGraph(attributePaths = "sender")
+    List<ChatMessage> findByChatIdAndIdLessThanOrderByIdDesc(Long chatId, Long before, Limit limit);
 }
