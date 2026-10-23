@@ -27,6 +27,8 @@ public class ChatService {
             throw new SelfChatException();
         }
 
+        userRepository.findAllByIdForUpdate(List.of(userId, otherUserId));
+
         User other = userRepository.findById(otherUserId).orElseThrow(UserNotFoundException::new);
 
         Chat chat = chatRepository
