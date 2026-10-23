@@ -1,6 +1,8 @@
 package com.mdzvtt.shmap.chat;
 
+import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
+import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.storage.StorageService;
@@ -18,6 +20,7 @@ import java.util.List;
 public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatMemberRepository chatMemberRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
 
@@ -39,6 +42,18 @@ public class ChatService {
         return toResponse(chat, userId);
     }
 
+    @Transactional
+    public ChatMessageResponse send(Integer userId, Long chatId, String text) {
+        Chat chat = findChat(userId, chatId);
+        User sender = userRepository.getReferenceById(userId);
+        ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
+        return toMessageResponse(message);
+    }
+
+    private Chat findChat(Integer userId, Long chatId) {
+        return chatRepository.findForMember(chatId, userId).orElseThrow(ChatNotFoundException::new);
+    }
+
     private Chat createDirect(User user, User other) {
         Chat chat = chatRepository.save(Chat.direct(user, other));
         chatMemberRepository.saveAll(List.of(
@@ -52,6 +67,14 @@ public class ChatService {
                 .map(this::toSummary)
                 .toList();
         return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members);
+    }
+
+    private ChatMessageResponse toMessageResponse(ChatMessage message) {
+        return new ChatMessageResponse(
+                message.getId(),
+                toSummary(message.getSender()),
+                message.getText(),
+                message.getCreatedAt());
     }
 
     private UserSummaryResponse toSummary(User user) {
