@@ -89,8 +89,12 @@ public class ChatService {
 
     @Transactional
     public void leave(Integer userId, Long chatId) {
-        findGroupChat(userId, chatId);
+        Chat chat = findGroupChat(userId, chatId);
         chatMemberRepository.deleteByChatIdAndUserId(chatId, userId);
+
+        if (!chatMemberRepository.existsByChatId(chatId)) {
+            chatRepository.delete(chat);
+        }
     }
 
     @Transactional(readOnly = true)

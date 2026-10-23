@@ -21,6 +21,8 @@ public interface ChatMemberRepository extends JpaRepository<ChatMember, Long> {
   @Query("select m.user.id from ChatMember m where m.chat.id = :chatId")
   Set<Integer> findUserIdsByChatId(Long chatId);
 
+  boolean existsByChatId(Long chatId);
+
   @Modifying
   @Query("delete from ChatMember m where m.chat.id = :chatId and m.user.id = :userId")
   int deleteByChatIdAndUserId(Long chatId, Integer userId);
