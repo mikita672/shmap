@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.SendChatMessageRequest;
 import com.mdzvtt.shmap.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,7 +30,7 @@ public class ChatController {
     @PostMapping("/{chatId}/messages")
     @ResponseStatus(HttpStatus.CREATED)
     public ChatMessageResponse send(@AuthenticationPrincipal User user, @PathVariable Long chatId,
-            @RequestBody SendChatMessageRequest request) {
+            @Valid @RequestBody SendChatMessageRequest request) {
         return chatService.send(user.getId(), chatId, request.text());
     }
 }
