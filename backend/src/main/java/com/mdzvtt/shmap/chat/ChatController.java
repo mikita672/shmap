@@ -3,6 +3,7 @@ package com.mdzvtt.shmap.chat;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
+import com.mdzvtt.shmap.chat.dto.CreateGroupChatRequest;
 import com.mdzvtt.shmap.chat.dto.SendChatMessageRequest;
 import com.mdzvtt.shmap.user.User;
 import jakarta.validation.Valid;
@@ -35,6 +36,13 @@ public class ChatController {
     @PutMapping("/direct/{userId}")
     public ChatResponse openDirect(@AuthenticationPrincipal User user, @PathVariable Integer userId) {
         return chatService.openDirect(user.getId(), userId);
+    }
+
+    @PostMapping("/groups")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ChatResponse createGroup(@AuthenticationPrincipal User user,
+            @Valid @RequestBody CreateGroupChatRequest request) {
+        return chatService.createGroup(user.getId(), request.name(), request.memberIds());
     }
 
     @GetMapping("/{chatId}")

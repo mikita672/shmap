@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
+import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
 import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.storage.StorageService;
@@ -15,7 +16,10 @@ import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +46,25 @@ public class ChatService {
                 .findByDirectUserLowIdAndDirectUserHighId(Math.min(userId, otherUserId),
                         Math.max(userId, otherUserId))
                 .orElseGet(() -> createDirect(userRepository.getReferenceById(userId), other));
+
+        return toResponse(chat, userId);
+    }
+
+    @Transactional
+    public ChatResponse createGroup(Integer userId, String name, Set<Integer> memberIds) {
+        Set<Integer> otherIds = new LinkedHashSet<>(memberIds);
+        otherIds.remove(userId);
+        if (otherIds.isEmpty()) {
+            throw new GroupWithoutMembersException();
+        }
+
+        Chat chat = chatRepository.save(Chat.group(name));
+        List<ChatMember> members = new ArrayList<>();
+        members.add(new ChatMember(chat, userRepository.getReferenceById(userId)));
+        for (Integer otherId : otherIds) {
+            members.add(new ChatMember(chat, userRepository.getReferenceById(otherId)));
+        }
+        chatMemberRepository.saveAll(members);
 
         return toResponse(chat, userId);
     }
