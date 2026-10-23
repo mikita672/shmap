@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,12 +11,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component
 public class EventStreamRegistry {
-    private static final Duration STREAM_TIMEOUT = Duration.ofMinutes(55);
-
+    private final RealtimeProperties properties;
     private final Map<Integer, Set<SseEmitter>> streams = new ConcurrentHashMap<>();
 
+    public EventStreamRegistry(RealtimeProperties properties) {
+        this.properties = properties;
+    }
+
     public SseEmitter open(Integer userId) {
-        SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT.toMillis());
+        SseEmitter emitter = new SseEmitter(properties.streamTimeout().toMillis());
         streams.computeIfAbsent(userId, id -> new CopyOnWriteArraySet<>()).add(emitter);
 
         Runnable remove = () -> remove(userId, emitter);
