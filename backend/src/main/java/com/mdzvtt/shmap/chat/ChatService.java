@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
+import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
@@ -46,6 +47,13 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
+    public List<ChatSummaryResponse> getChats(Integer userId) {
+        return chatRepository.findMyChats(userId).stream()
+                .map(chat -> toSummaryResponse(chat, userId))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public ChatResponse getChat(Integer userId, Long chatId) {
         return toResponse(findChat(userId, chatId), userId);
     }
@@ -86,6 +94,21 @@ public class ChatService {
                 .map(this::toSummary)
                 .toList();
         return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members);
+    }
+
+    private ChatSummaryResponse toSummaryResponse(Chat chat, Integer userId) {
+        User otherUser = null;
+        if (chat.getType() == ChatType.DIRECT) {
+            otherUser = chat.getDirectUserLow().getId().equals(userId)
+                    ? chat.getDirectUserHigh()
+                    : chat.getDirectUserLow();
+        }
+        return new ChatSummaryResponse(
+                chat.getId(),
+                chat.getType(),
+                chat.getName(),
+                otherUser == null ? null : toSummary(otherUser),
+                null);
     }
 
     private ChatMessageResponse toMessageResponse(ChatMessage message) {

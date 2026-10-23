@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
+import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.chat.dto.SendChatMessageRequest;
 import com.mdzvtt.shmap.user.User;
 import jakarta.validation.Valid;
@@ -25,6 +26,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chatService;
+
+    @GetMapping
+    public List<ChatSummaryResponse> getChats(@AuthenticationPrincipal User user) {
+        return chatService.getChats(user.getId());
+    }
 
     @PutMapping("/direct/{userId}")
     public ChatResponse openDirect(@AuthenticationPrincipal User user, @PathVariable Integer userId) {
