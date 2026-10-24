@@ -5,5 +5,5 @@ import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 
 import java.util.List;
 
-public record ChatResponse(Long id, ChatType type, String name, List<UserSummaryResponse> members) {
+public record ChatResponse(Long id, ChatType type, String name, List<UserSummaryResponse> members, boolean canSend) {
 }
