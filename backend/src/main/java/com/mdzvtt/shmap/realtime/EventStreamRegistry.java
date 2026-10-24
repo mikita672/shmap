@@ -73,6 +73,22 @@ public class EventStreamRegistry {
         });
     }
 
+    public void send(Set<Integer> userIds, String eventName, Object data) {
+        for (Integer userId : userIds) {
+            Set<EventStream> userStreams = streams.get(userId);
+            if (userStreams == null) {
+                continue;
+            }
+            for (EventStream stream : userStreams) {
+                try {
+                    stream.emitter().send(SseEmitter.event().name(eventName).data(data));
+                } catch (IOException | IllegalStateException e) {
+                    remove(userId, stream);
+                }
+            }
+        }
+    }
+
     @EventListener(ContextClosedEvent.class)
     void closeAll() {
         streams.values().forEach(userStreams -> userStreams.forEach(stream -> stream.emitter().complete()));

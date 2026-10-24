@@ -13,6 +13,7 @@ import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public ChatResponse openDirect(Integer userId, Integer otherUserId) {
@@ -127,7 +129,10 @@ public class ChatService {
         Chat chat = findChat(userId, chatId);
         User sender = userRepository.getReferenceById(userId);
         ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
-        return toMessageResponse(message);
+        ChatMessageResponse response = toMessageResponse(message);
+        eventPublisher
+                .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));
+        return response;
     }
 
     private Chat findChat(Integer userId, Long chatId) {
