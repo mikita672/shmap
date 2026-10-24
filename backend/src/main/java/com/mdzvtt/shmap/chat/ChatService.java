@@ -13,6 +13,7 @@ import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public ChatResponse openDirect(Integer userId, Integer otherUserId) {
@@ -68,6 +70,9 @@ public class ChatService {
             members.add(new ChatMember(chat, other));
         }
         chatMemberRepository.saveAll(members);
+        Set<Integer> recipientIds = new LinkedHashSet<>(otherIds);
+        recipientIds.add(userId);
+        eventPublisher.publishEvent(new ChatChanged(chat.getId(), recipientIds));
 
         return toResponse(chat, userId);
     }
@@ -84,6 +89,7 @@ public class ChatService {
                 .map(user -> new ChatMember(chat, user))
                 .toList();
         chatMemberRepository.saveAll(newMembers);
+        eventPublisher.publishEvent(new ChatChanged(chatId, chatMemberRepository.findUserIdsByChatId(chatId)));
 
         return toResponse(chat, userId);
     }
@@ -96,6 +102,8 @@ public class ChatService {
 
         if (!chatMemberRepository.existsByChatId(chatId)) {
             chatRepository.delete(chat);
+        } else {
+            eventPublisher.publishEvent(new ChatChanged(chatId, chatMemberRepository.findUserIdsByChatId(chatId)));
         }
     }
 
@@ -127,7 +135,10 @@ public class ChatService {
         Chat chat = findChat(userId, chatId);
         User sender = userRepository.getReferenceById(userId);
         ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
-        return toMessageResponse(message);
+        ChatMessageResponse response = toMessageResponse(message);
+        eventPublisher
+                .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));
+        return response;
     }
 
     private Chat findChat(Integer userId, Long chatId) {

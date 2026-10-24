@@ -9,10 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mdzvtt.shmap.configuration.JwtService;
-import com.mdzvtt.shmap.token.Token;
-import com.mdzvtt.shmap.token.TokenRepository;
-import com.mdzvtt.shmap.token.TokenType;
 import com.mdzvtt.shmap.user.Role;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.User;
@@ -31,20 +27,18 @@ public class GoogleAuthService {
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
-    private final TokenRepository tokenRepository;
-    private final JwtService jwtService;
+    private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.google.client-id:}")
     private String googleClientId;
 
     public GoogleAuthService(OkHttpClient httpClient, ObjectMapper objectMapper, UserRepository userRepository,
-            TokenRepository tokenRepository, JwtService jwtService, PasswordEncoder passwordEncoder) {
+            AuthenticationService authenticationService, PasswordEncoder passwordEncoder) {
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
         this.userRepository = userRepository;
-        this.tokenRepository = tokenRepository;
-        this.jwtService = jwtService;
+        this.authenticationService = authenticationService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -98,16 +92,7 @@ public class GoogleAuthService {
                 return userRepository.save(newUser);
             });
 
-            var jwtToken = jwtService.generateToken(user);
-            var refreshToken = jwtService.generateRefreshToken(user);
-
-            revokeAllUserTokens(user);
-            saveUserToken(user, refreshToken, TokenType.REFRESH);
-
-            return AuthenticationResponse.builder()
-                    .accessToken(jwtToken)
-                    .refreshToken(refreshToken)
-                    .build();
+            return authenticationService.issueTokens(user);
         }
     }
 
@@ -133,32 +118,5 @@ public class GoogleAuthService {
         }
 
         return base.substring(0, Math.min(base.length(), MAX_USERNAME_LENGTH));
-    }
-
-    private void saveUserToken(User user, String jwtToken, TokenType tokenType) {
-        var token = Token.builder()
-                .user(user)
-                .token(jwtToken)
-                .tokenType(tokenType)
-                .expired(false)
-                .revoked(false)
-                .build();
-
-        tokenRepository.save(token);
-    }
-
-    private void revokeAllUserTokens(User user) {
-        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
-
-        if (validUserTokens.isEmpty()) {
-            return;
-        }
-
-        validUserTokens.forEach(token -> {
-            token.setExpired(true);
-            token.setRevoked(true);
-        });
-
-        tokenRepository.saveAll(validUserTokens);
     }
 }

@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.configuration;
 
 import com.mdzvtt.shmap.token.TokenRepository;
+import com.mdzvtt.shmap.token.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class LogoutService implements LogoutHandler {
 
     private final TokenRepository tokenRepository;
+    private final TokenService tokenService;
 
     @Override
     public void logout(
@@ -28,14 +30,7 @@ public class LogoutService implements LogoutHandler {
         var storedToken = tokenRepository.findByToken(jwt).orElse(null);
 
         if (storedToken != null) {
-            var validUserTokens = tokenRepository.findAllValidTokenByUser(storedToken.getUser().getId());
-            if (!validUserTokens.isEmpty()) {
-                validUserTokens.forEach(t -> {
-                    t.setExpired(true);
-                    t.setRevoked(true);
-                });
-                tokenRepository.saveAll(validUserTokens);
-            }
+            tokenService.revokeAllUserTokens(storedToken.getUser().getId());
         }
     }
 }

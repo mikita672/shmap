@@ -3,6 +3,7 @@ package com.mdzvtt.shmap.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mdzvtt.shmap.exception.ApiErrorResponse;
 import com.mdzvtt.shmap.exception.ErrorCode;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +35,8 @@ public class SecurityConfig {
                 http
                                 .csrf(csrf -> csrf.disable())
                                 .authorizeHttpRequests(auth -> auth
+                                                .dispatcherTypeMatchers(DispatcherType.ASYNC)
+                                                .permitAll()
                                                 .requestMatchers(
                                                                 "/api/v1/auth/**",
                                                                 "/swagger-ui/**",
