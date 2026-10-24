@@ -29,7 +29,7 @@ The project is in early development. Accounts, profiles, friends and the map wor
 - Get "People you may know" suggestions: friends of your friends, ranked by mutual friends. You can dismiss any suggestion.
 - See your recent friend activity: who accepted your requests and whose requests you accepted.
 - Mute friends and block users. Blocking removes the friendship, its activity and any pending requests, and the two users stop seeing each other in search and on profiles.
-- Chat one-on-one or in groups through the API: open a chat with anyone, create a group, add people, leave, send text messages, page back through the history, and list your chats with their last message. Open `GET /api/v1/events` to get new messages and chat changes live, without polling. The app screens come later.
+- Chat one-on-one or in groups with your friends through the API: open a chat with a friend, create a group, add friends directly without an invite step, leave, send text messages, page back through the history, and list your chats with their last message. After an unfriend or a block, the 1:1 chat stays readable but takes no new messages, and groups don't change. Open `GET /api/v1/events` to get new messages and chat changes live, without polling. The app screens come later.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
 - Use the Settings screen to pick a light, dark or system theme, change your password, and log out.
 
@@ -196,12 +196,12 @@ data:{"chatId":12}
 :
 ```
 
-| Event          | When                                                         | What the app does                                                               |
-| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| `ready`        | The stream is registered                                     | Reloads the chats list and the open chat's newest page over REST                |
-| `chat.message` | Someone sent a message, to every member including the sender | Appends the message, skipping ids it already has, and moves the chat to the top |
-| `chat.changed` | A group was created, people were added, or someone left      | Reloads the chats list or the chat's details over REST                          |
-| `:` (comment)  | Every 20 seconds                                             | Nothing. It keeps quiet connections open and detects dead clients               |
+| Event          | When                                                                                                             | What the app does                                                               |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `ready`        | The stream is registered                                                                                         | Reloads the chats list and the open chat's newest page over REST                |
+| `chat.message` | Someone sent a message, to every member including the sender                                                     | Appends the message, skipping ids it already has, and moves the chat to the top |
+| `chat.changed` | A group was created, people were added, someone left, or the two people in a 1:1 became or stopped being friends | Reloads the chats list or the chat's details over REST                          |
+| `:` (comment)  | Every 20 seconds                                                                                                 | Nothing. It keeps quiet connections open and detects dead clients               |
 
 The stream ends when any of these happens, and the app reconnects with a backoff, refreshes its token on a 401 and reloads after `ready`:
 
