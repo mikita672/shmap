@@ -1,6 +1,8 @@
 package com.mdzvtt.shmap.realtime;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -69,6 +71,11 @@ public class EventStreamRegistry {
                 }
             }
         });
+    }
+
+    @EventListener(ContextClosedEvent.class)
+    void closeAll() {
+        streams.values().forEach(userStreams -> userStreams.forEach(stream -> stream.emitter().complete()));
     }
 
     private EventStream register(Integer userId, EventStream stream) {
