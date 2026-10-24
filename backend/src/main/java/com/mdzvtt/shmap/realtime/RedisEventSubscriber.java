@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 @Component
 @RequiredArgsConstructor
 public class RedisEventSubscriber implements MessageListener, SubscriptionListener {
+    private static final String SIGNED_OUT = "user.signed-out";
+
     private final EventStreamRegistry registry;
     private final JsonMapper jsonMapper;
 
@@ -22,7 +24,11 @@ public class RedisEventSubscriber implements MessageListener, SubscriptionListen
         try {
             BusMessage busMessage = jsonMapper.readValue(
                     new String(message.getBody(), StandardCharsets.UTF_8), BusMessage.class);
-            registry.send(busMessage.userIds(), busMessage.type(), busMessage.data());
+            if (SIGNED_OUT.equals(busMessage.type())) {
+                busMessage.userIds().forEach(registry::closeRevokedStreams);
+            } else {
+                registry.send(busMessage.userIds(), busMessage.type(), busMessage.data());
+            }
         } catch (RuntimeException e) {
             log.warn("Could not handle a message from Redis", e);
         }

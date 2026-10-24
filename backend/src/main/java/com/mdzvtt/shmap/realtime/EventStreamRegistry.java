@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.mdzvtt.shmap.configuration.JwtService;
+import com.mdzvtt.shmap.token.TokenRepository;
 import io.jsonwebtoken.Claims;
 
 import java.io.IOException;
@@ -24,11 +25,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class EventStreamRegistry {
     private final RealtimeProperties properties;
     private final JwtService jwtService;
+    private final TokenRepository tokenRepository;
     private final Map<Integer, Set<EventStream>> streams = new ConcurrentHashMap<>();
 
-    public EventStreamRegistry(RealtimeProperties properties, JwtService jwtService) {
+    public EventStreamRegistry(RealtimeProperties properties, JwtService jwtService,
+            TokenRepository tokenRepository) {
         this.properties = properties;
         this.jwtService = jwtService;
+        this.tokenRepository = tokenRepository;
     }
 
     public SseEmitter open(Integer userId, String token) {
@@ -89,6 +93,19 @@ public class EventStreamRegistry {
         }
     }
 
+    void closeRevokedStreams(Integer userId) {
+        Set<EventStream> userStreams = streams.get(userId);
+        if (userStreams == null) {
+            return;
+        }
+        for (EventStream stream : userStreams) {
+            if (!isTokenActive(stream.token())) {
+                remove(userId, stream);
+                stream.emitter().complete();
+            }
+        }
+    }
+
     @EventListener(ContextClosedEvent.class)
     void closeAll() {
         closeAllStreams();
@@ -122,6 +139,12 @@ public class EventStreamRegistry {
         if (removed.get()) {
             log.info("Stream closed for user {} ({} open on this instance)", userId, openCount());
         }
+    }
+
+    private boolean isTokenActive(String token) {
+        return tokenRepository.findByToken(token)
+                .map(stored -> !stored.isExpired() && !stored.isRevoked())
+                .orElse(false);
     }
 
     private Duration timeoutFor(String token) {
