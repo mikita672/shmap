@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.chat;
 
+import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
@@ -35,6 +36,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final UserBlockRepository userBlockRepository;
     private final StorageService storageService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -47,6 +49,10 @@ public class ChatService {
         userRepository.findAllByIdForUpdate(List.of(userId, otherUserId));
 
         User other = userRepository.findById(otherUserId).orElseThrow(UserNotFoundException::new);
+
+        if (userBlockRepository.existsBetween(userId, otherUserId)) {
+            throw new UserNotFoundException();
+        }
 
         Chat chat = chatRepository
                 .findByDirectUserLowIdAndDirectUserHighId(Math.min(userId, otherUserId),
