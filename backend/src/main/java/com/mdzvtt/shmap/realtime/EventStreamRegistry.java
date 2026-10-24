@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.realtime;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -37,6 +38,19 @@ public class EventStreamRegistry {
             emitter.completeWithError(e);
         }
         return emitter;
+    }
+
+    @Scheduled(fixedDelayString = "${app.realtime.heartbeat-interval}")
+    void sendHeartbeats() {
+        streams.forEach((userId, emitters) -> {
+            for (SseEmitter emitter : emitters) {
+                try {
+                    emitter.send(SseEmitter.event().comment(""));
+                } catch (IOException | IllegalStateException e) {
+                    remove(userId, emitter);
+                }
+            }
+        });
     }
 
     private void remove(Integer userId, SseEmitter emitter) {

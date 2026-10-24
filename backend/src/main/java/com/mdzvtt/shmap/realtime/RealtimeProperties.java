@@ -8,5 +8,7 @@ import java.time.Duration;
 
 @Validated
 @ConfigurationProperties("app.realtime")
-public record RealtimeProperties(@NotNull Duration streamTimeout) {
+public record RealtimeProperties(
+        @NotNull Duration streamTimeout,
+        @NotNull Duration heartbeatInterval) {
 }
