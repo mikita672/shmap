@@ -95,7 +95,10 @@ public class ChatService {
         Set<Integer> newIds = new LinkedHashSet<>(userIds);
         newIds.removeAll(chatMemberRepository.findUserIdsByChatId(chatId));
 
-        List<ChatMember> newMembers = findUsers(newIds).stream()
+        List<User> newUsers = findUsers(newIds);
+        requireFriends(userId, newIds);
+
+        List<ChatMember> newMembers = newUsers.stream()
                 .map(user -> new ChatMember(chat, user))
                 .toList();
         chatMemberRepository.saveAll(newMembers);
