@@ -5,9 +5,11 @@ import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
+import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.NotGroupChatException;
 import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.friend.FriendshipRepository;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -32,6 +34,7 @@ public class ChatService {
     private final ChatMemberRepository chatMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
     private final StorageService storageService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -48,7 +51,7 @@ public class ChatService {
         Chat chat = chatRepository
                 .findByDirectUserLowIdAndDirectUserHighId(Math.min(userId, otherUserId),
                         Math.max(userId, otherUserId))
-                .orElseGet(() -> createDirect(userRepository.getReferenceById(userId), other));
+                .orElseGet(() -> startDirect(userId, other));
 
         return toResponse(chat, userId);
     }
@@ -163,6 +166,13 @@ public class ChatService {
             throw new UserNotFoundException();
         }
         return users;
+    }
+
+    private Chat startDirect(Integer userId, User other) {
+        if (!friendshipRepository.existsByUserIdAndFriendId(userId, other.getId())) {
+            throw new NotFriendsException();
+        }
+        return createDirect(userRepository.getReferenceById(userId), other);
     }
 
     private Chat createDirect(User user, User other) {
