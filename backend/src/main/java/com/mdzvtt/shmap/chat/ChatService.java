@@ -70,6 +70,9 @@ public class ChatService {
             members.add(new ChatMember(chat, other));
         }
         chatMemberRepository.saveAll(members);
+        Set<Integer> recipientIds = new LinkedHashSet<>(otherIds);
+        recipientIds.add(userId);
+        eventPublisher.publishEvent(new ChatChanged(chat.getId(), recipientIds));
 
         return toResponse(chat, userId);
     }
@@ -86,6 +89,7 @@ public class ChatService {
                 .map(user -> new ChatMember(chat, user))
                 .toList();
         chatMemberRepository.saveAll(newMembers);
+        eventPublisher.publishEvent(new ChatChanged(chatId, chatMemberRepository.findUserIdsByChatId(chatId)));
 
         return toResponse(chat, userId);
     }
@@ -98,6 +102,8 @@ public class ChatService {
 
         if (!chatMemberRepository.existsByChatId(chatId)) {
             chatRepository.delete(chat);
+        } else {
+            eventPublisher.publishEvent(new ChatChanged(chatId, chatMemberRepository.findUserIdsByChatId(chatId)));
         }
     }
 
