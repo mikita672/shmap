@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.token;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TokenService {
     private final TokenRepository tokenRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void revokeAllUserTokens(Integer userId) {
@@ -23,5 +25,6 @@ public class TokenService {
         });
 
         tokenRepository.saveAll(validUserTokens);
+        eventPublisher.publishEvent(new UserTokensRevoked(userId));
     }
 }
