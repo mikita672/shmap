@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.friend.FriendshipEnded;
+import com.mdzvtt.shmap.friend.FriendshipStarted;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -13,6 +14,11 @@ import java.util.Set;
 public class FriendshipListener {
     private final ChatRepository chatRepository;
     private final ApplicationEventPublisher eventPublisher;
+
+    @EventListener
+    public void onFriendshipStarted(FriendshipStarted event) {
+        announceDirectChat(event.userId(), event.otherUserId());
+    }
 
     @EventListener
     public void onFriendshipEnded(FriendshipEnded event) {
