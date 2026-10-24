@@ -5,7 +5,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.mdzvtt.shmap.configuration.JwtService;
+import io.jsonwebtoken.Claims;
+
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,17 +21,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class EventStreamRegistry {
     private final RealtimeProperties properties;
-    private final Map<Integer, Set<SseEmitter>> streams = new ConcurrentHashMap<>();
+    private final JwtService jwtService;
+    private final Map<Integer, Set<EventStream>> streams = new ConcurrentHashMap<>();
 
-    public EventStreamRegistry(RealtimeProperties properties) {
+    public EventStreamRegistry(RealtimeProperties properties, JwtService jwtService) {
         this.properties = properties;
+        this.jwtService = jwtService;
     }
 
-    public SseEmitter open(Integer userId) {
-        SseEmitter emitter = new SseEmitter(properties.streamTimeout().toMillis());
-        SseEmitter oldest = register(userId, emitter);
+    public SseEmitter open(Integer userId, String token) {
+        SseEmitter emitter = new SseEmitter(timeoutFor(token).toMillis());
+        EventStream stream = new EventStream(emitter, token);
+        EventStream oldest = register(userId, stream);
 
-        Runnable remove = () -> remove(userId, emitter);
+        Runnable remove = () -> remove(userId, stream);
         emitter.onCompletion(remove);
         emitter.onTimeout(() -> {
             remove.run();
@@ -38,7 +46,7 @@ public class EventStreamRegistry {
 
         if (oldest != null) {
             remove(userId, oldest);
-            oldest.complete();
+            oldest.emitter().complete();
         }
 
         try {
@@ -53,21 +61,21 @@ public class EventStreamRegistry {
     @Scheduled(fixedDelayString = "${app.realtime.heartbeat-interval}")
     void sendHeartbeats() {
         streams.forEach((userId, emitters) -> {
-            for (SseEmitter emitter : emitters) {
+            for (EventStream stream : emitters) {
                 try {
-                    emitter.send(SseEmitter.event().comment(""));
+                    stream.emitter().send(SseEmitter.event().comment(""));
                 } catch (IOException | IllegalStateException e) {
-                    remove(userId, emitter);
+                    remove(userId, stream);
                 }
             }
         });
     }
 
-    private SseEmitter register(Integer userId, SseEmitter emitter) {
-        SseEmitter[] evicted = new SseEmitter[1];
+    private EventStream register(Integer userId, EventStream stream) {
+        EventStream[] evicted = new EventStream[1];
         streams.compute(userId, (id, emitters) -> {
-            Set<SseEmitter> userStreams = emitters == null ? new CopyOnWriteArraySet<>() : emitters;
-            userStreams.add(emitter);
+            Set<EventStream> userStreams = emitters == null ? new CopyOnWriteArraySet<>() : emitters;
+            userStreams.add(stream);
             if (userStreams.size() > properties.maxStreamsPerUser()) {
                 evicted[0] = userStreams.iterator().next();
             }
@@ -76,15 +84,23 @@ public class EventStreamRegistry {
         return evicted[0];
     }
 
-    private void remove(Integer userId, SseEmitter emitter) {
+    private void remove(Integer userId, EventStream stream) {
         AtomicBoolean removed = new AtomicBoolean();
         streams.computeIfPresent(userId, (id, emitters) -> {
-            removed.set(emitters.remove(emitter));
+            removed.set(emitters.remove(stream));
             return emitters.isEmpty() ? null : emitters;
         });
         if (removed.get()) {
             log.info("Stream closed for user {} ({} open on this instance)", userId, openCount());
         }
+    }
+
+    private Duration timeoutFor(String token) {
+        Instant expiresAt = jwtService.extractClaim(token, Claims::getExpiration).toInstant();
+        Duration untilExpiry = Duration.between(Instant.now(), expiresAt);
+        Duration timeout = untilExpiry.compareTo(properties.streamTimeout()) < 0 ? untilExpiry
+                : properties.streamTimeout();
+        return timeout.isPositive() ? timeout : Duration.ofMillis(1);
     }
 
     private int openCount() {
