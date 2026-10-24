@@ -12,14 +12,19 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class ChatEventRelay {
     private final EventStreamRegistry registry;
+    private final RedisEventBus bus;
 
     @TransactionalEventListener
     public void onMessageSent(ChatMessageSent event) {
-        registry.send(event.recipientIds(), "chat.message", new ChatMessagePayload(event.chatId(), event.message()));
+        ChatMessagePayload payload = new ChatMessagePayload(event.chatId(), event.message());
+        registry.send(event.recipientIds(), "chat.message", payload);
+        bus.publish("chat.message", event.recipientIds(), payload);
     }
 
     @TransactionalEventListener
     public void onChatChanged(ChatChanged event) {
-        registry.send(event.recipientIds(), "chat.changed", new ChatChangedPayload(event.chatId()));
+        ChatChangedPayload payload = new ChatChangedPayload(event.chatId());
+        registry.send(event.recipientIds(), "chat.changed", payload);
+        bus.publish("chat.changed", event.recipientIds(), payload);
     }
 }

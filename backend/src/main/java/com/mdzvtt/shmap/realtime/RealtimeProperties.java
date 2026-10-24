@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.realtime;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,5 +13,6 @@ import java.time.Duration;
 public record RealtimeProperties(
         @NotNull Duration streamTimeout,
         @NotNull Duration heartbeatInterval,
-        @Positive int maxStreamsPerUser) {
+        @Positive int maxStreamsPerUser,
+        @NotBlank String channel) {
 }
