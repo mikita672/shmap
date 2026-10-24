@@ -20,6 +20,10 @@ spring:
         format_sql: true
     database: PostgreSQL
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      url: ${REDIS_URL}
+      timeout: 2s
 application:
   security:
     jwt:
