@@ -71,6 +71,7 @@ public class ChatService {
         }
 
         List<User> others = findUsers(otherIds);
+        requireFriends(userId, otherIds);
 
         Chat chat = chatRepository.save(Chat.group(name));
         List<ChatMember> members = new ArrayList<>();
@@ -180,6 +181,12 @@ public class ChatService {
             throw new UserNotFoundException();
         }
         return users;
+    }
+
+    private void requireFriends(Integer userId, Set<Integer> ids) {
+        if (!friendshipRepository.findFriendIdsAmong(userId, ids).containsAll(ids)) {
+            throw new NotFriendsException("You can only add friends to a group");
+        }
     }
 
     private Chat startDirect(Integer userId, User other) {
