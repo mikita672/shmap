@@ -13,6 +13,7 @@ import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.token.Token;
 import com.mdzvtt.shmap.token.TokenType;
 import com.mdzvtt.shmap.token.TokenRepository;
+import com.mdzvtt.shmap.token.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
     private final UserRepository repository;
     private final TokenRepository tokenRepository;
+    private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -79,7 +81,7 @@ public class AuthenticationService {
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 
-        revokeAllUserTokens(user);
+        tokenService.revokeAllUserTokens(user.getId());
         saveUserToken(user, jwtToken, TokenType.BEARER);
         saveUserToken(user, refreshToken, TokenType.REFRESH);
 
@@ -96,21 +98,6 @@ public class AuthenticationService {
                 .build();
 
         tokenRepository.save(token);
-    }
-
-    private void revokeAllUserTokens(User user) {
-        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
-
-        if (validUserTokens.isEmpty()) {
-            return;
-        }
-
-        validUserTokens.forEach(token -> {
-            token.setExpired(true);
-            token.setRevoked(true);
-        });
-
-        tokenRepository.saveAll(validUserTokens);
     }
 
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -169,7 +156,8 @@ public class AuthenticationService {
         }
     }
 
-    private void writeErrorResponse(HttpServletResponse response, String path, int status, ErrorCode code, String message) throws IOException {
+    private void writeErrorResponse(HttpServletResponse response, String path, int status, ErrorCode code,
+            String message) throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         ApiErrorResponse errorResponse = ApiErrorResponse.builder()
