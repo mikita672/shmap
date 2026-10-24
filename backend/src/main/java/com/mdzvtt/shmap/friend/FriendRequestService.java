@@ -100,6 +100,9 @@ public class FriendRequestService {
 
     @Transactional
     public void accept(Integer userId, Long requestId) {
+        Integer senderId = findIncomingRequest(userId, requestId).getSender().getId();
+        userRepository.findAllByIdForUpdate(List.of(senderId, userId));
+
         FriendRequest request = findIncomingRequest(userId, requestId);
         becomeFriends(request.getSender(), request.getReceiver());
     }
