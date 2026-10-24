@@ -33,6 +33,7 @@ app:
   realtime:
     stream-timeout: 55m
     heartbeat-interval: 20s
+    max-streams-per-user: 5
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
 storage:
