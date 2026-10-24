@@ -91,7 +91,13 @@ public class EventStreamRegistry {
 
     @EventListener(ContextClosedEvent.class)
     void closeAll() {
+        closeAllStreams();
+    }
+
+    int closeAllStreams() {
+        int count = openCount();
         streams.values().forEach(userStreams -> userStreams.forEach(stream -> stream.emitter().complete()));
+        return count;
     }
 
     private EventStream register(Integer userId, EventStream stream) {
