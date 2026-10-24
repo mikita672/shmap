@@ -136,6 +136,9 @@ public class ChatService {
     @Transactional
     public ChatMessageResponse send(Integer userId, Long chatId, String text) {
         Chat chat = findChat(userId, chatId);
+        if (!canSend(chat, userId)) {
+            throw new NotFriendsException("You can only message friends");
+        }
         User sender = userRepository.getReferenceById(userId);
         ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
         ChatMessageResponse response = toMessageResponse(message);
@@ -146,6 +149,11 @@ public class ChatService {
 
     private Chat findChat(Integer userId, Long chatId) {
         return chatRepository.findForMember(chatId, userId).orElseThrow(ChatNotFoundException::new);
+    }
+
+    private boolean canSend(Chat chat, Integer userId) {
+        return chat.getType() == ChatType.GROUP
+                || friendshipRepository.existsByUserIdAndFriendId(userId, chat.otherUserId(userId));
     }
 
     private void lockChat(Long chatId) {
