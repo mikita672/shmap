@@ -36,9 +36,11 @@ export function refreshAccessToken(): Promise<string> {
   }
 
   refreshPromise = (async () => {
+    let noRefreshToken = false;
     try {
       const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
       if (!refreshToken) {
+        noRefreshToken = true;
         throw new Error("No refresh token available");
       }
 
@@ -53,9 +55,15 @@ export function refreshAccessToken(): Promise<string> {
 
       return data.access_token;
     } catch (error) {
-      await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-      onSessionClear?.();
+      const isAuthRejection =
+        axios.isAxiosError(error) &&
+        (error.response?.status === 401 || error.response?.status === 403);
+
+      if (noRefreshToken || isAuthRejection) {
+        await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
+        await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+        onSessionClear?.();
+      }
       throw error;
     } finally {
       refreshPromise = null;
