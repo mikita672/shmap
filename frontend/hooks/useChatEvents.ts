@@ -24,6 +24,7 @@ export function useChatEvents() {
     let watchdogTimer: ReturnType<typeof setTimeout> | null = null;
     let controller: AbortController | null = null;
     let isWatchdogDrop = false;
+    let tokenJustRefreshed = false;
 
     function clearWatchdog() {
       if (watchdogTimer) {
@@ -84,6 +85,7 @@ export function useChatEvents() {
           onEvent: (event) => {
             resetWatchdog(currentController);
             if (event.event === "ready") {
+              tokenJustRefreshed = false;
               retryDelay = 1000;
               void queryClient.invalidateQueries({
                 queryKey: ["chats"],
@@ -150,9 +152,12 @@ export function useChatEvents() {
               scheduleRetry(0);
               return;
             }
-            await refreshAccessToken();
-            scheduleRetry(0);
-            return;
+            if (!tokenJustRefreshed) {
+              await refreshAccessToken();
+              tokenJustRefreshed = true;
+              scheduleRetry(0);
+              return;
+            }
           } catch {}
         }
 
@@ -164,6 +169,7 @@ export function useChatEvents() {
 
     function disconnect() {
       isActive = false;
+      tokenJustRefreshed = false;
       if (retryTimer) {
         clearTimeout(retryTimer);
         retryTimer = null;
@@ -182,6 +188,7 @@ export function useChatEvents() {
       (status: AppStateStatus) => {
         if (status === "active") {
           isActive = true;
+          tokenJustRefreshed = false;
           retryDelay = 1000;
           void connect();
         } else {
