@@ -1,0 +1,34 @@
+import { apiClient } from "./client";
+import type {
+  ChatMessageResponse,
+  ChatResponse,
+  ChatSummaryResponse,
+  CreateGroupChatRequest,
+} from "@/lib/types/api";
+
+export const getChats = () =>
+  apiClient.get<ChatSummaryResponse[]>("/api/v1/chats");
+
+export const getChat = (chatId: number) =>
+  apiClient.get<ChatResponse>(`/api/v1/chats/${chatId}`);
+
+export const getChatMessages = (chatId: number, before?: number) =>
+  apiClient.get<ChatMessageResponse[]>(`/api/v1/chats/${chatId}/messages`, {
+    params: { before },
+  });
+
+export const sendChatMessage = (chatId: number, text: string) =>
+  apiClient.post<ChatMessageResponse>(`/api/v1/chats/${chatId}/messages`, {
+    text,
+  });
+
+export const createGroupChat = (data: CreateGroupChatRequest) =>
+  apiClient.post<ChatResponse>("/api/v1/chats/groups", data);
+
+export const addChatMembers = (chatId: number, userIds: number[]) =>
+  apiClient.post<ChatResponse>(`/api/v1/chats/${chatId}/members`, {
+    userIds,
+  });
+
+export const leaveChat = (chatId: number) =>
+  apiClient.delete<void>(`/api/v1/chats/${chatId}/members/me`);
