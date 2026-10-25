@@ -8,6 +8,7 @@ import { GroupAvatar } from "@/components/ui/group-avatar";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { TitleHeader } from "@/components/ui/title-header";
+import { useCreateGroup } from "@/hooks/useChatMutations";
 import { useFriends } from "@/hooks/useFriends";
 import { useProfile } from "@/hooks/useProfile";
 import { KeyboardAvoidingView } from "@/lib/keyboard";
@@ -16,6 +17,7 @@ export default function NewGroupDetailsScreen() {
   const insets = useSafeAreaInsets();
   const { memberIds } = useLocalSearchParams<{ memberIds?: string }>();
   const [groupName, setGroupName] = useState("");
+  const createGroup = useCreateGroup();
 
   const { data: me } = useProfile();
   const { data: friends } = useFriends();
@@ -40,6 +42,17 @@ export default function NewGroupDetailsScreen() {
       avatarUrl: friend.user.avatarUrl,
     })),
   ];
+
+  const handleCreate = () => {
+    const trimmed = groupName.trim();
+    if (trimmed.length === 0 || createGroup.isPending) {
+      return;
+    }
+    createGroup.mutate({
+      name: trimmed,
+      memberIds: pickedMemberIds,
+    });
+  };
 
   return (
     <KeyboardAvoidingView
@@ -66,6 +79,8 @@ export default function NewGroupDetailsScreen() {
               maxLength={50}
               value={groupName}
               onChangeText={setGroupName}
+              returnKeyType="done"
+              onSubmitEditing={handleCreate}
             />
 
             <Text
@@ -87,8 +102,14 @@ export default function NewGroupDetailsScreen() {
       />
 
       <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom + 24 }}>
-        <Button size="xl" disabled={groupName.trim().length === 0}>
-          <Text className="text-2xl">Create group</Text>
+        <Button
+          size="xl"
+          disabled={groupName.trim().length === 0 || createGroup.isPending}
+          onPress={handleCreate}
+        >
+          <Text className="text-2xl">
+            {createGroup.isPending ? "Creating…" : "Create group"}
+          </Text>
         </Button>
       </View>
     </KeyboardAvoidingView>
