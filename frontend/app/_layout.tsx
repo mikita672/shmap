@@ -57,6 +57,7 @@ function RootNavigator() {
             <Stack.Screen name="change-password" />
             <Stack.Screen name="chat/[chatId]/index" />
             <Stack.Screen name="chat/[chatId]/info" />
+            <Stack.Screen name="chat/[chatId]/add-members" />
             <Stack.Screen name="new-group/index" />
             <Stack.Screen name="new-group/details" />
             <Stack.Screen

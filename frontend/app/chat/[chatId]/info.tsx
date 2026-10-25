@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PickerRow } from "@/components/chats/picker-row";
 import { BackButton } from "@/components/ui/back-button";
@@ -110,10 +110,15 @@ export default function GroupInfoScreen() {
             </Text>
 
             <Pressable
-              disabled
               accessibilityRole="button"
               accessibilityLabel="Add friends"
-              className="mb-2 h-16 flex-row items-center gap-3 rounded-full bg-action pl-2 pr-5 opacity-50"
+              className="mb-2 h-16 flex-row items-center gap-3 rounded-full bg-action pl-2 pr-5 active:opacity-80"
+              onPress={() =>
+                router.push({
+                  pathname: "/chat/[chatId]/add-members",
+                  params: { chatId: String(chatId) },
+                })
+              }
             >
               <View className="h-12 w-12 items-center justify-center rounded-full bg-avatar-surface">
                 <MaterialIcons

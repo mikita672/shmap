@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { toast } from "sonner-native";
-import { createGroupChat, leaveChat } from "@/lib/api/chats";
+import { addChatMembers, createGroupChat, leaveChat } from "@/lib/api/chats";
 import type { CreateGroupChatRequest } from "@/lib/types/api";
 import { getErrorMessage } from "@/lib/utils/error";
 
@@ -43,6 +43,30 @@ export function useLeaveChat() {
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't leave group"));
+    },
+  });
+}
+
+interface AddChatMembersVariables {
+  chatId: number;
+  userIds: number[];
+}
+
+export function useAddChatMembers() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ chatId, userIds }: AddChatMembersVariables) => {
+      const response = await addChatMembers(chatId, userIds);
+      return response.data;
+    },
+    onSuccess: async (chat) => {
+      queryClient.setQueryData(["chats", chat.id], chat);
+      await queryClient.refetchQueries({ queryKey: ["chats"], exact: true });
+      router.back();
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't add members"));
     },
   });
 }
