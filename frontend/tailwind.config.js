@@ -64,7 +64,11 @@ module.exports = {
         "tab-icon": "hsl(var(--tab-icon))",
         "tab-icon-active": "hsl(var(--tab-icon-active))",
         "app-bar": "hsl(var(--app-bar))",
-        "chat-list": "hsl(var(--chat-list))",
+        "chat-list": {
+          DEFAULT: "hsl(var(--chat-list))",
+          foreground: "hsl(var(--chat-list-foreground))",
+          divider: "hsl(var(--chat-list-divider))",
+        },
         searchbar: "hsl(var(--searchbar))",
         "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
         avatar: {
