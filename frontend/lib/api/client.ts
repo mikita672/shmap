@@ -76,9 +76,7 @@ apiClient.interceptors.response.use(
       originalRequest.url?.includes("/reset-password");
 
     const shouldAttemptRefresh =
-      (status === 401 || status === 403) &&
-      !originalRequest._retry &&
-      !isAuthEndpoint;
+      status === 401 && !originalRequest._retry && !isAuthEndpoint;
 
     if (!shouldAttemptRefresh) {
       return Promise.reject(error);
