@@ -1,4 +1,5 @@
 import { ActivityIndicator, FlatList, View } from "react-native";
+import { router } from "expo-router";
 import { ChatRow } from "@/components/chats/chat-row";
 import { ChatsEmpty } from "@/components/chats/chats-empty";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,12 @@ export function ChatsList({ searchQuery }: ChatsListProps) {
           isGroup={chat.type === "GROUP"}
           avatarUrl={chat.type === "DIRECT" ? chat.otherUser.avatarUrl : null}
           divider={index < matches.length - 1}
+          onPress={() =>
+            router.push({
+              pathname: "/chat/[chatId]",
+              params: { chatId: String(chat.id) },
+            })
+          }
         />
       )}
     />
