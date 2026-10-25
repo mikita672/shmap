@@ -58,7 +58,10 @@ export default function ChatScreen() {
               <Composer onSend={(text) => send.mutate(text)} />
             </KeyboardStickyView>
           ) : (
-            <ReadOnlyBar firstName={chat.members[0]?.firstName ?? ""} />
+            <ReadOnlyBar
+              firstName={chat.members[0]?.firstName ?? ""}
+              username={chat.members[0]?.username}
+            />
           )}
         </>
       )}
