@@ -1,19 +1,19 @@
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { DayChip } from "@/components/chats/day-chip";
-import { MessageBubble } from "@/components/chats/message-bubble";
+import { MessageRow } from "@/components/chats/message-row";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useProfile } from "@/hooks/useProfile";
 import { buildChatItems } from "@/lib/chat-items";
-import { formatMessageTime } from "@/lib/chat-time";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export interface MessageListProps {
   chatId: number;
+  isGroup: boolean;
 }
 
-export function MessageList({ chatId }: MessageListProps) {
+export function MessageList({ chatId, isGroup }: MessageListProps) {
   const { data, isPending, error, refetch, dataUpdatedAt } =
     useChatMessages(chatId);
   const { data: me } = useProfile();
@@ -51,19 +51,16 @@ export function MessageList({ chatId }: MessageListProps) {
         item.kind === "day" ? (
           <DayChip label={item.label} />
         ) : (
-          <MessageBubble
-            text={item.message.text}
-            time={formatMessageTime(item.message.createdAt)}
+          <MessageRow
+            message={item.message}
             isMine={item.message.sender.id === me?.id}
+            isGroup={isGroup}
+            isFirstInRun={item.isFirstInRun}
+            isLastInRun={item.isLastInRun}
           />
         )
       }
-      ItemSeparatorComponent={BubbleGap}
       contentContainerClassName="px-3 py-2"
     />
   );
-}
-
-function BubbleGap() {
-  return <View className="h-1" />;
 }

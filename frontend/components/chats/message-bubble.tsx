@@ -6,18 +6,27 @@ export interface MessageBubbleProps {
   text: string;
   time: string;
   isMine: boolean;
+  senderName?: string;
 }
 
-export function MessageBubble({ text, time, isMine }: MessageBubbleProps) {
+export function MessageBubble({
+  text,
+  time,
+  isMine,
+  senderName,
+}: MessageBubbleProps) {
   return (
     <View
       className={cn(
         "max-w-[288px] gap-0.5 rounded-[18px] px-3 pb-1.5 pt-2",
-        isMine
-          ? "self-end rounded-br-md bg-bubble-out"
-          : "self-start rounded-bl-md bg-bubble-in",
+        isMine ? "rounded-br-md bg-bubble-out" : "rounded-bl-md bg-bubble-in",
       )}
     >
+      {senderName ? (
+        <Text className="text-sm font-medium leading-5 text-bubble-sender">
+          {senderName}
+        </Text>
+      ) : null}
       <Text
         className={cn(
           "text-base leading-[22px]",

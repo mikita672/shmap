@@ -46,7 +46,7 @@ export default function ChatScreen() {
           )}
         </View>
       ) : (
-        <MessageList chatId={chat.id} />
+        <MessageList chatId={chat.id} isGroup={chat.type === "GROUP"} />
       )}
     </View>
   );
