@@ -2,8 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { toast } from "sonner-native";
 import { addChatMembers, createGroupChat, leaveChat } from "@/lib/api/chats";
-import type { CreateGroupChatRequest } from "@/lib/types/api";
-import { getErrorMessage } from "@/lib/utils/error";
+import { AuthErrorCode, type CreateGroupChatRequest } from "@/lib/types/api";
+import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
+import { chatQueryOptions } from "@/hooks/useChat";
+import { friendsQueryOptions } from "@/hooks/useFriends";
 
 export function useCreateGroup() {
   const queryClient = useQueryClient();
@@ -23,7 +25,17 @@ export function useCreateGroup() {
       });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, "Couldn't create group"));
+      const isNotFriends = isErrorCode(error, AuthErrorCode.NOT_FRIENDS);
+      if (isNotFriends) {
+        void queryClient.invalidateQueries({
+          queryKey: friendsQueryOptions.queryKey,
+        });
+      }
+      toast.error(
+        isNotFriends
+          ? getErrorMessage(error, "You can only add friends to a group")
+          : getErrorMessage(error, "Couldn't create group"),
+      );
     },
   });
 }
@@ -65,8 +77,22 @@ export function useAddChatMembers() {
       await queryClient.refetchQueries({ queryKey: ["chats"], exact: true });
       router.back();
     },
-    onError: (error) => {
-      toast.error(getErrorMessage(error, "Couldn't add members"));
+    onError: (error, { chatId }) => {
+      const isNotFriends = isErrorCode(error, AuthErrorCode.NOT_FRIENDS);
+      if (isNotFriends) {
+        void queryClient.invalidateQueries({
+          queryKey: friendsQueryOptions.queryKey,
+        });
+        void queryClient.invalidateQueries({
+          queryKey: chatQueryOptions(chatId).queryKey,
+          exact: true,
+        });
+      }
+      toast.error(
+        isNotFriends
+          ? getErrorMessage(error, "You can only add friends to a group")
+          : getErrorMessage(error, "Couldn't add members"),
+      );
     },
   });
 }
