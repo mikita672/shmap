@@ -12,6 +12,7 @@ import "../global.css";
 import { PortalHost } from "@rn-primitives/portal";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { Toaster } from "sonner-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
@@ -77,11 +78,13 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <AppThemeProvider>
-          <AuthProvider>
-            <RootNavigator />
-          </AuthProvider>
-        </AppThemeProvider>
+        <KeyboardProvider>
+          <AppThemeProvider>
+            <AuthProvider>
+              <RootNavigator />
+            </AuthProvider>
+          </AppThemeProvider>
+        </KeyboardProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

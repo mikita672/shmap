@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   View,
   type TextInput,
 } from "react-native";
+import { KeyboardAvoidingView } from "@/lib/keyboard";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";

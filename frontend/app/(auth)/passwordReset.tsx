@@ -3,12 +3,12 @@ import {
   ActivityIndicator,
   Text,
   View,
-  KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
   ScrollView,
 } from "react-native";
+import { KeyboardAvoidingView } from "@/lib/keyboard";
 import { router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 
