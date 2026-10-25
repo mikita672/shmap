@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
+import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FriendPicker } from "@/components/chats/friend-picker";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,16 @@ export default function NewGroupScreen() {
       <FriendPicker selectedIds={selectedIds} onToggle={handleToggle} />
 
       <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom + 24 }}>
-        <Button size="xl" disabled={selectedIds.size === 0}>
+        <Button
+          size="xl"
+          disabled={selectedIds.size === 0}
+          onPress={() =>
+            router.push({
+              pathname: "/new-group/details",
+              params: { memberIds: JSON.stringify(Array.from(selectedIds)) },
+            })
+          }
+        >
           <Text className="text-2xl">Next</Text>
         </Button>
       </View>
