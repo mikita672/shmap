@@ -2,9 +2,12 @@ import { ActivityIndicator, FlatList, View } from "react-native";
 import { ChatRow } from "@/components/chats/chat-row";
 import { ChatsEmpty } from "@/components/chats/chats-empty";
 import { Button } from "@/components/ui/button";
+import { RefreshControl } from "@/components/ui/refresh-control";
 import { Text } from "@/components/ui/text";
 import { useChats } from "@/hooks/useChats";
 import { useProfile } from "@/hooks/useProfile";
+import { useRefreshByUser } from "@/hooks/useRefreshByUser";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { getChatName, getChatPreview } from "@/lib/chat-preview";
 import { formatChatListTime } from "@/lib/chat-time";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -12,6 +15,8 @@ import { getErrorMessage } from "@/lib/utils/error";
 export function ChatsList() {
   const { data: chats, isPending, error, refetch, dataUpdatedAt } = useChats();
   const { data: me } = useProfile();
+  useRefreshOnFocus(refetch);
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
 
   if (isPending) {
     return (
@@ -42,6 +47,13 @@ export function ChatsList() {
     <FlatList
       data={chats}
       keyExtractor={(chat) => String(chat.id)}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetchingByUser}
+          onRefresh={refetchByUser}
+          className="bg-action text-secondary"
+        />
+      }
       renderItem={({ item: chat, index }) => (
         <ChatRow
           name={getChatName(chat)}
