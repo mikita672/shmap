@@ -1,9 +1,11 @@
 import { ActivityIndicator, FlatList, View } from "react-native";
+import { DayChip } from "@/components/chats/day-chip";
 import { MessageBubble } from "@/components/chats/message-bubble";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useProfile } from "@/hooks/useProfile";
+import { buildChatItems } from "@/lib/chat-items";
 import { formatMessageTime } from "@/lib/chat-time";
 import { getErrorMessage } from "@/lib/utils/error";
 
@@ -12,7 +14,8 @@ export interface MessageListProps {
 }
 
 export function MessageList({ chatId }: MessageListProps) {
-  const { data, isPending, error, refetch } = useChatMessages(chatId);
+  const { data, isPending, error, refetch, dataUpdatedAt } =
+    useChatMessages(chatId);
   const { data: me } = useProfile();
 
   if (isPending) {
@@ -36,21 +39,25 @@ export function MessageList({ chatId }: MessageListProps) {
     );
   }
 
-  const messages = data.pages.flat();
+  const items = buildChatItems(data.pages.flat(), dataUpdatedAt);
 
   return (
     <FlatList
       inverted
       showsVerticalScrollIndicator={false}
-      data={messages}
-      keyExtractor={(message) => String(message.id)}
-      renderItem={({ item: message }) => (
-        <MessageBubble
-          text={message.text}
-          time={formatMessageTime(message.createdAt)}
-          isMine={message.sender.id === me?.id}
-        />
-      )}
+      data={items}
+      keyExtractor={(item) => item.key}
+      renderItem={({ item }) =>
+        item.kind === "day" ? (
+          <DayChip label={item.label} />
+        ) : (
+          <MessageBubble
+            text={item.message.text}
+            time={formatMessageTime(item.message.createdAt)}
+            isMine={item.message.sender.id === me?.id}
+          />
+        )
+      }
       ItemSeparatorComponent={BubbleGap}
       contentContainerClassName="px-3 py-2"
     />

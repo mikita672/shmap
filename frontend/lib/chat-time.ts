@@ -42,3 +42,23 @@ export function formatChatListTime(isoDate: string, now: number) {
 export function formatMessageTime(isoDate: string) {
   return timeFormat.format(new Date(isoDate));
 }
+
+export function isSameDay(isoDate: string, otherIsoDate: string) {
+  return (
+    startOfDay(new Date(isoDate).getTime()) ===
+    startOfDay(new Date(otherIsoDate).getTime())
+  );
+}
+
+export function formatDayLabel(isoDate: string, now: number) {
+  const date = new Date(isoDate);
+  const daysAgo = calendarDaysAgo(date.getTime(), now);
+
+  if (daysAgo <= 0) return "Today";
+  if (daysAgo === 1) return "Yesterday";
+  if (daysAgo < 7) return weekdayFormat.format(date);
+  if (date.getFullYear() === new Date(now).getFullYear()) {
+    return dayMonthFormat.format(date);
+  }
+  return dayMonthYearFormat.format(date);
+}
