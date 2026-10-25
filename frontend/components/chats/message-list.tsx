@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   View,
   type ScrollViewProps,
 } from "react-native";
@@ -11,9 +12,9 @@ import { MessageBubble } from "@/components/chats/message-bubble";
 import { MessageRow } from "@/components/chats/message-row";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { useMutationState } from "@tanstack/react-query";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useProfile } from "@/hooks/useProfile";
+import { useOutgoingMessages } from "@/hooks/useSendMessage";
 import { buildChatItems } from "@/lib/chat-items";
 import { getErrorMessage } from "@/lib/utils/error";
 
@@ -34,13 +35,7 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
     fetchNextPage,
   } = useChatMessages(chatId);
   const { data: me } = useProfile();
-  const pending = useMutationState({
-    filters: { mutationKey: ["chats", chatId, "send"], status: "pending" },
-    select: (mutation) => ({
-      submittedAt: mutation.state.submittedAt,
-      text: String(mutation.state.variables),
-    }),
-  });
+  const { outgoing, retry } = useOutgoingMessages(chatId);
 
   if (isPending) {
     return (
@@ -63,7 +58,7 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
     );
   }
 
-  const items = buildChatItems(data.pages.flat(), dataUpdatedAt, pending);
+  const items = buildChatItems(data.pages.flat(), dataUpdatedAt, outgoing);
 
   return (
     <FlatList
@@ -75,10 +70,23 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
       renderItem={({ item }) =>
         item.kind === "day" ? (
           <DayChip label={item.label} />
-        ) : item.kind === "pending" ? (
-          <View className="flex-row justify-end pt-1">
-            <MessageBubble text={item.text} isMine isPending />
-          </View>
+        ) : item.kind === "outgoing" ? (
+          <Pressable
+            className="flex-row justify-end pt-1"
+            disabled={!item.message.failed}
+            accessibilityRole={item.message.failed ? "button" : undefined}
+            accessibilityHint={
+              item.message.failed ? "Sends the message again" : undefined
+            }
+            onPress={() => retry(item.message)}
+          >
+            <MessageBubble
+              text={item.message.text}
+              isMine
+              isPending={!item.message.failed}
+              isFailed={item.message.failed}
+            />
+          </Pressable>
         ) : (
           <MessageRow
             message={item.message}

@@ -10,11 +10,12 @@ export type ChatItem =
       isLastInRun: boolean;
     }
   | { kind: "day"; key: string; label: string }
-  | { kind: "pending"; key: string; text: string };
+  | { kind: "outgoing"; key: string; message: OutgoingMessage };
 
-export interface PendingMessage {
+export interface OutgoingMessage {
   submittedAt: number;
   text: string;
+  failed: boolean;
 }
 
 function isSameRun(a: ChatMessageResponse, b: ChatMessageResponse) {
@@ -24,14 +25,14 @@ function isSameRun(a: ChatMessageResponse, b: ChatMessageResponse) {
 export function buildChatItems(
   messages: ChatMessageResponse[],
   now: number,
-  pending: PendingMessage[] = [],
+  outgoing: OutgoingMessage[] = [],
 ): ChatItem[] {
-  const items: ChatItem[] = [...pending]
+  const items: ChatItem[] = [...outgoing]
     .sort((a, b) => b.submittedAt - a.submittedAt)
     .map((message) => ({
-      kind: "pending",
-      key: `pending-${message.submittedAt}`,
-      text: message.text,
+      kind: "outgoing",
+      key: `outgoing-${message.submittedAt}`,
+      message,
     }));
 
   messages.forEach((message, index) => {

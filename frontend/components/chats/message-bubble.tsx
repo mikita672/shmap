@@ -8,6 +8,7 @@ export interface MessageBubbleProps {
   time?: string;
   isMine: boolean;
   isPending?: boolean;
+  isFailed?: boolean;
   senderName?: string;
 }
 
@@ -16,6 +17,7 @@ export function MessageBubble({
   time,
   isMine,
   isPending = false,
+  isFailed = false,
   senderName,
 }: MessageBubbleProps) {
   return (
@@ -24,6 +26,7 @@ export function MessageBubble({
         "max-w-[288px] gap-0.5 rounded-[18px] px-3 pb-1.5 pt-2",
         isMine ? "rounded-br-md bg-bubble-out" : "rounded-bl-md bg-bubble-in",
         isPending && "opacity-60",
+        isFailed && "opacity-80",
       )}
     >
       {senderName ? (
@@ -39,7 +42,11 @@ export function MessageBubble({
       >
         {text}
       </Text>
-      {isPending ? (
+      {isFailed ? (
+        <Text className="self-end text-xs font-medium leading-4 text-bubble-out-foreground">
+          Not sent · Tap to retry
+        </Text>
+      ) : isPending ? (
         <MaterialIcons
           name="schedule"
           size={14}
