@@ -63,6 +63,7 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
   return (
     <FlatList
       inverted
+      maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
       showsVerticalScrollIndicator={false}
       renderScrollComponent={(props) => <ChatScrollView {...props} />}
       data={items}

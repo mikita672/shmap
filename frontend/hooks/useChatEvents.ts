@@ -1,11 +1,17 @@
 import { useEffect } from "react";
 import { AppState, type AppStateStatus } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { chatQueryOptions } from "@/hooks/useChat";
+import { chatsQueryOptions } from "@/hooks/useChats";
 import { getAccessToken, refreshAccessToken } from "@/lib/api/client";
+import { addMessageToCache } from "@/lib/chat-cache";
 import { EventStreamError, readEventStream } from "@/lib/api/events";
+import type { ChatMessageResponse } from "@/lib/types/api";
 
 export function useChatEvents() {
   const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -79,16 +85,46 @@ export function useChatEvents() {
             resetWatchdog(currentController);
             if (event.event === "ready") {
               retryDelay = 1000;
+              void queryClient.invalidateQueries({
+                queryKey: ["chats"],
+              });
+              return;
             }
-            if (__DEV__) {
-              console.log("[chat-events]", event.event ?? "message", event.data);
+
+            if (event.event === "chat.message") {
+              try {
+                const { chatId, message } = JSON.parse(event.data) as {
+                  chatId: number;
+                  message: ChatMessageResponse;
+                };
+                addMessageToCache(queryClient, chatId, message);
+                void queryClient.invalidateQueries({
+                  queryKey: chatsQueryOptions.queryKey,
+                  exact: true,
+                });
+              } catch {}
+              return;
+            }
+
+            if (event.event === "chat.changed") {
+              try {
+                const { chatId } = JSON.parse(event.data) as {
+                  chatId: number;
+                };
+                void queryClient.invalidateQueries({
+                  queryKey: chatsQueryOptions.queryKey,
+                  exact: true,
+                });
+                void queryClient.invalidateQueries({
+                  queryKey: chatQueryOptions(chatId).queryKey,
+                  exact: true,
+                });
+              } catch {}
+              return;
             }
           },
-          onComment: (comment) => {
+          onComment: () => {
             resetWatchdog(currentController);
-            if (__DEV__) {
-              console.log("[chat-events] comment", comment);
-            }
           },
         });
 
@@ -100,7 +136,10 @@ export function useChatEvents() {
         }
       } catch (error) {
         clearWatchdog();
-        if (!isActive || (currentController.signal.aborted && !isWatchdogDrop)) {
+        if (
+          !isActive ||
+          (currentController.signal.aborted && !isWatchdogDrop)
+        ) {
           return;
         }
 
@@ -115,10 +154,6 @@ export function useChatEvents() {
             scheduleRetry(0);
             return;
           } catch {}
-        }
-
-        if (__DEV__) {
-          console.warn("[chat-events] error", error);
         }
 
         const delay = retryDelay;
@@ -159,5 +194,5 @@ export function useChatEvents() {
       disconnect();
       subscription.remove();
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, queryClient]);
 }
