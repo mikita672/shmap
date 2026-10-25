@@ -5,6 +5,7 @@ import { useLocalSearchParams } from "expo-router";
 import { ChatHeader } from "@/components/chats/chat-header";
 import { Composer } from "@/components/chats/composer";
 import { MessageList } from "@/components/chats/message-list";
+import { ReadOnlyBar } from "@/components/chats/read-only-bar";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
@@ -50,9 +51,13 @@ export default function ChatScreen() {
       ) : (
         <>
           <MessageList chatId={chat.id} isGroup={chat.type === "GROUP"} />
-          <KeyboardStickyView offset={{ opened: insets.bottom }}>
-            <Composer />
-          </KeyboardStickyView>
+          {chat.canSend ? (
+            <KeyboardStickyView offset={{ opened: insets.bottom }}>
+              <Composer />
+            </KeyboardStickyView>
+          ) : (
+            <ReadOnlyBar firstName={chat.members[0]?.firstName ?? ""} />
+          )}
         </>
       )}
     </View>
