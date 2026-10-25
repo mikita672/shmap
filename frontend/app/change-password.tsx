@@ -1,11 +1,6 @@
 import { useRef, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  type TextInput,
-} from "react-native";
+import { Platform, ScrollView, View, type TextInput } from "react-native";
+import { KeyboardAvoidingView } from "@/lib/keyboard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";

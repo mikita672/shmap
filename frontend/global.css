@@ -90,6 +90,22 @@
     --action-chip-foreground: 22.74 65.52% 18%; /* Dark Russet — content on the chip, 4.7:1 on Camel */
     --action-tonal: 52 93% 93%; /* Cornsilk — tonal round/pill button */
     --action-tonal-foreground: 22.74 65.52% 28.43%; /* Russet — content on the tonal button */
+
+    /* Chats */
+    --app-bar: 74 22% 62%; /* Laurel Green — Chats top bar */
+    --chat-list: 43 81% 88%; /* Lemon Meringue — Chats list sheet */
+    --chat-list-foreground: 22.74 65.52% 28.43%; /* Russet — chat names, empty state */
+    --chat-list-divider: 36 46% 75%; /* Camel at 45% over the list sheet */
+
+    /* Chat bubbles */
+    --bubble-in: 52 93% 93%; /* Cornsilk */
+    --bubble-in-foreground: 22.74 65.52% 28.43%; /* Russet */
+    --bubble-in-muted: 30 34% 58%; /* Camel — time */
+    --bubble-out: 22.74 65.52% 28.43%; /* Russet */
+    --bubble-out-foreground: 52 93% 93%; /* Cornsilk */
+    --bubble-out-muted: 43 81% 88%; /* Lemon Meringue — time, used at 80% */
+    --bubble-sender: 25.82 72.69% 44.51%; /* Alloy Orange — sender name */
+    --picker-ring: 30 34% 58%; /* Camel #B99470 — picker checkbox ring */
   }
 
   .dark:root {
@@ -180,5 +196,21 @@
     --action-chip-foreground: 22.74 65.52% 18%; /* Dark Russet — content on the chip, 4.7:1 on Camel */
     --action-tonal: 93.1 15.03% 37.84%; /* Dark Olive Green — tonal round/pill button */
     --action-tonal-foreground: 30 34% 58%; /* Camel — content on the tonal button */
+
+    /* Chats */
+    --app-bar: 22.74 65.52% 28.43%; /* Russet — Chats top bar */
+    --chat-list: 93.1 15.03% 37.84%; /* Dark Olive Green — Chats list sheet */
+    --chat-list-foreground: 43 81% 88%; /* Lemon Meringue — chat names, empty state */
+    --chat-list-divider: 86 14% 44%; /* Lemon Meringue at 12% over the list sheet */
+
+    /* Chat bubbles */
+    --bubble-in: 22.74 65.52% 28.43%; /* Russet */
+    --bubble-in-foreground: 43 81% 88%; /* Lemon Meringue */
+    --bubble-in-muted: 74 22% 62%; /* Laurel Green — time */
+    --bubble-out: 30 34% 58%; /* Camel */
+    --bubble-out-foreground: 22.74 65.52% 28.43%; /* Russet */
+    --bubble-out-muted: 93.1 15.03% 37.84%; /* Dark Olive Green — time, used at 80% */
+    --bubble-sender: 74 22% 62%; /* Laurel Green — sender name */
+    --picker-ring: 74 22% 62%; /* Laurel Green #A9B388 — picker checkbox ring */
   }
 }

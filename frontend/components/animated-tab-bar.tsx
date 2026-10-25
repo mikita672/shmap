@@ -34,7 +34,9 @@ export function AnimatedTabBar({
 }: TabBarProps) {
   const focusedRouteName = state.routes[state.index].name;
   const colors = useTabColors(
-    focusedRouteName === "friends" ? "contrast" : "default",
+    focusedRouteName === "friends" || focusedRouteName === "chats"
+      ? "contrast"
+      : "default",
   );
   const insets = useSafeAreaInsets();
 

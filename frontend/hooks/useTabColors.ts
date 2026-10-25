@@ -4,7 +4,7 @@ import { useTheme } from "@/hooks/useTheme";
  * Tab bar colors as plain values. The tab bar paints with StyleSheet and
  * passes color strings to tabBarIcon, so it can't use NativeWind classNames.
  * "default" mirrors the CSS variables in global.css; "contrast" is the
- * Friends tab bar from Figma. Keep both in sync with the design.
+ * Friends and Chats tab bar from Figma. Keep both in sync with the design.
  */
 const TAB_COLORS = {
   light: {

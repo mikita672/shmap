@@ -12,9 +12,11 @@ import "../global.css";
 import { PortalHost } from "@rn-primitives/portal";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { Toaster } from "sonner-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
+import { useChatEvents } from "@/hooks/useChatEvents";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ThemeProvider as AppThemeProvider } from "@/providers/ThemeProvider";
 import { LogManager } from "@maplibre/maplibre-react-native";
@@ -36,6 +38,7 @@ enableFreeze(true);
 function RootNavigator() {
   const { isDark } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
+  useChatEvents();
 
   if (isLoading) {
     return null;
@@ -52,6 +55,11 @@ function RootNavigator() {
             <Stack.Screen name="blocked-users" />
             <Stack.Screen name="edit-profile" />
             <Stack.Screen name="change-password" />
+            <Stack.Screen name="chat/[chatId]/index" />
+            <Stack.Screen name="chat/[chatId]/info" />
+            <Stack.Screen name="chat/[chatId]/add-members" />
+            <Stack.Screen name="new-group/index" />
+            <Stack.Screen name="new-group/details" />
             <Stack.Screen
               name="scan"
               options={{ presentation: "fullScreenModal" }}
@@ -76,11 +84,13 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <AppThemeProvider>
-          <AuthProvider>
-            <RootNavigator />
-          </AuthProvider>
-        </AppThemeProvider>
+        <KeyboardProvider>
+          <AppThemeProvider>
+            <AuthProvider>
+              <RootNavigator />
+            </AuthProvider>
+          </AppThemeProvider>
+        </KeyboardProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

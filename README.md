@@ -1,8 +1,8 @@
 # Shmap
 
-Shmap is a mobile app for planning routes with friends. You find places on a map, add friends, and (once group chats land) build a shared route with them by picking points of interest together.
+Shmap is a mobile app for planning routes with friends. You find places on a map, add friends, chat in groups, and build a shared route with them by picking points of interest together.
 
-The project is in early development. Accounts, profiles, friends and the map work today. Group chats and shared routes are next.
+The project is in early development. Accounts, profiles, friends, chats and the map work today. Shared routes are next.
 
 [![Lint & Typecheck](https://github.com/mikita672/shmap/actions/workflows/lint-and-typecheck.yml/badge.svg)](https://github.com/mikita672/shmap/actions/workflows/lint-and-typecheck.yml)
 [![Latest release](https://img.shields.io/github/v/release/mikita672/shmap)](https://github.com/mikita672/shmap/releases/latest)
@@ -29,7 +29,7 @@ The project is in early development. Accounts, profiles, friends and the map wor
 - Get "People you may know" suggestions: friends of your friends, ranked by mutual friends. You can dismiss any suggestion.
 - See your recent friend activity: who accepted your requests and whose requests you accepted.
 - Mute friends and block users. Blocking removes the friendship, its activity and any pending requests, and the two users stop seeing each other in search and on profiles.
-- Chat one-on-one or in groups with your friends through the API: open a chat with a friend, create a group, add friends directly without an invite step, leave, send text messages, page back through the history, and list your chats with their last message. After an unfriend or a block, the 1:1 chat stays readable but takes no new messages, and groups don't change. Open `GET /api/v1/events` to get new messages and chat changes live, without polling. The app screens come later.
+- Chat one-on-one or in groups with your friends: browse your 1:1 and group chats with their last message, scroll through history with smooth keyboard handling, and send text messages. Live updates arrive via Server-Sent Events without polling. After an unfriend or a block, the 1:1 chat stays readable with an Add friend shortcut but takes no new messages. Create group chats with a searchable friend picker, view group info with member lists, add friends, and leave groups.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
 - Use the Settings screen to pick a light, dark or system theme, change your password, and log out.
 
@@ -37,7 +37,7 @@ The project is in early development. Accounts, profiles, friends and the map wor
 
 The backend is a Spring Boot 4 application on Java 25. It uses Spring Security with JWT, Spring Data JPA on PostgreSQL, Redis pub/sub for live updates, and springdoc-openapi for the API docs. Emails go out through [Resend](https://resend.com), and avatars are stored in an S3-compatible bucket (Cloudflare R2 in production). Production runs on Google Cloud Run with a [Neon](https://neon.tech) Postgres database and an [Upstash](https://upstash.com) Redis database.
 
-The mobile app is built with Expo and React Native in TypeScript, with Expo Router for navigation, TanStack Query for server state and NativeWind for styling. The map uses MapLibre with [OpenFreeMap](https://openfreemap.org) tiles, place search uses the [Photon](https://photon.komoot.io) geocoder, and the QR scanner uses `expo-camera`.
+The mobile app is built with Expo and React Native in TypeScript, with Expo Router for navigation, TanStack Query for server state, NativeWind for styling, and `react-native-keyboard-controller` for smooth keyboard handling. Live updates stream using `eventsource-parser` over `expo/fetch`. The map uses MapLibre with [OpenFreeMap](https://openfreemap.org) tiles, place search uses the [Photon](https://photon.komoot.io) geocoder, and the QR scanner uses `expo-camera`.
 
 The website at [shmap.dev](https://shmap.dev) is a Cloudflare Worker with static assets. Plain HTML and CSS pages are served as files, and a small TypeScript Worker renders profile pages at `/u/<username>`.
 
@@ -200,7 +200,7 @@ data:{"chatId":12}
 | -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `ready`        | The stream is registered                                                                                         | Reloads the chats list and the open chat's newest page over REST                |
 | `chat.message` | Someone sent a message, to every member including the sender                                                     | Appends the message, skipping ids it already has, and moves the chat to the top |
-| `chat.changed` | A group was created, people were added, someone left, or the two people in a 1:1 became or stopped being friends | Reloads the chats list or the chat's details over REST                          |
+| `chat.changed` | A group was created, people were added, someone left, or the two people in a 1:1 became or stopped being friends | Reloads the chats list and the open chat                                        |
 | `:` (comment)  | Every 20 seconds                                                                                                 | Nothing. It keeps quiet connections open and detects dead clients               |
 
 The stream ends when any of these happens, and the app reconnects with a backoff, refreshes its token on a 401 and reloads after `ready`:

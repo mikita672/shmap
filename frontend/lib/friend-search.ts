@@ -1,7 +1,7 @@
 import type { FriendResponse } from "@/lib/types/api";
 
 export function matchesFriendSearch(
-  { user }: FriendResponse,
+  { user }: Pick<FriendResponse, "user">,
   query: string,
 ): boolean {
   const text = query.trim().toLocaleLowerCase();

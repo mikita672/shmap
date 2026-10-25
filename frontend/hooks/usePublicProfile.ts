@@ -10,6 +10,7 @@ export const publicProfileQueryOptions = (username: string) =>
       const { data } = await getPublicProfile(username);
       return data;
     },
+    enabled: Boolean(username),
     retry: (failureCount, error) =>
       !isErrorCode(error, AuthErrorCode.USER_NOT_FOUND) && failureCount < 2,
   });
