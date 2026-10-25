@@ -1,4 +1,11 @@
-import { ActivityIndicator, FlatList, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  View,
+  type ScrollViewProps,
+} from "react-native";
+import { KeyboardChatScrollView } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DayChip } from "@/components/chats/day-chip";
 import { MessageRow } from "@/components/chats/message-row";
 import { Button } from "@/components/ui/button";
@@ -53,6 +60,7 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
     <FlatList
       inverted
       showsVerticalScrollIndicator={false}
+      renderScrollComponent={(props) => <ChatScrollView {...props} />}
       data={items}
       keyExtractor={(item) => item.key}
       renderItem={({ item }) =>
@@ -76,6 +84,21 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
         isFetchingNextPage ? <ActivityIndicator className="py-3" /> : null
       }
       contentContainerClassName="px-3 py-2"
+    />
+  );
+}
+
+function ChatScrollView(props: ScrollViewProps) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <KeyboardChatScrollView
+      {...props}
+      inverted
+      offset={insets.bottom}
+      keyboardDismissMode="interactive"
+      automaticallyAdjustContentInsets={false}
+      contentInsetAdjustmentBehavior="never"
     />
   );
 }

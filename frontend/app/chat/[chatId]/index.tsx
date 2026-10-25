@@ -1,7 +1,9 @@
 import { ActivityIndicator, View } from "react-native";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { ChatHeader } from "@/components/chats/chat-header";
+import { Composer } from "@/components/chats/composer";
 import { MessageList } from "@/components/chats/message-list";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
@@ -46,7 +48,12 @@ export default function ChatScreen() {
           )}
         </View>
       ) : (
-        <MessageList chatId={chat.id} isGroup={chat.type === "GROUP"} />
+        <>
+          <MessageList chatId={chat.id} isGroup={chat.type === "GROUP"} />
+          <KeyboardStickyView offset={{ opened: insets.bottom }}>
+            <Composer />
+          </KeyboardStickyView>
+        </>
       )}
     </View>
   );
