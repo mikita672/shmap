@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PickerRow } from "@/components/chats/picker-row";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
+import { ConfirmCard } from "@/components/ui/confirm-card";
 import { GroupAvatar } from "@/components/ui/group-avatar";
+import { Popup } from "@/components/ui/popup";
 import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
+import { useLeaveChat } from "@/hooks/useChatMutations";
 import { useProfile } from "@/hooks/useProfile";
 import { MaterialIcons } from "@/lib/icons";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -16,6 +20,8 @@ export default function GroupInfoScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
   const { data: chat, isPending, error, refetch } = useChat(Number(chatId));
   const { data: me } = useProfile();
+  const [leaveConfirmVisible, setLeaveConfirmVisible] = useState(false);
+  const leaveChat = useLeaveChat();
 
   if (isPending) {
     return (
@@ -55,6 +61,14 @@ export default function GroupInfoScreen() {
       avatarUrl: member.avatarUrl,
     })),
   ];
+
+  const handleLeaveConfirm = () => {
+    leaveChat.mutate(chat.id, {
+      onSuccess: () => {
+        setLeaveConfirmVisible(false);
+      },
+    });
+  };
 
   return (
     <View
@@ -123,6 +137,42 @@ export default function GroupInfoScreen() {
           />
         )}
       />
+
+      {chat.type === "GROUP" && (
+        <View
+          className="px-6 pt-4"
+          style={{ paddingBottom: insets.bottom + 24 }}
+        >
+          <Button
+            variant="destructive"
+            size="xl"
+            onPress={() => setLeaveConfirmVisible(true)}
+          >
+            <MaterialIcons name="logout" size={24} className="text-white" />
+            <Text className="font-medium">Leave group</Text>
+          </Button>
+        </View>
+      )}
+
+      <Popup
+        visible={leaveConfirmVisible}
+        onClose={() => {
+          if (!leaveChat.isPending) setLeaveConfirmVisible(false);
+        }}
+      >
+        <ConfirmCard
+          icon="logout"
+          title={`Leave ${chat.name}?`}
+          message="You'll stop getting its messages. A friend in the group can add you back."
+          confirmLabel="Leave"
+          pendingLabel="Leaving…"
+          isPending={leaveChat.isPending}
+          onConfirm={handleLeaveConfirm}
+          onCancel={() => {
+            if (!leaveChat.isPending) setLeaveConfirmVisible(false);
+          }}
+        />
+      </Popup>
     </View>
   );
 }
