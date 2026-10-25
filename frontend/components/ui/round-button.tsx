@@ -44,6 +44,7 @@ export interface RoundButtonProps
   accessibilityLabel: string;
   badge?: number;
   className?: string;
+  iconClassName?: string;
 }
 
 export function RoundButton({
@@ -52,6 +53,7 @@ export function RoundButton({
   size,
   badge = 0,
   className,
+  iconClassName,
   disabled,
   ...props
 }: RoundButtonProps) {
@@ -70,7 +72,7 @@ export function RoundButton({
       <MaterialIcons
         name={icon}
         size={24}
-        className={roundButtonIconVariants({ variant })}
+        className={cn(roundButtonIconVariants({ variant }), iconClassName)}
       />
       <Badge count={badge} className="absolute -right-0.5 -top-0.5" />
     </Pressable>

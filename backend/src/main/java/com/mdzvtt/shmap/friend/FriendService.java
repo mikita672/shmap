@@ -6,6 +6,7 @@ import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ public class FriendService {
     private final FriendshipRepository friendshipRepository;
     private final FriendActivityRepository friendActivityRepository;
     private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<FriendResponse> getFriends(Integer userId, String query) {
@@ -37,6 +39,7 @@ public class FriendService {
             throw new FriendNotFoundException();
         }
         friendActivityRepository.deleteBetween(userId, friendId);
+        eventPublisher.publishEvent(new FriendshipEnded(userId, friendId));
     }
 
     @Transactional

@@ -1,8 +1,8 @@
 # Shmap
 
-Shmap is a mobile app for planning routes with friends. You find places on a map, add friends, and (once group chats land) build a shared route with them by picking points of interest together.
+Shmap is a mobile app for planning routes with friends. You find places on a map, add friends, chat in groups, and build a shared route with them by picking points of interest together.
 
-The project is in early development. Accounts, profiles, friends and the map work today. Group chats and shared routes are next.
+The project is in early development. Accounts, profiles, friends, chats and the map work today. Shared routes are next.
 
 [![Lint & Typecheck](https://github.com/mikita672/shmap/actions/workflows/lint-and-typecheck.yml/badge.svg)](https://github.com/mikita672/shmap/actions/workflows/lint-and-typecheck.yml)
 [![Latest release](https://img.shields.io/github/v/release/mikita672/shmap)](https://github.com/mikita672/shmap/releases/latest)
@@ -15,6 +15,7 @@ The project is in early development. Accounts, profiles, friends and the map wor
 - [Getting started](#getting-started)
 - [Profile links](#profile-links)
 - [API documentation](#api-documentation)
+- [Live updates](#live-updates)
 - [CI and releases](#ci-and-releases)
 - [License](#license)
 
@@ -28,14 +29,15 @@ The project is in early development. Accounts, profiles, friends and the map wor
 - Get "People you may know" suggestions: friends of your friends, ranked by mutual friends. You can dismiss any suggestion.
 - See your recent friend activity: who accepted your requests and whose requests you accepted.
 - Mute friends and block users. Blocking removes the friendship, its activity and any pending requests, and the two users stop seeing each other in search and on profiles.
+- Chat one-on-one or in groups with your friends: browse your 1:1 and group chats with their last message, scroll through history with smooth keyboard handling, and send text messages. Live updates arrive via Server-Sent Events without polling. After an unfriend or a block, the 1:1 chat stays readable with an Add friend shortcut but takes no new messages. Create group chats with a searchable friend picker, view group info with member lists, add friends, and leave groups.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
 - Use the Settings screen to pick a light, dark or system theme, change your password, and log out.
 
 ## Tech stack
 
-The backend is a Spring Boot 4 application on Java 25. It uses Spring Security with JWT, Spring Data JPA on PostgreSQL, and springdoc-openapi for the API docs. Emails go out through [Resend](https://resend.com), and avatars are stored in an S3-compatible bucket (Cloudflare R2 in production). Production runs on Google Cloud Run with a [Neon](https://neon.tech) Postgres database.
+The backend is a Spring Boot 4 application on Java 25. It uses Spring Security with JWT, Spring Data JPA on PostgreSQL, Redis pub/sub for live updates, and springdoc-openapi for the API docs. Emails go out through [Resend](https://resend.com), and avatars are stored in an S3-compatible bucket (Cloudflare R2 in production). Production runs on Google Cloud Run with a [Neon](https://neon.tech) Postgres database and an [Upstash](https://upstash.com) Redis database.
 
-The mobile app is built with Expo and React Native in TypeScript, with Expo Router for navigation, TanStack Query for server state and NativeWind for styling. The map uses MapLibre with [OpenFreeMap](https://openfreemap.org) tiles, place search uses the [Photon](https://photon.komoot.io) geocoder, and the QR scanner uses `expo-camera`.
+The mobile app is built with Expo and React Native in TypeScript, with Expo Router for navigation, TanStack Query for server state, NativeWind for styling, and `react-native-keyboard-controller` for smooth keyboard handling. Live updates stream using `eventsource-parser` over `expo/fetch`. The map uses MapLibre with [OpenFreeMap](https://openfreemap.org) tiles, place search uses the [Photon](https://photon.komoot.io) geocoder, and the QR scanner uses `expo-camera`.
 
 The website at [shmap.dev](https://shmap.dev) is a Cloudflare Worker with static assets. Plain HTML and CSS pages are served as files, and a small TypeScript Worker renders profile pages at `/u/<username>`.
 
@@ -49,9 +51,11 @@ The website at [shmap.dev](https://shmap.dev) is a Cloudflare Worker with static
 │   │   ├── user/         account and profile endpoints, avatars
 │   │   ├── friend/       friends, friend requests, user search, public profiles
 │   │   ├── block/        blocking and unblocking users
+│   │   ├── chat/         1:1 and group chats, messages
+│   │   ├── realtime/     live event stream and Redis pub/sub
 │   │   ├── storage/      S3-compatible object storage
 │   │   └── configuration/ security, JWT, OpenAPI
-│   ├── docker-compose.yml  local PostgreSQL
+│   ├── docker-compose.yml  local PostgreSQL and Redis
 │   └── Dockerfile
 ├── frontend/             Expo / React Native app
 │   ├── app/              screens (file-based routing)
@@ -80,7 +84,7 @@ The website at [shmap.dev](https://shmap.dev) is a Cloudflare Worker with static
 ```bash
 cd backend
 cp .env.example .env        # then fill in the values
-docker compose up -d        # starts PostgreSQL on localhost:5432
+docker compose up -d        # starts PostgreSQL on localhost:5432 and Redis on localhost:6379
 ```
 
 Spring Boot doesn't read `.env` on its own, so export the variables before you start the app, and run it with the `dev` profile so it connects to the local database:
@@ -99,6 +103,7 @@ The backend reads these environment variables:
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`                                                                   | Local database, used by Docker Compose and the `dev` profile |
 | `DB_URL`, `DB_USER`, `DB_PASSWORD`                                                                                    | Database connection outside the `dev` profile                |
 | `JWT_SECRET`                                                                                                          | Key for signing tokens, at least 256 bits                    |
+| `REDIS_URL`                                                                                                           | Redis connection, `redis://localhost:6379` locally           |
 | `RESEND_API_KEY`                                                                                                      | Sends password reset emails                                  |
 | `GOOGLE_CLIENT_ID`                                                                                                    | Google OAuth client ID that ID tokens are checked against    |
 | `STORAGE_ENDPOINT`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY_ID`, `STORAGE_SECRET_ACCESS_KEY`, `STORAGE_PUBLIC_BASE_URL` | S3-compatible bucket for avatars                             |
@@ -171,6 +176,44 @@ All routes live under `/api/v1`:
 | `/friend-suggestions`         | "People you may know" and dismissing suggestions                        |
 | `/friend-activity`            | Your recent friend activity, newest first                               |
 | `/blocks`                     | Blocking and unblocking users, and the list of users you blocked        |
+| `/chats`                      | Your chats, 1:1 and group chats, members, and messages                  |
+| `/events`                    | The live event stream. See Live updates                                 |
+
+## Live updates
+
+The app keeps one stream open to `GET /api/v1/events` and gets chat changes as they happen. Sending a message is still a normal REST call, and the stream only delivers. Send the access token as `Authorization: Bearer <token>`. The response is `text/event-stream` and stays open:
+
+```
+event:ready
+data:{}
+
+event:chat.message
+data:{"chatId":12,"message":{"id":345,"sender":{...},"text":"Hi","createdAt":"2026-10-24T10:00:00Z"}}
+
+event:chat.changed
+data:{"chatId":12}
+
+:
+```
+
+| Event          | When                                                                                                             | What the app does                                                               |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `ready`        | The stream is registered                                                                                         | Reloads the chats list and the open chat's newest page over REST                |
+| `chat.message` | Someone sent a message, to every member including the sender                                                     | Appends the message, skipping ids it already has, and moves the chat to the top |
+| `chat.changed` | A group was created, people were added, someone left, or the two people in a 1:1 became or stopped being friends | Reloads the chats list and the open chat                                        |
+| `:` (comment)  | Every 20 seconds                                                                                                 | Nothing. It keeps quiet connections open and detects dead clients               |
+
+The stream ends when any of these happens, and the app reconnects with a backoff, refreshes its token on a 401 and reloads after `ready`:
+
+- 55 minutes have passed (Cloud Run cuts requests at 60).
+- The access token expires or is revoked: a new login, a token refresh, a password or email change, or a logout.
+- The same user opens a sixth stream. The oldest one closes.
+- The server restarts, or loses and regains its Redis connection.
+
+Close the stream when the app goes to the background. Cloud Run bills an instance for as long as any stream is open on it.
+
+Instances share events through Redis pub/sub on one channel, so it doesn't matter which instance serves a stream or a send. Production uses an [Upstash](https://upstash.com) free database, and local development uses the `redis` container from Docker Compose. If Redis is down, REST keeps working and live updates pause until it returns. The timeouts and limits are under `app.realtime` in `application.yml`, and the Cloud Run request timeout (60 minutes) and concurrency (250) are set in the release workflow.
+
 
 ## CI and releases
 

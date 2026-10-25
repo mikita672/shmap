@@ -4,7 +4,6 @@ import type { Href } from "expo-router";
 import { isValidUsername } from "@/lib/validation/profile";
 
 const SHARE_ORIGIN = "https://shmap.dev";
-const SHARE_MESSAGE = "Add me on Shmap!";
 const PROFILE_LINK_PATTERN =
   /^(?:https:\/\/shmap\.dev|shmap:\/)\/u\/([^/?#]+)\/?(?:[?#].*)?$/;
 
@@ -26,15 +25,16 @@ export function parseProfileLink(text: string): string | null {
   return isValidUsername(username) ? username : null;
 }
 
-export function shareProfile(username: string) {
+export function shareProfile(username: string, name?: string) {
   const url = getProfileUrl(username);
+  const message = name ? `Add ${name} on Shmap!` : "Add me on Shmap!";
   const content: ShareContent =
     Platform.OS === "ios"
-      ? { message: SHARE_MESSAGE, url }
-      : { title: "Shmap profile", message: `${SHARE_MESSAGE} ${url}` };
+      ? { message, url }
+      : { title: "Shmap profile", message: `${message} ${url}` };
 
   return Share.share(content, {
     dialogTitle: "Share profile",
-    subject: "My Shmap profile",
+    subject: name ? `${name} on Shmap` : "My Shmap profile",
   });
 }

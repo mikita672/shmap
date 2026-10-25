@@ -20,6 +20,10 @@ spring:
         format_sql: true
     database: PostgreSQL
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      url: ${REDIS_URL}
+      timeout: 2s
 application:
   security:
     jwt:
@@ -30,6 +34,11 @@ application:
 resend:
   api-key: ${RESEND_API_KEY}
 app:
+  realtime:
+    stream-timeout: 55m
+    heartbeat-interval: 20s
+    max-streams-per-user: 5
+    channel: shmap:events
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
 storage:

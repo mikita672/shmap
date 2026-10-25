@@ -1,9 +1,11 @@
+import { router } from "expo-router";
 import { FriendRow } from "@/components/friends/friend-row";
 import {
   useAcceptFriendRequest,
   useDeclineFriendRequest,
 } from "@/hooks/useFriendRequestMutations";
 import { mutualFriendsSubtitle } from "@/lib/mutual-friends";
+import { getProfileHref } from "@/lib/profile-link";
 import type { FriendRequestResponse } from "@/lib/types/api";
 
 export interface IncomingRequestRowProps {
@@ -22,6 +24,7 @@ export function IncomingRequestRow({ request }: IncomingRequestRowProps) {
       subtitle={mutualFriendsSubtitle(request)}
       avatarUrl={user.avatarUrl}
       disabled={accept.isPending || decline.isPending}
+      onPress={() => router.push(getProfileHref(user.username))}
       onAccept={() => accept.mutate(request.id)}
       onDecline={() => decline.mutate(request.id)}
     />

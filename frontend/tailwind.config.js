@@ -13,6 +13,7 @@ module.exports = {
           DEFAULT: "hsl(var(--brand))",
           foreground: "hsl(var(--brand-foreground))",
         },
+        favorite: "hsl(var(--favorite))",
         "on-surface": "hsl(var(--on-surface))",
         "on-surface-muted": "hsl(var(--on-surface-muted))",
         border: "hsl(var(--border))",
@@ -53,6 +54,7 @@ module.exports = {
           title: "hsl(var(--card-title))",
           muted: "hsl(var(--card-muted))",
           danger: "hsl(var(--card-danger))",
+          divider: "hsl(var(--card-divider))",
         },
         qr: {
           tile: "hsl(var(--qr-tile))",
@@ -61,6 +63,21 @@ module.exports = {
         "tab-bubble": "hsl(var(--tab-bubble))",
         "tab-icon": "hsl(var(--tab-icon))",
         "tab-icon-active": "hsl(var(--tab-icon-active))",
+        "app-bar": "hsl(var(--app-bar))",
+        "chat-list": {
+          DEFAULT: "hsl(var(--chat-list))",
+          foreground: "hsl(var(--chat-list-foreground))",
+          divider: "hsl(var(--chat-list-divider))",
+        },
+        bubble: {
+          in: "hsl(var(--bubble-in))",
+          "in-foreground": "hsl(var(--bubble-in-foreground))",
+          "in-muted": "hsl(var(--bubble-in-muted))",
+          out: "hsl(var(--bubble-out))",
+          "out-foreground": "hsl(var(--bubble-out-foreground))",
+          "out-muted": "hsl(var(--bubble-out-muted))",
+          sender: "hsl(var(--bubble-sender))",
+        },
         searchbar: "hsl(var(--searchbar))",
         "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
         avatar: {
@@ -79,6 +96,10 @@ module.exports = {
           tonal: "hsl(var(--action-tonal))",
           "tonal-foreground": "hsl(var(--action-tonal-foreground))",
         },
+        "picker-ring": "hsl(var(--picker-ring))",
+      },
+      opacity: {
+        55: "0.55",
       },
       borderWidth: {
         hairline: "1px",

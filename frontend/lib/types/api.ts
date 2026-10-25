@@ -9,6 +9,11 @@ export const AuthErrorCode = {
   INVALID_GOOGLE_TOKEN: "INVALID_GOOGLE_TOKEN",
   GOOGLE_AUTH_FAILED: "GOOGLE_AUTH_FAILED",
   USER_NOT_FOUND: "USER_NOT_FOUND",
+  PRIVATE_ACCOUNT: "PRIVATE_ACCOUNT",
+  FRIENDS_LIST_HIDDEN: "FRIENDS_LIST_HIDDEN",
+  BLOCK_NOT_FOUND: "BLOCK_NOT_FOUND",
+  CHAT_NOT_FOUND: "CHAT_NOT_FOUND",
+  NOT_FRIENDS: "NOT_FRIENDS",
   UNAUTHORIZED: "UNAUTHORIZED",
   INVALID_REFRESH_TOKEN: "INVALID_REFRESH_TOKEN",
   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
@@ -73,6 +78,8 @@ export interface ProfileResponse {
   bio: string | null;
   avatarUrl: string | null;
   createdAt: string;
+  privateAccount: boolean;
+  friendsListHidden: boolean;
 }
 
 export interface UpdateProfileRequest {
@@ -80,6 +87,8 @@ export interface UpdateProfileRequest {
   lastName?: string;
   username?: string;
   bio?: string;
+  privateAccount?: boolean;
+  friendsListHidden?: boolean;
 }
 
 export interface ChangeEmailRequest {
@@ -121,6 +130,11 @@ export interface UserSummaryResponse {
   firstName: string;
   lastName: string;
   avatarUrl: string | null;
+}
+
+export interface BlockedUserResponse {
+  user: UserSummaryResponse;
+  blockedAt: string;
 }
 
 export interface FriendRequestResponse {
@@ -180,3 +194,31 @@ export type PublicProfileResponse = {
   | { relationship: "NONE" | "FRIENDS" | "SELF"; requestId: null }
   | { relationship: "REQUESTED" | "INCOMING"; requestId: number }
 );
+
+export type ChatType = "DIRECT" | "GROUP";
+
+export interface ChatMessageResponse {
+  id: number;
+  sender: UserSummaryResponse;
+  text: string;
+  createdAt: string;
+}
+
+export type ChatSummaryResponse = {
+  id: number;
+  lastMessage: ChatMessageResponse | null;
+} & (
+  | { type: "DIRECT"; name: null; otherUser: UserSummaryResponse }
+  | { type: "GROUP"; name: string; otherUser: null }
+);
+
+export type ChatResponse = {
+  id: number;
+  members: UserSummaryResponse[];
+  canSend: boolean;
+} & ({ type: "DIRECT"; name: null } | { type: "GROUP"; name: string });
+
+export interface CreateGroupChatRequest {
+  name: string;
+  memberIds: number[];
+}

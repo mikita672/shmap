@@ -15,7 +15,9 @@ type FriendRowTrailingProps =
   | { variant: "suggestion"; onAdd: () => void; onDismiss: () => void }
   | { variant: "add"; onAdd: () => void }
   | { variant: "accept"; onAccept: () => void }
-  | { variant: "friends" };
+  | { variant: "unblock"; onUnblock: () => void }
+  | { variant: "friends" }
+  | { variant: "plain" };
 
 export type FriendRowProps = FriendRowTrailingProps & {
   name: string;
@@ -151,12 +153,24 @@ function FriendRowTrailing(
           onPress={props.onAccept}
         />
       );
+    case "unblock":
+      return (
+        <PillButton
+          label="Unblock"
+          variant="tonal"
+          accessibilityLabel={`Unblock ${props.name}`}
+          disabled={props.disabled}
+          onPress={props.onUnblock}
+        />
+      );
     case "friends":
       return (
         <Text className="px-4 text-sm font-medium leading-5 tracking-[0.5px] text-secondary">
           Friends
         </Text>
       );
+    case "plain":
+      return null;
     default:
       return props satisfies never;
   }
