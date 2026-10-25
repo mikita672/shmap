@@ -9,10 +9,15 @@ import { useProfile } from "@/hooks/useProfile";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { getChatName, getChatPreview } from "@/lib/chat-preview";
+import { matchesChatSearch } from "@/lib/chat-search";
 import { formatChatListTime } from "@/lib/chat-time";
 import { getErrorMessage } from "@/lib/utils/error";
 
-export function ChatsList() {
+export interface ChatsListProps {
+  searchQuery: string;
+}
+
+export function ChatsList({ searchQuery }: ChatsListProps) {
   const { data: chats, isPending, error, refetch, dataUpdatedAt } = useChats();
   const { data: me } = useProfile();
   useRefreshOnFocus(refetch);
@@ -43,9 +48,11 @@ export function ChatsList() {
     return <ChatsEmpty />;
   }
 
+  const matches = chats.filter((chat) => matchesChatSearch(chat, searchQuery));
+
   return (
     <FlatList
-      data={chats}
+      data={matches}
       keyExtractor={(chat) => String(chat.id)}
       refreshControl={
         <RefreshControl
@@ -53,6 +60,13 @@ export function ChatsList() {
           onRefresh={refetchByUser}
           className="bg-action text-secondary"
         />
+      }
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      ListEmptyComponent={
+        <Text className="px-6 pt-10 text-center text-sm leading-5 text-secondary">
+          No chats found
+        </Text>
       }
       renderItem={({ item: chat, index }) => (
         <ChatRow
@@ -65,7 +79,7 @@ export function ChatsList() {
           }
           isGroup={chat.type === "GROUP"}
           avatarUrl={chat.type === "DIRECT" ? chat.otherUser.avatarUrl : null}
-          divider={index < chats.length - 1}
+          divider={index < matches.length - 1}
         />
       )}
     />

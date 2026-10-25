@@ -1,37 +1,64 @@
-import { Pressable, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 export interface ChatsTopBarProps {
-  onSearch?: () => void;
+  searchQuery: string | null;
+  onSearchQueryChange: (query: string | null) => void;
   onNewGroup?: () => void;
 }
 
-export function ChatsTopBar({ onSearch, onNewGroup }: ChatsTopBarProps) {
+export function ChatsTopBar({
+  searchQuery,
+  onSearchQueryChange,
+  onNewGroup,
+}: ChatsTopBarProps) {
   const insets = useSafeAreaInsets();
+  const isSearching = searchQuery !== null;
 
   return (
     <View className="bg-app-bar" style={{ paddingTop: insets.top }}>
-      <View className="h-16 flex-row items-center pl-5 pr-2">
-        <Text
-          role="heading"
-          className="flex-1 text-[22px] leading-7 text-heading"
-        >
-          Chats
-        </Text>
-        <TopBarIconButton
-          icon="search"
-          accessibilityLabel="Search chats"
-          onPress={onSearch}
-        />
-        <TopBarIconButton
-          icon="group-add"
-          accessibilityLabel="New group"
-          onPress={onNewGroup}
-        />
-      </View>
+      {isSearching ? (
+        <View className="h-16 flex-row items-center pl-1 pr-5">
+          <TopBarIconButton
+            icon="arrow-back"
+            accessibilityLabel="Close search"
+            onPress={() => onSearchQueryChange(null)}
+          />
+          <TextInput
+            value={searchQuery}
+            onChangeText={onSearchQueryChange}
+            autoFocus
+            role="searchbox"
+            enterKeyHint="search"
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="Search chats"
+            className="h-full flex-1 py-0 text-lg text-heading placeholder:text-heading/60"
+          />
+        </View>
+      ) : (
+        <View className="h-16 flex-row items-center pl-5 pr-2">
+          <Text
+            role="heading"
+            className="flex-1 text-[22px] leading-7 text-heading"
+          >
+            Chats
+          </Text>
+          <TopBarIconButton
+            icon="search"
+            accessibilityLabel="Search chats"
+            onPress={() => onSearchQueryChange("")}
+          />
+          <TopBarIconButton
+            icon="group-add"
+            accessibilityLabel="New group"
+            onPress={onNewGroup}
+          />
+        </View>
+      )}
     </View>
   );
 }
