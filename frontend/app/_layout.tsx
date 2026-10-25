@@ -16,6 +16,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { Toaster } from "sonner-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
+import { useChatEvents } from "@/hooks/useChatEvents";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ThemeProvider as AppThemeProvider } from "@/providers/ThemeProvider";
 import { LogManager } from "@maplibre/maplibre-react-native";
@@ -37,6 +38,7 @@ enableFreeze(true);
 function RootNavigator() {
   const { isDark } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
+  useChatEvents();
 
   if (isLoading) {
     return null;
