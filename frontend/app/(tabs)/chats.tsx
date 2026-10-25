@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { BackHandler, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { ChatsList } from "@/components/chats/chats-list";
 import { ChatsTopBar } from "@/components/chats/chats-top-bar";
 
@@ -27,6 +27,7 @@ export default function ChatsScreen() {
       <ChatsTopBar
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
+        onNewGroup={() => router.push("/new-group")}
       />
       <ChatsList searchQuery={searchQuery ?? ""} />
     </View>

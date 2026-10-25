@@ -46,7 +46,7 @@ export function ChatsList({ searchQuery }: ChatsListProps) {
   }
 
   if (chats.length === 0) {
-    return <ChatsEmpty />;
+    return <ChatsEmpty onNewGroup={() => router.push("/new-group")} />;
   }
 
   const matches = chats.filter((chat) => matchesChatSearch(chat, searchQuery));

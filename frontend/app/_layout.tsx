@@ -56,6 +56,7 @@ function RootNavigator() {
             <Stack.Screen name="edit-profile" />
             <Stack.Screen name="change-password" />
             <Stack.Screen name="chat/[chatId]/index" />
+            <Stack.Screen name="new-group/index" />
             <Stack.Screen
               name="scan"
               options={{ presentation: "fullScreenModal" }}
