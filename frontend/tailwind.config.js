@@ -69,6 +69,15 @@ module.exports = {
           foreground: "hsl(var(--chat-list-foreground))",
           divider: "hsl(var(--chat-list-divider))",
         },
+        bubble: {
+          in: "hsl(var(--bubble-in))",
+          "in-foreground": "hsl(var(--bubble-in-foreground))",
+          "in-muted": "hsl(var(--bubble-in-muted))",
+          out: "hsl(var(--bubble-out))",
+          "out-foreground": "hsl(var(--bubble-out-foreground))",
+          "out-muted": "hsl(var(--bubble-out-muted))",
+          sender: "hsl(var(--bubble-sender))",
+        },
         searchbar: "hsl(var(--searchbar))",
         "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
         avatar: {

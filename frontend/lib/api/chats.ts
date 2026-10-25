@@ -12,9 +12,9 @@ export const getChats = () =>
 export const getChat = (chatId: number) =>
   apiClient.get<ChatResponse>(`/api/v1/chats/${chatId}`);
 
-export const getChatMessages = (chatId: number, before?: number) =>
+export const getChatMessages = (chatId: number, before: number | null) =>
   apiClient.get<ChatMessageResponse[]>(`/api/v1/chats/${chatId}/messages`, {
-    params: { before },
+    params: { before: before ?? undefined },
   });
 
 export const sendChatMessage = (chatId: number, text: string) =>

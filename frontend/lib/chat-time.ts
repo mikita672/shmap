@@ -38,3 +38,7 @@ export function formatChatListTime(isoDate: string, now: number) {
   }
   return dayMonthYearFormat.format(date);
 }
+
+export function formatMessageTime(isoDate: string) {
+  return timeFormat.format(new Date(isoDate));
+}
