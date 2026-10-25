@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
+import { useSendMessage } from "@/hooks/useSendMessage";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
@@ -17,6 +18,7 @@ export default function ChatScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
   const insets = useSafeAreaInsets();
   const { data: chat, isPending, error, refetch } = useChat(Number(chatId));
+  const send = useSendMessage(Number(chatId));
 
   return (
     <View
@@ -53,7 +55,7 @@ export default function ChatScreen() {
           <MessageList chatId={chat.id} isGroup={chat.type === "GROUP"} />
           {chat.canSend ? (
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
-              <Composer />
+              <Composer onSend={(text) => send.mutate(text)} />
             </KeyboardStickyView>
           ) : (
             <ReadOnlyBar firstName={chat.members[0]?.firstName ?? ""} />
