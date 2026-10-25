@@ -14,8 +14,16 @@ export interface MessageListProps {
 }
 
 export function MessageList({ chatId, isGroup }: MessageListProps) {
-  const { data, isPending, error, refetch, dataUpdatedAt } =
-    useChatMessages(chatId);
+  const {
+    data,
+    isPending,
+    error,
+    refetch,
+    dataUpdatedAt,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useChatMessages(chatId);
   const { data: me } = useProfile();
 
   if (isPending) {
@@ -59,6 +67,13 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
             isLastInRun={item.isLastInRun}
           />
         )
+      }
+      onEndReached={() => {
+        if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+      }}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={
+        isFetchingNextPage ? <ActivityIndicator className="py-3" /> : null
       }
       contentContainerClassName="px-3 py-2"
     />
