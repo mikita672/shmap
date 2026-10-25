@@ -105,6 +105,7 @@
     --bubble-out-foreground: 52 93% 93%; /* Cornsilk */
     --bubble-out-muted: 43 81% 88%; /* Lemon Meringue — time, used at 80% */
     --bubble-sender: 25.82 72.69% 44.51%; /* Alloy Orange — sender name */
+    --picker-ring: 30 34% 58%; /* Camel #B99470 — picker checkbox ring */
   }
 
   .dark:root {
@@ -210,5 +211,6 @@
     --bubble-out-foreground: 22.74 65.52% 28.43%; /* Russet */
     --bubble-out-muted: 93.1 15.03% 37.84%; /* Dark Olive Green — time, used at 80% */
     --bubble-sender: 74 22% 62%; /* Laurel Green — sender name */
+    --picker-ring: 74 22% 62%; /* Laurel Green #A9B388 — picker checkbox ring */
   }
 }

@@ -96,6 +96,10 @@ module.exports = {
           tonal: "hsl(var(--action-tonal))",
           "tonal-foreground": "hsl(var(--action-tonal-foreground))",
         },
+        "picker-ring": "hsl(var(--picker-ring))",
+      },
+      opacity: {
+        55: "0.55",
       },
       borderWidth: {
         hairline: "1px",
