@@ -20,6 +20,7 @@ export function useSendMessage(chatId: number) {
   return useMutation({
     mutationKey: sendMutationKey(chatId),
     scope: { id: `chat-${chatId}` },
+    gcTime: 24 * 60 * 60 * 1000,
     mutationFn: async (text: string) => {
       const { data } = await sendChatMessage(chatId, text);
       return data;
