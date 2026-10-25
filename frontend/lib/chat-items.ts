@@ -9,7 +9,13 @@ export type ChatItem =
       isFirstInRun: boolean;
       isLastInRun: boolean;
     }
-  | { kind: "day"; key: string; label: string };
+  | { kind: "day"; key: string; label: string }
+  | { kind: "pending"; key: string; text: string };
+
+export interface PendingMessage {
+  submittedAt: number;
+  text: string;
+}
 
 function isSameRun(a: ChatMessageResponse, b: ChatMessageResponse) {
   return a.sender.id === b.sender.id && isSameDay(a.createdAt, b.createdAt);
@@ -18,8 +24,15 @@ function isSameRun(a: ChatMessageResponse, b: ChatMessageResponse) {
 export function buildChatItems(
   messages: ChatMessageResponse[],
   now: number,
+  pending: PendingMessage[] = [],
 ): ChatItem[] {
-  const items: ChatItem[] = [];
+  const items: ChatItem[] = [...pending]
+    .sort((a, b) => b.submittedAt - a.submittedAt)
+    .map((message) => ({
+      kind: "pending",
+      key: `pending-${message.submittedAt}`,
+      text: message.text,
+    }));
 
   messages.forEach((message, index) => {
     const newer = messages[index - 1];

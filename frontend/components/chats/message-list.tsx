@@ -7,9 +7,11 @@ import {
 import { KeyboardChatScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DayChip } from "@/components/chats/day-chip";
+import { MessageBubble } from "@/components/chats/message-bubble";
 import { MessageRow } from "@/components/chats/message-row";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { useMutationState } from "@tanstack/react-query";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useProfile } from "@/hooks/useProfile";
 import { buildChatItems } from "@/lib/chat-items";
@@ -32,6 +34,13 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
     fetchNextPage,
   } = useChatMessages(chatId);
   const { data: me } = useProfile();
+  const pending = useMutationState({
+    filters: { mutationKey: ["chats", chatId, "send"], status: "pending" },
+    select: (mutation) => ({
+      submittedAt: mutation.state.submittedAt,
+      text: String(mutation.state.variables),
+    }),
+  });
 
   if (isPending) {
     return (
@@ -54,7 +63,7 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
     );
   }
 
-  const items = buildChatItems(data.pages.flat(), dataUpdatedAt);
+  const items = buildChatItems(data.pages.flat(), dataUpdatedAt, pending);
 
   return (
     <FlatList
@@ -66,6 +75,10 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
       renderItem={({ item }) =>
         item.kind === "day" ? (
           <DayChip label={item.label} />
+        ) : item.kind === "pending" ? (
+          <View className="flex-row justify-end pt-1">
+            <MessageBubble text={item.text} isMine isPending />
+          </View>
         ) : (
           <MessageRow
             message={item.message}
