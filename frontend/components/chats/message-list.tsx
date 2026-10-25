@@ -41,6 +41,7 @@ export function MessageList({ chatId }: MessageListProps) {
   return (
     <FlatList
       inverted
+      showsVerticalScrollIndicator={false}
       data={messages}
       keyExtractor={(message) => String(message.id)}
       renderItem={({ item: message }) => (
