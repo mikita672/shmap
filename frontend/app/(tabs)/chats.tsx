@@ -1,9 +1,10 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
+import { ChatsTopBar } from "@/components/chats/chats-top-bar";
 
 export default function ChatsScreen() {
   return (
-    <View className="flex-1 justify-center items-center bg-background">
-      <Text className="text-3xl font-bold text-foreground">Chats</Text>
+    <View className="flex-1 bg-chat-list">
+      <ChatsTopBar />
     </View>
   );
 }

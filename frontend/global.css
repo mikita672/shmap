@@ -90,6 +90,10 @@
     --action-chip-foreground: 22.74 65.52% 18%; /* Dark Russet — content on the chip, 4.7:1 on Camel */
     --action-tonal: 52 93% 93%; /* Cornsilk — tonal round/pill button */
     --action-tonal-foreground: 22.74 65.52% 28.43%; /* Russet — content on the tonal button */
+
+    /* Chats */
+    --app-bar: 74 22% 62%; /* Laurel Green — Chats top bar */
+    --chat-list: 43 81% 88%; /* Lemon Meringue — Chats list sheet */
   }
 
   .dark:root {
@@ -180,5 +184,9 @@
     --action-chip-foreground: 22.74 65.52% 18%; /* Dark Russet — content on the chip, 4.7:1 on Camel */
     --action-tonal: 93.1 15.03% 37.84%; /* Dark Olive Green — tonal round/pill button */
     --action-tonal-foreground: 30 34% 58%; /* Camel — content on the tonal button */
+
+    /* Chats */
+    --app-bar: 22.74 65.52% 28.43%; /* Russet — Chats top bar */
+    --chat-list: 93.1 15.03% 37.84%; /* Dark Olive Green — Chats list sheet */
   }
 }
