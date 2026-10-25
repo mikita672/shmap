@@ -1,13 +1,16 @@
 package com.mdzvtt.shmap.chat;
 
+import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
+import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.NotGroupChatException;
 import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.friend.FriendshipRepository;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -32,6 +35,8 @@ public class ChatService {
     private final ChatMemberRepository chatMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
+    private final UserBlockRepository userBlockRepository;
     private final StorageService storageService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -45,10 +50,14 @@ public class ChatService {
 
         User other = userRepository.findById(otherUserId).orElseThrow(UserNotFoundException::new);
 
+        if (userBlockRepository.existsBetween(userId, otherUserId)) {
+            throw new UserNotFoundException();
+        }
+
         Chat chat = chatRepository
                 .findByDirectUserLowIdAndDirectUserHighId(Math.min(userId, otherUserId),
                         Math.max(userId, otherUserId))
-                .orElseGet(() -> createDirect(userRepository.getReferenceById(userId), other));
+                .orElseGet(() -> startDirect(userId, other));
 
         return toResponse(chat, userId);
     }
@@ -62,6 +71,7 @@ public class ChatService {
         }
 
         List<User> others = findUsers(otherIds);
+        requireFriends(userId, otherIds);
 
         Chat chat = chatRepository.save(Chat.group(name));
         List<ChatMember> members = new ArrayList<>();
@@ -85,7 +95,10 @@ public class ChatService {
         Set<Integer> newIds = new LinkedHashSet<>(userIds);
         newIds.removeAll(chatMemberRepository.findUserIdsByChatId(chatId));
 
-        List<ChatMember> newMembers = findUsers(newIds).stream()
+        List<User> newUsers = findUsers(newIds);
+        requireFriends(userId, newIds);
+
+        List<ChatMember> newMembers = newUsers.stream()
                 .map(user -> new ChatMember(chat, user))
                 .toList();
         chatMemberRepository.saveAll(newMembers);
@@ -133,6 +146,9 @@ public class ChatService {
     @Transactional
     public ChatMessageResponse send(Integer userId, Long chatId, String text) {
         Chat chat = findChat(userId, chatId);
+        if (!canSend(chat, userId)) {
+            throw new NotFriendsException("You can only message friends");
+        }
         User sender = userRepository.getReferenceById(userId);
         ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
         ChatMessageResponse response = toMessageResponse(message);
@@ -143,6 +159,11 @@ public class ChatService {
 
     private Chat findChat(Integer userId, Long chatId) {
         return chatRepository.findForMember(chatId, userId).orElseThrow(ChatNotFoundException::new);
+    }
+
+    private boolean canSend(Chat chat, Integer userId) {
+        return chat.getType() == ChatType.GROUP
+                || friendshipRepository.existsByUserIdAndFriendId(userId, chat.otherUserId(userId));
     }
 
     private void lockChat(Long chatId) {
@@ -165,6 +186,19 @@ public class ChatService {
         return users;
     }
 
+    private void requireFriends(Integer userId, Set<Integer> ids) {
+        if (!friendshipRepository.findFriendIdsAmong(userId, ids).containsAll(ids)) {
+            throw new NotFriendsException("You can only add friends to a group");
+        }
+    }
+
+    private Chat startDirect(Integer userId, User other) {
+        if (!friendshipRepository.existsByUserIdAndFriendId(userId, other.getId())) {
+            throw new NotFriendsException();
+        }
+        return createDirect(userRepository.getReferenceById(userId), other);
+    }
+
     private Chat createDirect(User user, User other) {
         Chat chat = chatRepository.save(Chat.direct(user, other));
         chatMemberRepository.saveAll(List.of(
@@ -177,7 +211,7 @@ public class ChatService {
         List<UserSummaryResponse> members = chatMemberRepository.findOtherMembers(chat.getId(), userId).stream()
                 .map(this::toSummary)
                 .toList();
-        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members);
+        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members, canSend(chat, userId));
     }
 
     private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId) {

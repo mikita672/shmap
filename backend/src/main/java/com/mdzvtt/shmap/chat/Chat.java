@@ -65,4 +65,9 @@ public class Chat {
         chat.name = name;
         return chat;
     }
+
+    public Integer otherUserId(Integer userId) {
+        Integer lowId = directUserLow.getId();
+        return lowId.equals(userId) ? directUserHigh.getId() : lowId;
+    }
 }

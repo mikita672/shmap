@@ -6,12 +6,14 @@ import com.mdzvtt.shmap.exception.SelfBlockException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.FriendActivityRepository;
 import com.mdzvtt.shmap.friend.FriendRequestRepository;
+import com.mdzvtt.shmap.friend.FriendshipEnded;
 import com.mdzvtt.shmap.friend.FriendshipRepository;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class BlockService {
     private final FriendActivityRepository friendActivityRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void block(Integer blockerId, Integer blockedId) {
@@ -41,7 +44,9 @@ public class BlockService {
             return;
         }
 
-        friendshipRepository.deleteBetween(blockerId, blockedId);
+        if (friendshipRepository.deleteBetween(blockerId, blockedId) > 0) {
+            eventPublisher.publishEvent(new FriendshipEnded(blockerId, blockedId));
+        }
         friendActivityRepository.deleteBetween(blockerId, blockedId);
         friendRequestRepository.deleteBySenderIdAndReceiverId(blockerId, blockedId);
         friendRequestRepository.deleteBySenderIdAndReceiverId(blockedId, blockerId);

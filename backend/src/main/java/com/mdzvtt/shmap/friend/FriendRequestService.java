@@ -14,6 +14,7 @@ import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class FriendRequestService {
     private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
     private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public SendFriendRequestResponse send(Integer senderId, Integer receiverId) {
@@ -98,6 +100,9 @@ public class FriendRequestService {
 
     @Transactional
     public void accept(Integer userId, Long requestId) {
+        Integer senderId = findIncomingRequest(userId, requestId).getSender().getId();
+        userRepository.findAllByIdForUpdate(List.of(senderId, userId));
+
         FriendRequest request = findIncomingRequest(userId, requestId);
         becomeFriends(request.getSender(), request.getReceiver());
     }
@@ -111,6 +116,7 @@ public class FriendRequestService {
         friendActivityRepository.saveAll(List.of(
                 new FriendActivity(requester, accepter, FriendActivityType.REQUEST_ACCEPTED),
                 new FriendActivity(accepter, requester, FriendActivityType.NEW_FRIENDSHIP)));
+        eventPublisher.publishEvent(new FriendshipStarted(requester.getId(), accepter.getId()));
     }
 
     private FriendRequest findIncomingRequest(Integer userId, Long requestId) {
