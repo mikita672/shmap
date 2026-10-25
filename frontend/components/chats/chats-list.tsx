@@ -1,5 +1,6 @@
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { ChatRow } from "@/components/chats/chat-row";
+import { ChatsEmpty } from "@/components/chats/chats-empty";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useChats } from "@/hooks/useChats";
@@ -31,6 +32,10 @@ export function ChatsList() {
         </Button>
       </View>
     );
+  }
+
+  if (chats.length === 0) {
+    return <ChatsEmpty />;
   }
 
   return (
