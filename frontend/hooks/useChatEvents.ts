@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { AppState, type AppStateStatus } from "react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { getAccessToken } from "@/lib/api/client";
 import { readEventStream } from "@/lib/api/events";
@@ -11,18 +12,22 @@ export function useChatEvents() {
       return;
     }
 
-    const controller = new AbortController();
+    let controller: AbortController | null = null;
 
-    async function stream() {
+    async function connect() {
+      controller?.abort();
+      const currentController = new AbortController();
+      controller = currentController;
+
       try {
         const token = await getAccessToken();
-        if (!token || controller.signal.aborted) {
+        if (!token || currentController.signal.aborted) {
           return;
         }
 
         await readEventStream({
           token,
-          signal: controller.signal,
+          signal: currentController.signal,
           onEvent: (event) => {
             if (__DEV__) {
               console.log(
@@ -39,7 +44,7 @@ export function useChatEvents() {
           },
         });
       } catch (error) {
-        if (controller.signal.aborted) {
+        if (currentController.signal.aborted) {
           return;
         }
         if (__DEV__) {
@@ -48,10 +53,29 @@ export function useChatEvents() {
       }
     }
 
-    void stream();
+    function disconnect() {
+      controller?.abort();
+      controller = null;
+    }
+
+    if (AppState.currentState === "active") {
+      void connect();
+    }
+
+    const subscription = AppState.addEventListener(
+      "change",
+      (status: AppStateStatus) => {
+        if (status === "active") {
+          void connect();
+        } else {
+          disconnect();
+        }
+      },
+    );
 
     return () => {
-      controller.abort();
+      disconnect();
+      subscription.remove();
     };
   }, [isAuthenticated]);
 }
