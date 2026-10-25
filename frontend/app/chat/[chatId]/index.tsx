@@ -43,6 +43,13 @@ export default function ChatScreen() {
     });
   };
 
+  const handleOpenInfo = () => {
+    router.push({
+      pathname: "/chat/[chatId]/info",
+      params: { chatId: String(chatId) },
+    });
+  };
+
   return (
     <View
       className="flex-1 bg-background"
@@ -50,7 +57,14 @@ export default function ChatScreen() {
     >
       <ChatHeader
         chat={chat}
-        onMore={chat?.type === "DIRECT" ? handleMore : undefined}
+        onMore={
+          chat?.type === "DIRECT"
+            ? handleMore
+            : chat?.type === "GROUP"
+              ? handleOpenInfo
+              : undefined
+        }
+        onPress={chat?.type === "GROUP" ? handleOpenInfo : undefined}
       />
 
       {isPending ? (
