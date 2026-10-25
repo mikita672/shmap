@@ -24,9 +24,50 @@ export function setOnSessionClear(callback: SessionClearCallback): void {
   onSessionClear = callback;
 }
 
+export function getAccessToken(): Promise<string | null> {
+  return SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+}
+
+let refreshPromise: Promise<string> | null = null;
+
+export function refreshAccessToken(): Promise<string> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+      if (!refreshToken) {
+        throw new Error("No refresh token available");
+      }
+
+      const { data } = await refreshClient.post<AuthenticationResponse>(
+        "/api/v1/auth/refresh-token",
+        null,
+        { headers: { Authorization: `Bearer ${refreshToken}` } },
+      );
+
+      await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, data.access_token);
+      await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, data.refresh_token);
+
+      return data.access_token;
+    } catch (error) {
+      await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      onSessionClear?.();
+      throw error;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    const token = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+    const token = await getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,23 +77,6 @@ apiClient.interceptors.request.use(
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
-}
-
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (token: string) => void;
-  reject: (error: unknown) => void;
-}> = [];
-
-function processQueue(error: unknown, token: string | null = null): void {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (token) {
-      resolve(token);
-    } else {
-      reject(error);
-    }
-  });
-  failedQueue = [];
 }
 
 apiClient.interceptors.response.use(
@@ -82,47 +106,14 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (isRefreshing) {
-      return new Promise<string>((resolve, reject) => {
-        failedQueue.push({ resolve, reject });
-      }).then((newToken) => {
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return apiClient(originalRequest);
-      });
-    }
-
     originalRequest._retry = true;
-    isRefreshing = true;
 
     try {
-      const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-      if (!refreshToken) {
-        throw new Error("No refresh token available");
-      }
-
-      const { data } = await refreshClient.post<AuthenticationResponse>(
-        "/api/v1/auth/refresh-token",
-        null,
-        { headers: { Authorization: `Bearer ${refreshToken}` } },
-      );
-
-      await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, data.access_token);
-      await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, data.refresh_token);
-
-      processQueue(null, data.access_token);
-
-      originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
+      const newToken = await refreshAccessToken();
+      originalRequest.headers.Authorization = `Bearer ${newToken}`;
       return apiClient(originalRequest);
     } catch (refreshError) {
-      processQueue(refreshError, null);
-
-      await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-      onSessionClear?.();
-
       return Promise.reject(refreshError);
-    } finally {
-      isRefreshing = false;
     }
   },
 );
