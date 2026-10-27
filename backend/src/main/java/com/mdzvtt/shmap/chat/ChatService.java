@@ -214,7 +214,8 @@ public class ChatService {
         List<UserSummaryResponse> members = chatMemberRepository.findOtherMembers(chat.getId(), userId).stream()
                 .map(this::toSummary)
                 .toList();
-        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members, canSend(chat, userId));
+        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members, canSend(chat, userId),
+                chatMemberRepository.findLastReadMessageId(chat.getId(), userId));
     }
 
     private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId) {
