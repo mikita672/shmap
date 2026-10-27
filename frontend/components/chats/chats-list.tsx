@@ -80,6 +80,7 @@ export function ChatsList({ searchQuery }: ChatsListProps) {
           }
           isGroup={chat.type === "GROUP"}
           avatarUrl={chat.type === "DIRECT" ? chat.otherUser.avatarUrl : null}
+          unreadCount={chat.unreadCount}
           divider={index < matches.length - 1}
           onPress={() =>
             router.push({

@@ -68,6 +68,7 @@ module.exports = {
           DEFAULT: "hsl(var(--chat-list))",
           foreground: "hsl(var(--chat-list-foreground))",
           divider: "hsl(var(--chat-list-divider))",
+          unread: "hsl(var(--chat-list-unread))",
         },
         bubble: {
           in: "hsl(var(--bubble-in))",
