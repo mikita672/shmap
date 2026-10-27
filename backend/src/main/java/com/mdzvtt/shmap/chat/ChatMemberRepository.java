@@ -23,7 +23,20 @@ public interface ChatMemberRepository extends JpaRepository<ChatMember, Long> {
 
   boolean existsByChatId(Long chatId);
 
+  @Query("select m.lastReadMessageId from ChatMember m where m.chat.id = :chatId and m.user.id = :userId")
+  Long findLastReadMessageId(Long chatId, Integer userId);
+
   @Modifying
   @Query("delete from ChatMember m where m.chat.id = :chatId and m.user.id = :userId")
   int deleteByChatIdAndUserId(Long chatId, Integer userId);
+
+  @Modifying
+  @Query("""
+      update ChatMember m
+      set m.lastReadMessageId = :messageId
+      where m.chat.id = :chatId
+        and m.user.id = :userId
+        and (m.lastReadMessageId is null or m.lastReadMessageId < :messageId)
+      """)
+  int markRead(Long chatId, Integer userId, Long messageId);
 }

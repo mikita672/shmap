@@ -4,6 +4,8 @@ import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
+import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
+import com.mdzvtt.shmap.exception.ChatMessageNotFoundException;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
@@ -98,8 +100,9 @@ public class ChatService {
         List<User> newUsers = findUsers(newIds);
         requireFriends(userId, newIds);
 
+        Long latestMessageId = chatMessageRepository.findLatestId(chatId);
         List<ChatMember> newMembers = newUsers.stream()
-                .map(user -> new ChatMember(chat, user))
+                .map(user -> new ChatMember(chat, user, latestMessageId))
                 .toList();
         chatMemberRepository.saveAll(newMembers);
         eventPublisher.publishEvent(new ChatChanged(chatId, chatMemberRepository.findUserIdsByChatId(chatId)));
@@ -128,6 +131,11 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
+    public ChatUnreadCountResponse countUnread(Integer userId) {
+        return new ChatUnreadCountResponse(chatMessageRepository.countUnread(userId));
+    }
+
+    @Transactional(readOnly = true)
     public ChatResponse getChat(Integer userId, Long chatId) {
         return toResponse(findChat(userId, chatId), userId);
     }
@@ -145,6 +153,7 @@ public class ChatService {
 
     @Transactional
     public ChatMessageResponse send(Integer userId, Long chatId, String text) {
+        lockChat(chatId);
         Chat chat = findChat(userId, chatId);
         if (!canSend(chat, userId)) {
             throw new NotFriendsException("You can only message friends");
@@ -154,7 +163,27 @@ public class ChatService {
         ChatMessageResponse response = toMessageResponse(message);
         eventPublisher
                 .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));
+        advanceReadPosition(chatId, userId, message.getId());
         return response;
+    }
+
+    @Transactional
+    public void markRead(Integer userId, Long chatId, Long messageId) {
+        findChat(userId, chatId);
+        if (!chatMessageRepository.existsByIdAndChatId(messageId, chatId)) {
+            throw new ChatMessageNotFoundException();
+        }
+        advanceReadPosition(chatId, userId, messageId);
+    }
+
+    private void advanceReadPosition(Long chatId, Integer userId, Long messageId) {
+        userRepository.findAllByIdForUpdate(List.of(userId));
+        if (chatMemberRepository.markRead(chatId, userId, messageId) == 0) {
+            return;
+        }
+        long unreadCount = chatMessageRepository.countByChatIdAndIdGreaterThanAndSenderIdNot(chatId, messageId, userId);
+        long totalUnreadCount = chatMessageRepository.countUnread(userId);
+        eventPublisher.publishEvent(new ChatRead(chatId, userId, messageId, unreadCount, totalUnreadCount));
     }
 
     private Chat findChat(Integer userId, Long chatId) {
@@ -211,7 +240,8 @@ public class ChatService {
         List<UserSummaryResponse> members = chatMemberRepository.findOtherMembers(chat.getId(), userId).stream()
                 .map(this::toSummary)
                 .toList();
-        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members, canSend(chat, userId));
+        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members, canSend(chat, userId),
+                chatMemberRepository.findLastReadMessageId(chat.getId(), userId));
     }
 
     private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId) {
@@ -228,7 +258,8 @@ public class ChatService {
                 chat.getType(),
                 chat.getName(),
                 otherUser == null ? null : toSummary(otherUser),
-                lastMessage == null ? null : toMessageResponse(lastMessage, row.lastMessageSender()));
+                lastMessage == null ? null : toMessageResponse(lastMessage, row.lastMessageSender()),
+                row.unreadCount());
     }
 
     private ChatMessageResponse toMessageResponse(ChatMessage message) {

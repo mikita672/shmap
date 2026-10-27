@@ -4,7 +4,9 @@ import com.mdzvtt.shmap.chat.dto.AddChatMembersRequest;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
+import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
 import com.mdzvtt.shmap.chat.dto.CreateGroupChatRequest;
+import com.mdzvtt.shmap.chat.dto.MarkChatReadRequest;
 import com.mdzvtt.shmap.chat.dto.SendChatMessageRequest;
 import com.mdzvtt.shmap.user.User;
 import jakarta.validation.Valid;
@@ -35,6 +37,11 @@ public class ChatController {
         return chatService.getChats(user.getId());
     }
 
+    @GetMapping("/unread/count")
+    public ChatUnreadCountResponse countUnread(@AuthenticationPrincipal User user) {
+        return chatService.countUnread(user.getId());
+    }
+
     @PutMapping("/direct/{userId}")
     public ChatResponse openDirect(@AuthenticationPrincipal User user, @PathVariable Integer userId) {
         return chatService.openDirect(user.getId(), userId);
@@ -62,6 +69,13 @@ public class ChatController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void leave(@AuthenticationPrincipal User user, @PathVariable Long chatId) {
         chatService.leave(user.getId(), chatId);
+    }
+
+    @PutMapping("/{chatId}/read")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void markRead(@AuthenticationPrincipal User user, @PathVariable Long chatId,
+            @Valid @RequestBody MarkChatReadRequest request) {
+        chatService.markRead(user.getId(), chatId, request.messageId());
     }
 
     @GetMapping("/{chatId}/messages")
