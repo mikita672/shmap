@@ -146,6 +146,7 @@ public class ChatService {
 
     @Transactional
     public ChatMessageResponse send(Integer userId, Long chatId, String text) {
+        lockChat(chatId);
         Chat chat = findChat(userId, chatId);
         if (!canSend(chat, userId)) {
             throw new NotFriendsException("You can only message friends");
