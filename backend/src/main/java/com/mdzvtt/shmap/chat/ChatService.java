@@ -177,6 +177,7 @@ public class ChatService {
     }
 
     private void advanceReadPosition(Long chatId, Integer userId, Long messageId) {
+        userRepository.findAllByIdForUpdate(List.of(userId));
         if (chatMemberRepository.markRead(chatId, userId, messageId) == 0) {
             return;
         }
