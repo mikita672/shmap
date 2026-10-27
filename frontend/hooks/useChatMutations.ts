@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { toast } from "sonner-native";
 import { addChatMembers, createGroupChat, leaveChat } from "@/lib/api/chats";
+import { refetchUnreadTotal } from "@/lib/chat-cache";
 import { AuthErrorCode, type CreateGroupChatRequest } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 import { chatQueryOptions } from "@/hooks/useChat";
@@ -50,6 +51,7 @@ export function useLeaveChat() {
     },
     onSuccess: async (chatId) => {
       queryClient.removeQueries({ queryKey: ["chats", chatId] });
+      void refetchUnreadTotal(queryClient);
       await queryClient.refetchQueries({ queryKey: ["chats"], exact: true });
       router.dismissAll();
     },

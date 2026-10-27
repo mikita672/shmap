@@ -4,8 +4,15 @@ import { useIsFocused } from "expo-router";
 import { chatQueryOptions, useChat } from "@/hooks/useChat";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { chatsQueryOptions } from "@/hooks/useChats";
+import { unreadChatCountQueryOptions } from "@/hooks/useUnreadChatCount";
 import { markChatRead } from "@/lib/api/chats";
-import { moveReadPosition, setChatUnreadCount } from "@/lib/chat-cache";
+import {
+  addToUnreadTotal,
+  getChatUnreadCount,
+  moveReadPosition,
+  refetchUnreadTotal,
+  setChatUnreadCount,
+} from "@/lib/chat-cache";
 
 const LIVE_READ_DELAY_MS = 1000;
 
@@ -18,10 +25,17 @@ export function useMarkChatRead(chatId: number) {
       await markChatRead(chatId, messageId);
     },
     onMutate: async (messageId) => {
-      await queryClient.cancelQueries({
-        queryKey: chatsQueryOptions.queryKey,
-        exact: true,
-      });
+      await Promise.all([
+        queryClient.cancelQueries({
+          queryKey: chatsQueryOptions.queryKey,
+          exact: true,
+        }),
+        queryClient.cancelQueries({
+          queryKey: unreadChatCountQueryOptions.queryKey,
+          exact: true,
+        }),
+      ]);
+      addToUnreadTotal(queryClient, -getChatUnreadCount(queryClient, chatId));
       setChatUnreadCount(queryClient, chatId, 0);
       moveReadPosition(queryClient, chatId, messageId);
     },
@@ -34,6 +48,7 @@ export function useMarkChatRead(chatId: number) {
         queryKey: chatQueryOptions(chatId).queryKey,
         exact: true,
       });
+      void refetchUnreadTotal(queryClient);
     },
   });
 }

@@ -10,6 +10,7 @@ import {
   addMessageToCache,
   addMessageToChatList,
   applyChatRead,
+  refetchUnreadTotal,
 } from "@/lib/chat-cache";
 import { EventStreamError, readEventStream } from "@/lib/api/events";
 import { getOpenChatId } from "@/lib/open-chat";
@@ -144,6 +145,7 @@ export function useChatEvents() {
                   queryKey: chatQueryOptions(chatId).queryKey,
                   exact: true,
                 });
+                void refetchUnreadTotal(queryClient);
               } catch {}
               return;
             }
