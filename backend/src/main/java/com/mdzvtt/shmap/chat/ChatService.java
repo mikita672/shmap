@@ -231,7 +231,8 @@ public class ChatService {
                 chat.getType(),
                 chat.getName(),
                 otherUser == null ? null : toSummary(otherUser),
-                lastMessage == null ? null : toMessageResponse(lastMessage, row.lastMessageSender()));
+                lastMessage == null ? null : toMessageResponse(lastMessage, row.lastMessageSender()),
+                row.unreadCount());
     }
 
     private ChatMessageResponse toMessageResponse(ChatMessage message) {
