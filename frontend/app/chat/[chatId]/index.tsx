@@ -13,6 +13,7 @@ import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
+import { useReadPositionOnOpen } from "@/hooks/useReadPositionOnOpen";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -22,6 +23,7 @@ export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: chat, isPending, error, refetch } = useChat(Number(chatId));
+  const readUpTo = useReadPositionOnOpen(Number(chatId));
   const { data: friends } = useFriends();
   const send = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();
@@ -95,7 +97,7 @@ export default function ChatScreen() {
           <MessageList
             chatId={chat.id}
             isGroup={chat.type === "GROUP"}
-            readUpTo={chat.lastReadMessageId}
+            readUpTo={readUpTo}
           />
           {chat.canSend ? (
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
