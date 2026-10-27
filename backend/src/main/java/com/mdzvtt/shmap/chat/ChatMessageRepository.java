@@ -14,6 +14,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     @EntityGraph(attributePaths = "sender")
     List<ChatMessage> findByChatIdAndIdLessThanOrderByIdDesc(Long chatId, Long before, Limit limit);
 
+    boolean existsByIdAndChatId(Long id, Long chatId);
+
     @Query("select max(m.id) from ChatMessage m where m.chat.id = :chatId")
     Long findLatestId(Long chatId);
 }

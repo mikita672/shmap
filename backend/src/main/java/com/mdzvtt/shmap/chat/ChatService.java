@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
+import com.mdzvtt.shmap.exception.ChatMessageNotFoundException;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
@@ -163,6 +164,9 @@ public class ChatService {
     @Transactional
     public void markRead(Integer userId, Long chatId, Long messageId) {
         findChat(userId, chatId);
+        if (!chatMessageRepository.existsByIdAndChatId(messageId, chatId)) {
+            throw new ChatMessageNotFoundException();
+        }
         chatMemberRepository.markRead(chatId, userId, messageId);
     }
 
