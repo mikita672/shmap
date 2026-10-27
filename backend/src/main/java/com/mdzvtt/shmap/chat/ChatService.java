@@ -160,6 +160,12 @@ public class ChatService {
         return response;
     }
 
+    @Transactional
+    public void markRead(Integer userId, Long chatId, Long messageId) {
+        findChat(userId, chatId);
+        chatMemberRepository.markRead(chatId, userId, messageId);
+    }
+
     private Chat findChat(Integer userId, Long chatId) {
         return chatRepository.findForMember(chatId, userId).orElseThrow(ChatNotFoundException::new);
     }
