@@ -177,7 +177,7 @@ All routes live under `/api/v1`:
 | `/friend-activity`            | Your recent friend activity, newest first                               |
 | `/blocks`                     | Blocking and unblocking users, and the list of users you blocked        |
 | `/chats`                      | Your chats, 1:1 and group chats, members, messages and unread counts    |
-| `/events`                     | The live event stream. See Live updates                                 |
+| `/events`                    | The live event stream. See Live updates                                 |
 
 ## Live updates
 
@@ -199,13 +199,13 @@ data:{"chatId":12,"lastReadMessageId":345,"unreadCount":0,"totalUnreadCount":4}
 :
 ```
 
-| Event          | When                                                                                                             | What the app does                                                                                                                                                  |
-| -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ready`        | The stream is registered                                                                                         | Reloads the chats list, the unread total and the open chat's newest page over REST                                                                                 |
-| `chat.message` | Someone sent a message, to every member including the sender                                                     | Appends the message, skipping ids it already has, and moves the chat to the top. From someone else in a chat you're not viewing, adds 1 to its badge and the total |
-| `chat.changed` | A group was created, people were added, someone left, or the two people in a 1:1 became or stopped being friends | Reloads the chats list, the unread total and the open chat                                                                                                         |
-| `chat.read`    | You marked a chat read or sent a message and your read position moved, to all of your own devices                | Sets that chat's unread badge, the total badge and your read position from the event                                                                               |
-| `:` (comment)  | Every 20 seconds                                                                                                 | Nothing. It keeps quiet connections open and detects dead clients                                                                                                  |
+| Event          | When                                                                                                             | What the app does                                                               |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `ready`        | The stream is registered                                                                                         | Reloads the chats list and the open chat's newest page over REST                |
+| `chat.message` | Someone sent a message, to every member including the sender                                                     | Appends the message, skipping ids it already has, and moves the chat to the top |
+| `chat.changed` | A group was created, people were added, someone left, or the two people in a 1:1 became or stopped being friends | Reloads the chats list and the open chat                                        |
+| `chat.read`    | You marked a chat read and your read position moved, to all of your own devices                                  | Sets that chat's unread badge and the total badge from the event                |
+| `:` (comment)  | Every 20 seconds                                                                                                 | Nothing. It keeps quiet connections open and detects dead clients               |
 
 The stream ends when any of these happens, and the app reconnects with a backoff, refreshes its token on a 401 and reloads after `ready`:
 
