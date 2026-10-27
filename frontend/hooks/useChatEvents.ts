@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { chatsQueryOptions } from "@/hooks/useChats";
+import { profileQueryOptions } from "@/hooks/useProfile";
 import { getAccessToken, refreshAccessToken } from "@/lib/api/client";
 import {
   addMessageToCache,
@@ -11,6 +12,7 @@ import {
   applyChatRead,
 } from "@/lib/chat-cache";
 import { EventStreamError, readEventStream } from "@/lib/api/events";
+import { getOpenChatId } from "@/lib/open-chat";
 import type { ChatMessageResponse, ChatReadEvent } from "@/lib/types/api";
 
 export function useChatEvents() {
@@ -103,8 +105,18 @@ export function useChatEvents() {
                   chatId: number;
                   message: ChatMessageResponse;
                 };
+                const myId = queryClient.getQueryData(
+                  profileQueryOptions.queryKey,
+                )?.id;
+                const countAsUnread =
+                  message.sender.id !== myId && chatId !== getOpenChatId();
                 addMessageToCache(queryClient, chatId, message);
-                addMessageToChatList(queryClient, chatId, message);
+                addMessageToChatList(
+                  queryClient,
+                  chatId,
+                  message,
+                  countAsUnread,
+                );
               } catch {}
               return;
             }

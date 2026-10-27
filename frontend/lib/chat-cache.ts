@@ -44,6 +44,7 @@ export function addMessageToChatList(
   queryClient: QueryClient,
   chatId: number,
   message: ChatMessageResponse,
+  countAsUnread = false,
 ) {
   let found = false;
   queryClient.setQueryData(chatsQueryOptions.queryKey, (chats) => {
@@ -52,8 +53,9 @@ export function addMessageToChatList(
     found = true;
     if (chat.lastMessage && chat.lastMessage.id >= message.id) return chats;
 
+    const unreadCount = chat.unreadCount + (countAsUnread ? 1 : 0);
     const others = chats.filter((cached) => cached.id !== chatId);
-    return [{ ...chat, lastMessage: message }, ...others];
+    return [{ ...chat, lastMessage: message, unreadCount }, ...others];
   });
 
   if (!found) {
