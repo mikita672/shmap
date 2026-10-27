@@ -5,9 +5,8 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { chatQueryOptions } from "@/hooks/useChat";
-import { chatsQueryOptions } from "@/hooks/useChats";
 import { sendChatMessage } from "@/lib/api/chats";
-import { addMessageToCache } from "@/lib/chat-cache";
+import { addMessageToCache, addMessageToChatList } from "@/lib/chat-cache";
 import type { OutgoingMessage } from "@/lib/chat-items";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -25,7 +24,10 @@ export function useSendMessage(chatId: number) {
       const { data } = await sendChatMessage(chatId, text);
       return data;
     },
-    onSuccess: (message) => addMessageToCache(queryClient, chatId, message),
+    onSuccess: (message) => {
+      addMessageToCache(queryClient, chatId, message);
+      addMessageToChatList(queryClient, chatId, message);
+    },
     onError: (error) => {
       if (!isErrorCode(error, AuthErrorCode.NOT_FRIENDS)) return;
       queueMicrotask(() => {
@@ -41,11 +43,6 @@ export function useSendMessage(chatId: number) {
         exact: true,
       });
     },
-    onSettled: () =>
-      queryClient.invalidateQueries({
-        queryKey: chatsQueryOptions.queryKey,
-        exact: true,
-      }),
   });
 }
 
