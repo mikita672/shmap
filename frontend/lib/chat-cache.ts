@@ -8,23 +8,36 @@ import type {
   ChatResponse,
 } from "@/lib/types/api";
 
-export function applyChatRead(queryClient: QueryClient, event: ChatReadEvent) {
+export function setChatUnreadCount(
+  queryClient: QueryClient,
+  chatId: number,
+  unreadCount: number,
+) {
   queryClient.setQueryData(chatsQueryOptions.queryKey, (chats) =>
     chats?.map((chat) =>
-      chat.id === event.chatId
-        ? { ...chat, unreadCount: event.unreadCount }
-        : chat,
+      chat.id === chatId ? { ...chat, unreadCount } : chat,
     ),
   );
+}
 
+export function moveReadPosition(
+  queryClient: QueryClient,
+  chatId: number,
+  messageId: number,
+) {
   queryClient.setQueryData(
-    chatQueryOptions(event.chatId).queryKey,
+    chatQueryOptions(chatId).queryKey,
     (chat?: ChatResponse) => {
       if (!chat) return chat;
-      if ((chat.lastReadMessageId ?? 0) >= event.lastReadMessageId) return chat;
-      return { ...chat, lastReadMessageId: event.lastReadMessageId };
+      if ((chat.lastReadMessageId ?? 0) >= messageId) return chat;
+      return { ...chat, lastReadMessageId: messageId };
     },
   );
+}
+
+export function applyChatRead(queryClient: QueryClient, event: ChatReadEvent) {
+  setChatUnreadCount(queryClient, event.chatId, event.unreadCount);
+  moveReadPosition(queryClient, event.chatId, event.lastReadMessageId);
 }
 
 export function addMessageToChatList(
