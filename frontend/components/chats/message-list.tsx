@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -50,11 +50,21 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
   const hasDecidedScrollRef = useRef(false);
   const scrollRetriesRef = useRef(0);
 
+  const [newestAtOpen, setNewestAtOpen] = useState<number | undefined>(
+    undefined,
+  );
+
   const messages = data?.pages.flat() ?? [];
+  const canDecideScroll =
+    readUpTo !== undefined && !!me && !!data && fetchStatus === "idle";
+  if (newestAtOpen === undefined && canDecideScroll) {
+    setNewestAtOpen(messages[0]?.id ?? 0);
+  }
+
   const firstUnreadId =
-    readUpTo === undefined || !me
+    readUpTo === undefined || newestAtOpen === undefined || !me
       ? null
-      : findFirstUnreadId(messages, readUpTo, me.id, hasNextPage);
+      : findFirstUnreadId(messages, readUpTo, newestAtOpen, me.id, hasNextPage);
   const items = buildChatItems(
     messages,
     dataUpdatedAt,
@@ -62,8 +72,6 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     firstUnreadId,
   );
   const unreadIndex = items.findIndex((item) => item.kind === "unread");
-  const canDecideScroll =
-    readUpTo !== undefined && !!me && !!data && fetchStatus === "idle";
 
   useEffect(() => {
     if (hasDecidedScrollRef.current || !canDecideScroll) return;

@@ -26,12 +26,15 @@ function isSameRun(a: ChatMessageResponse, b: ChatMessageResponse) {
 export function findFirstUnreadId(
   messages: ChatMessageResponse[],
   readUpTo: number | null,
+  newestAtOpen: number,
   myId: number,
   hasOlderMessages: boolean,
 ): number | null {
   let firstUnreadIndex = -1;
   messages.forEach((message, index) => {
-    if (message.sender.id !== myId && message.id > (readUpTo ?? 0)) {
+    const wasUnreadAtOpen =
+      message.id > (readUpTo ?? 0) && message.id <= newestAtOpen;
+    if (message.sender.id !== myId && wasUnreadAtOpen) {
       firstUnreadIndex = index;
     }
   });
