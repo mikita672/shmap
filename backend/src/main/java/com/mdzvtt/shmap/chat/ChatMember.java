@@ -47,7 +47,12 @@ public class ChatMember {
     private Long lastReadMessageId;
 
     public ChatMember(Chat chat, User user) {
+        this(chat, user, null);
+    }
+
+    public ChatMember(Chat chat, User user, Long lastReadMessageId) {
         this.chat = chat;
         this.user = user;
+        this.lastReadMessageId = lastReadMessageId;
     }
 }

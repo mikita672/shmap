@@ -98,8 +98,9 @@ public class ChatService {
         List<User> newUsers = findUsers(newIds);
         requireFriends(userId, newIds);
 
+        Long latestMessageId = chatMessageRepository.findLatestId(chatId);
         List<ChatMember> newMembers = newUsers.stream()
-                .map(user -> new ChatMember(chat, user))
+                .map(user -> new ChatMember(chat, user, latestMessageId))
                 .toList();
         chatMemberRepository.saveAll(newMembers);
         eventPublisher.publishEvent(new ChatChanged(chatId, chatMemberRepository.findUserIdsByChatId(chatId)));
