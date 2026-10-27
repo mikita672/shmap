@@ -62,17 +62,23 @@ export function useMarkReadWhileOpen(
   const { mutate } = useMarkChatRead(chatId);
   const isFocused = useIsFocused();
   const hasMarkedRef = useRef(false);
+  const failedIdRef = useRef<number | null>(null);
   const newestId = data?.pages[0]?.[0]?.id;
   const lastReadId = chat?.lastReadMessageId ?? null;
 
   useEffect(() => {
     if (!isFocused || readUpTo === undefined || fetchStatus !== "idle") return;
     if (newestId === undefined || newestId <= (lastReadId ?? 0)) return;
+    if (newestId === failedIdRef.current) return;
 
     const delay = hasMarkedRef.current ? LIVE_READ_DELAY_MS : 0;
     const timer = setTimeout(() => {
       hasMarkedRef.current = true;
-      mutate(newestId);
+      mutate(newestId, {
+        onError: () => {
+          failedIdRef.current = newestId;
+        },
+      });
     }, delay);
     return () => clearTimeout(timer);
   }, [isFocused, readUpTo, fetchStatus, newestId, lastReadId, mutate]);
