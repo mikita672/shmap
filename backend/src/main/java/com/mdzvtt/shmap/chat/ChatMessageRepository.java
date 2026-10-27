@@ -16,6 +16,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     boolean existsByIdAndChatId(Long id, Long chatId);
 
+    long countByChatIdAndIdGreaterThanAndSenderIdNot(Long chatId, Long id, Integer senderId);
+
     @Query("select max(m.id) from ChatMessage m where m.chat.id = :chatId")
     Long findLatestId(Long chatId);
 

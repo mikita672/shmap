@@ -173,7 +173,12 @@ public class ChatService {
         if (!chatMessageRepository.existsByIdAndChatId(messageId, chatId)) {
             throw new ChatMessageNotFoundException();
         }
-        chatMemberRepository.markRead(chatId, userId, messageId);
+        if (chatMemberRepository.markRead(chatId, userId, messageId) == 0) {
+            return;
+        }
+        long unreadCount = chatMessageRepository.countByChatIdAndIdGreaterThanAndSenderIdNot(chatId, messageId, userId);
+        long totalUnreadCount = chatMessageRepository.countUnread(userId);
+        eventPublisher.publishEvent(new ChatRead(chatId, userId, messageId, unreadCount, totalUnreadCount));
     }
 
     private Chat findChat(Integer userId, Long chatId) {
