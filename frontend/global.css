@@ -97,6 +97,8 @@
     --chat-list-foreground: 22.74 65.52% 28.43%; /* Russet — chat names, empty state */
     --chat-list-divider: 36 46% 75%; /* Camel at 45% over the list sheet */
     --chat-list-unread: 25.82 72.69% 44.51%; /* Orange #C4661F — unread chat time */
+    --unread-divider: 51 43% 79%; /* Lemon Meringue at 70% over the chat background */
+    --unread-divider-foreground: 22.74 65.52% 28.43%; /* Russet — "Unread messages" */
 
     /* Chat bubbles */
     --bubble-in: 52 93% 93%; /* Cornsilk */
@@ -204,6 +206,8 @@
     --chat-list-foreground: 43 81% 88%; /* Lemon Meringue — chat names, empty state */
     --chat-list-divider: 86 14% 44%; /* Lemon Meringue at 12% over the list sheet */
     --chat-list-unread: 43 81% 88%; /* Lemon Meringue — unread chat time */
+    --unread-divider: 29 46% 30%; /* Russet at 70% over the chat background */
+    --unread-divider-foreground: 43 81% 88%; /* Lemon Meringue — "Unread messages" */
 
     /* Chat bubbles */
     --bubble-in: 22.74 65.52% 28.43%; /* Russet */

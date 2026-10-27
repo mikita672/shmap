@@ -10,20 +10,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DayChip } from "@/components/chats/day-chip";
 import { MessageBubble } from "@/components/chats/message-bubble";
 import { MessageRow } from "@/components/chats/message-row";
+import { UnreadDivider } from "@/components/chats/unread-divider";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useProfile } from "@/hooks/useProfile";
 import { useOutgoingMessages } from "@/hooks/useSendMessage";
-import { buildChatItems } from "@/lib/chat-items";
+import { buildChatItems, findFirstUnreadId } from "@/lib/chat-items";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export interface MessageListProps {
   chatId: number;
   isGroup: boolean;
+  readUpTo?: number | null;
 }
 
-export function MessageList({ chatId, isGroup }: MessageListProps) {
+export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
   const {
     data,
     isPending,
@@ -58,7 +60,17 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
     );
   }
 
-  const items = buildChatItems(data.pages.flat(), dataUpdatedAt, outgoing);
+  const messages = data.pages.flat();
+  const firstUnreadId =
+    readUpTo === undefined || !me
+      ? null
+      : findFirstUnreadId(messages, readUpTo, me.id, hasNextPage);
+  const items = buildChatItems(
+    messages,
+    dataUpdatedAt,
+    outgoing,
+    firstUnreadId,
+  );
 
   return (
     <FlatList
@@ -71,6 +83,8 @@ export function MessageList({ chatId, isGroup }: MessageListProps) {
       renderItem={({ item }) =>
         item.kind === "day" ? (
           <DayChip label={item.label} />
+        ) : item.kind === "unread" ? (
+          <UnreadDivider />
         ) : item.kind === "outgoing" ? (
           <Pressable
             className="flex-row justify-end pt-1"

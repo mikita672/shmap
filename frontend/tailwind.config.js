@@ -70,6 +70,10 @@ module.exports = {
           divider: "hsl(var(--chat-list-divider))",
           unread: "hsl(var(--chat-list-unread))",
         },
+        "unread-divider": {
+          DEFAULT: "hsl(var(--unread-divider))",
+          foreground: "hsl(var(--unread-divider-foreground))",
+        },
         bubble: {
           in: "hsl(var(--bubble-in))",
           "in-foreground": "hsl(var(--bubble-in-foreground))",

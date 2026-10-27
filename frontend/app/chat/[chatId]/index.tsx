@@ -92,7 +92,11 @@ export default function ChatScreen() {
         </View>
       ) : (
         <>
-          <MessageList chatId={chat.id} isGroup={chat.type === "GROUP"} />
+          <MessageList
+            chatId={chat.id}
+            isGroup={chat.type === "GROUP"}
+            readUpTo={chat.lastReadMessageId}
+          />
           {chat.canSend ? (
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
               <Composer onSend={(text) => send.mutate(text)} />

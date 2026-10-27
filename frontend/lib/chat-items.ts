@@ -10,6 +10,7 @@ export type ChatItem =
       isLastInRun: boolean;
     }
   | { kind: "day"; key: string; label: string }
+  | { kind: "unread"; key: string }
   | { kind: "outgoing"; key: string; message: OutgoingMessage };
 
 export interface OutgoingMessage {
@@ -22,10 +23,30 @@ function isSameRun(a: ChatMessageResponse, b: ChatMessageResponse) {
   return a.sender.id === b.sender.id && isSameDay(a.createdAt, b.createdAt);
 }
 
+export function findFirstUnreadId(
+  messages: ChatMessageResponse[],
+  readUpTo: number | null,
+  myId: number,
+  hasOlderMessages: boolean,
+): number | null {
+  let firstUnreadIndex = -1;
+  messages.forEach((message, index) => {
+    if (message.sender.id !== myId && message.id > (readUpTo ?? 0)) {
+      firstUnreadIndex = index;
+    }
+  });
+
+  if (firstUnreadIndex === -1) return null;
+  const isOldestLoaded = firstUnreadIndex === messages.length - 1;
+  if (isOldestLoaded && hasOlderMessages) return null;
+  return messages[firstUnreadIndex].id;
+}
+
 export function buildChatItems(
   messages: ChatMessageResponse[],
   now: number,
   outgoing: OutgoingMessage[] = [],
+  firstUnreadId: number | null = null,
 ): ChatItem[] {
   const items: ChatItem[] = [...outgoing]
     .sort((a, b) => b.submittedAt - a.submittedAt)
@@ -38,14 +59,20 @@ export function buildChatItems(
   messages.forEach((message, index) => {
     const newer = messages[index - 1];
     const older = messages[index + 1];
+    const isFirstUnread = message.id === firstUnreadId;
 
     items.push({
       kind: "message",
       key: `message-${message.id}`,
       message,
-      isFirstInRun: !older || !isSameRun(message, older),
-      isLastInRun: !newer || !isSameRun(message, newer),
+      isFirstInRun: isFirstUnread || !older || !isSameRun(message, older),
+      isLastInRun:
+        !newer || newer.id === firstUnreadId || !isSameRun(message, newer),
     });
+
+    if (isFirstUnread) {
+      items.push({ kind: "unread", key: "unread" });
+    }
 
     if (!older || !isSameDay(message.createdAt, older.createdAt)) {
       items.push({
