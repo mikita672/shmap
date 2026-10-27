@@ -44,6 +44,8 @@ public class ChatMember {
     @Column(nullable = false, updatable = false)
     private Instant joinedAt;
 
+    private Long lastReadMessageId;
+
     public ChatMember(Chat chat, User user) {
         this.chat = chat;
         this.user = user;
