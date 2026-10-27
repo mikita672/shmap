@@ -160,10 +160,10 @@ public class ChatService {
         }
         User sender = userRepository.getReferenceById(userId);
         ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
-        chatMemberRepository.markRead(chatId, userId, message.getId());
         ChatMessageResponse response = toMessageResponse(message);
         eventPublisher
                 .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));
+        advanceReadPosition(chatId, userId, message.getId());
         return response;
     }
 
@@ -173,6 +173,10 @@ public class ChatService {
         if (!chatMessageRepository.existsByIdAndChatId(messageId, chatId)) {
             throw new ChatMessageNotFoundException();
         }
+        advanceReadPosition(chatId, userId, messageId);
+    }
+
+    private void advanceReadPosition(Long chatId, Integer userId, Long messageId) {
         if (chatMemberRepository.markRead(chatId, userId, messageId) == 0) {
             return;
         }
