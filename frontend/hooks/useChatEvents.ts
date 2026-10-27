@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { chatsQueryOptions } from "@/hooks/useChats";
 import { getAccessToken, refreshAccessToken } from "@/lib/api/client";
-import { addMessageToCache } from "@/lib/chat-cache";
+import { addMessageToCache, addMessageToChatList } from "@/lib/chat-cache";
 import { EventStreamError, readEventStream } from "@/lib/api/events";
 import type { ChatMessageResponse } from "@/lib/types/api";
 
@@ -100,10 +100,7 @@ export function useChatEvents() {
                   message: ChatMessageResponse;
                 };
                 addMessageToCache(queryClient, chatId, message);
-                void queryClient.invalidateQueries({
-                  queryKey: chatsQueryOptions.queryKey,
-                  exact: true,
-                });
+                addMessageToChatList(queryClient, chatId, message);
               } catch {}
               return;
             }
