@@ -1,7 +1,9 @@
 import { Pressable, View } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { GroupAvatar } from "@/components/ui/group-avatar";
 import { Text } from "@/components/ui/text";
+import { cn } from "@/lib/utils";
 
 const AVATAR_SIZE = 52;
 
@@ -11,6 +13,7 @@ export interface ChatRowProps {
   time?: string;
   isGroup: boolean;
   avatarUrl?: string | null;
+  unreadCount?: number;
   divider?: boolean;
   onPress?: () => void;
 }
@@ -21,9 +24,12 @@ export function ChatRow({
   time,
   isGroup,
   avatarUrl,
+  unreadCount = 0,
   divider = true,
   onPress,
 }: ChatRowProps) {
+  const isUnread = unreadCount > 0;
+
   return (
     <Pressable
       onPress={onPress}
@@ -46,12 +52,37 @@ export function ChatRow({
             {name}
           </Text>
           {time ? (
-            <Text className="text-xs leading-4 text-secondary">{time}</Text>
+            <Text
+              className={cn(
+                "text-xs leading-4",
+                isUnread
+                  ? "font-medium text-chat-list-unread"
+                  : "text-secondary",
+              )}
+            >
+              {time}
+            </Text>
           ) : null}
         </View>
-        <Text numberOfLines={1} className="text-sm leading-5 text-secondary">
-          {preview}
-        </Text>
+        <View className="flex-row items-center gap-2">
+          <Text
+            numberOfLines={1}
+            className={cn(
+              "flex-1 text-sm leading-5",
+              isUnread ? "text-chat-list-foreground" : "text-secondary",
+            )}
+          >
+            {preview}
+          </Text>
+          {isUnread && (
+            <View
+              accessible
+              accessibilityLabel={`${unreadCount} unread ${unreadCount === 1 ? "message" : "messages"}`}
+            >
+              <Badge count={unreadCount} />
+            </View>
+          )}
+        </View>
       </View>
 
       {divider && (

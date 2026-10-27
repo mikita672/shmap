@@ -3,9 +3,11 @@ import { router, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AnimatedTabBar } from "@/components/animated-tab-bar";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadChatCount } from "@/hooks/useUnreadChatCount";
 
 export default function TabsLayout() {
   const { pendingLink, clearPendingLink } = useAuth();
+  const { data: unreadCount = 0 } = useUnreadChatCount();
 
   useEffect(() => {
     if (!pendingLink) return;
@@ -38,6 +40,11 @@ export default function TabsLayout() {
         name="chats"
         options={{
           title: "Chats",
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarAccessibilityLabel:
+            unreadCount > 0
+              ? `Chats, ${unreadCount} unread ${unreadCount === 1 ? "message" : "messages"}`
+              : "Chats",
           tabBarIcon: ({ size, focused, color }) => (
             <Ionicons
               name={focused ? "chatbox-ellipses" : "chatbox-ellipses-outline"}

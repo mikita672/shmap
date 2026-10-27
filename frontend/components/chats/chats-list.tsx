@@ -9,6 +9,7 @@ import { useChats } from "@/hooks/useChats";
 import { useProfile } from "@/hooks/useProfile";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { useUnreadChatCount } from "@/hooks/useUnreadChatCount";
 import { getChatName, getChatPreview } from "@/lib/chat-preview";
 import { matchesChatSearch } from "@/lib/chat-search";
 import { formatChatListTime } from "@/lib/chat-time";
@@ -21,8 +22,10 @@ export interface ChatsListProps {
 export function ChatsList({ searchQuery }: ChatsListProps) {
   const { data: chats, isPending, error, refetch, dataUpdatedAt } = useChats();
   const { data: me } = useProfile();
-  useRefreshOnFocus(refetch);
-  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
+  const { refetch: refetchUnreadTotal } = useUnreadChatCount();
+  const refetchAll = () => Promise.all([refetch(), refetchUnreadTotal()]);
+  useRefreshOnFocus(refetchAll);
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetchAll);
 
   if (isPending) {
     return (
@@ -80,6 +83,7 @@ export function ChatsList({ searchQuery }: ChatsListProps) {
           }
           isGroup={chat.type === "GROUP"}
           avatarUrl={chat.type === "DIRECT" ? chat.otherUser.avatarUrl : null}
+          unreadCount={chat.unreadCount}
           divider={index < matches.length - 1}
           onPress={() =>
             router.push({

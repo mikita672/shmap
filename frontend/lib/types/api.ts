@@ -13,6 +13,7 @@ export const AuthErrorCode = {
   FRIENDS_LIST_HIDDEN: "FRIENDS_LIST_HIDDEN",
   BLOCK_NOT_FOUND: "BLOCK_NOT_FOUND",
   CHAT_NOT_FOUND: "CHAT_NOT_FOUND",
+  CHAT_MESSAGE_NOT_FOUND: "CHAT_MESSAGE_NOT_FOUND",
   NOT_FRIENDS: "NOT_FRIENDS",
   UNAUTHORIZED: "UNAUTHORIZED",
   INVALID_REFRESH_TOKEN: "INVALID_REFRESH_TOKEN",
@@ -207,6 +208,7 @@ export interface ChatMessageResponse {
 export type ChatSummaryResponse = {
   id: number;
   lastMessage: ChatMessageResponse | null;
+  unreadCount: number;
 } & (
   | { type: "DIRECT"; name: null; otherUser: UserSummaryResponse }
   | { type: "GROUP"; name: string; otherUser: null }
@@ -216,7 +218,19 @@ export type ChatResponse = {
   id: number;
   members: UserSummaryResponse[];
   canSend: boolean;
+  lastReadMessageId: number | null;
 } & ({ type: "DIRECT"; name: null } | { type: "GROUP"; name: string });
+
+export interface ChatUnreadCountResponse {
+  count: number;
+}
+
+export interface ChatReadEvent {
+  chatId: number;
+  lastReadMessageId: number;
+  unreadCount: number;
+  totalUnreadCount: number;
+}
 
 export interface CreateGroupChatRequest {
   name: string;

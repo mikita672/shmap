@@ -29,7 +29,7 @@ The project is in early development. Accounts, profiles, friends, chats and the 
 - Get "People you may know" suggestions: friends of your friends, ranked by mutual friends. You can dismiss any suggestion.
 - See your recent friend activity: who accepted your requests and whose requests you accepted.
 - Mute friends and block users. Blocking removes the friendship, its activity and any pending requests, and the two users stop seeing each other in search and on profiles.
-- Chat one-on-one or in groups with your friends: browse your 1:1 and group chats with their last message, scroll through history with smooth keyboard handling, and send text messages. Live updates arrive via Server-Sent Events without polling. After an unfriend or a block, the 1:1 chat stays readable with an Add friend shortcut but takes no new messages. Create group chats with a searchable friend picker, view group info with member lists, add friends, and leave groups.
+- Chat one-on-one or in groups with your friends: browse your 1:1 and group chats with their last message, scroll through history with smooth keyboard handling, and send text messages. Live updates arrive via Server-Sent Events without polling. Unread messages show as count badges on each chat and as a total on the Chats tab. Opening a chat marks it read and starts at an "Unread messages" divider when the first unread message is loaded. After an unfriend or a block, the 1:1 chat stays readable with an Add friend shortcut but takes no new messages. Create group chats with a searchable friend picker, view group info with member lists, add friends, and leave groups.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
 - Use the Settings screen to pick a light, dark or system theme, change your password, and log out.
 
@@ -217,7 +217,6 @@ The stream ends when any of these happens, and the app reconnects with a backoff
 Close the stream when the app goes to the background. Cloud Run bills an instance for as long as any stream is open on it.
 
 Instances share events through Redis pub/sub on one channel, so it doesn't matter which instance serves a stream or a send. Production uses an [Upstash](https://upstash.com) free database, and local development uses the `redis` container from Docker Compose. If Redis is down, REST keeps working and live updates pause until it returns. The timeouts and limits are under `app.realtime` in `application.yml`, and the Cloud Run request timeout (60 minutes) and concurrency (250) are set in the release workflow.
-
 
 ## CI and releases
 

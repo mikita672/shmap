@@ -1,7 +1,8 @@
+import { useCallback } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ChatHeader } from "@/components/chats/chat-header";
 import { Composer } from "@/components/chats/composer";
 import { MessageList } from "@/components/chats/message-list";
@@ -13,7 +14,10 @@ import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
+import { useMarkReadWhileOpen } from "@/hooks/useMarkChatRead";
+import { useReadPositionOnOpen } from "@/hooks/useReadPositionOnOpen";
 import { useSendMessage } from "@/hooks/useSendMessage";
+import { setOpenChatId } from "@/lib/open-chat";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
@@ -22,6 +26,14 @@ export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: chat, isPending, error, refetch } = useChat(Number(chatId));
+  const readUpTo = useReadPositionOnOpen(Number(chatId));
+  useMarkReadWhileOpen(Number(chatId), readUpTo);
+  useFocusEffect(
+    useCallback(() => {
+      setOpenChatId(Number(chatId));
+      return () => setOpenChatId(null);
+    }, [chatId]),
+  );
   const { data: friends } = useFriends();
   const send = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();
@@ -92,7 +104,11 @@ export default function ChatScreen() {
         </View>
       ) : (
         <>
-          <MessageList chatId={chat.id} isGroup={chat.type === "GROUP"} />
+          <MessageList
+            chatId={chat.id}
+            isGroup={chat.type === "GROUP"}
+            readUpTo={readUpTo}
+          />
           {chat.canSend ? (
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
               <Composer onSend={(text) => send.mutate(text)} />

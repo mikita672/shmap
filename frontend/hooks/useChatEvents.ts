@@ -4,10 +4,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { chatsQueryOptions } from "@/hooks/useChats";
+import { profileQueryOptions } from "@/hooks/useProfile";
 import { getAccessToken, refreshAccessToken } from "@/lib/api/client";
-import { addMessageToCache, addMessageToChatList } from "@/lib/chat-cache";
+import {
+  addMessageToCache,
+  addMessageToChatList,
+  applyChatRead,
+  refetchUnreadTotal,
+} from "@/lib/chat-cache";
 import { EventStreamError, readEventStream } from "@/lib/api/events";
-import type { ChatMessageResponse } from "@/lib/types/api";
+import { getOpenChatId } from "@/lib/open-chat";
+import type { ChatMessageResponse, ChatReadEvent } from "@/lib/types/api";
 
 export function useChatEvents() {
   const { isAuthenticated } = useAuth();
@@ -99,8 +106,28 @@ export function useChatEvents() {
                   chatId: number;
                   message: ChatMessageResponse;
                 };
+                const myId = queryClient.getQueryData(
+                  profileQueryOptions.queryKey,
+                )?.id;
+                const countAsUnread =
+                  message.sender.id !== myId && chatId !== getOpenChatId();
                 addMessageToCache(queryClient, chatId, message);
-                addMessageToChatList(queryClient, chatId, message);
+                addMessageToChatList(
+                  queryClient,
+                  chatId,
+                  message,
+                  countAsUnread,
+                );
+              } catch {}
+              return;
+            }
+
+            if (event.event === "chat.read") {
+              try {
+                applyChatRead(
+                  queryClient,
+                  JSON.parse(event.data) as ChatReadEvent,
+                );
               } catch {}
               return;
             }
@@ -118,6 +145,7 @@ export function useChatEvents() {
                   queryKey: chatQueryOptions(chatId).queryKey,
                   exact: true,
                 });
+                void refetchUnreadTotal(queryClient);
               } catch {}
               return;
             }

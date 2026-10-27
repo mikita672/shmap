@@ -3,11 +3,18 @@ import type {
   ChatMessageResponse,
   ChatResponse,
   ChatSummaryResponse,
+  ChatUnreadCountResponse,
   CreateGroupChatRequest,
 } from "@/lib/types/api";
 
 export const getChats = () =>
   apiClient.get<ChatSummaryResponse[]>("/api/v1/chats");
+
+export const getUnreadChatCount = () =>
+  apiClient.get<ChatUnreadCountResponse>("/api/v1/chats/unread/count");
+
+export const markChatRead = (chatId: number, messageId: number) =>
+  apiClient.put<void>(`/api/v1/chats/${chatId}/read`, { messageId });
 
 export const getChat = (chatId: number) =>
   apiClient.get<ChatResponse>(`/api/v1/chats/${chatId}`);
