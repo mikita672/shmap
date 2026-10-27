@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -16,8 +17,14 @@ import { Text } from "@/components/ui/text";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useProfile } from "@/hooks/useProfile";
 import { useOutgoingMessages } from "@/hooks/useSendMessage";
-import { buildChatItems, findFirstUnreadId } from "@/lib/chat-items";
+import {
+  buildChatItems,
+  findFirstUnreadId,
+  type ChatItem,
+} from "@/lib/chat-items";
 import { getErrorMessage } from "@/lib/utils/error";
+
+const MAX_SCROLL_RETRIES = 3;
 
 export interface MessageListProps {
   chatId: number;
@@ -35,9 +42,64 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+    fetchStatus,
   } = useChatMessages(chatId);
   const { data: me } = useProfile();
   const { outgoing, retry } = useOutgoingMessages(chatId);
+  const listRef = useRef<FlatList<ChatItem>>(null);
+  const hasDecidedScrollRef = useRef(false);
+  const scrollRetriesRef = useRef(0);
+
+  const messages = data?.pages.flat() ?? [];
+  const firstUnreadId =
+    readUpTo === undefined || !me
+      ? null
+      : findFirstUnreadId(messages, readUpTo, me.id, hasNextPage);
+  const items = buildChatItems(
+    messages,
+    dataUpdatedAt,
+    outgoing,
+    firstUnreadId,
+  );
+  const unreadIndex = items.findIndex((item) => item.kind === "unread");
+  const canDecideScroll =
+    readUpTo !== undefined && !!me && !!data && fetchStatus === "idle";
+
+  useEffect(() => {
+    if (hasDecidedScrollRef.current || !canDecideScroll) return;
+    hasDecidedScrollRef.current = true;
+    if (unreadIndex < 0) return;
+
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToIndex({
+        index: unreadIndex,
+        viewPosition: 1,
+        animated: false,
+      });
+    });
+  }, [canDecideScroll, unreadIndex]);
+
+  const handleScrollToIndexFailed = ({
+    index,
+    averageItemLength,
+  }: {
+    index: number;
+    averageItemLength: number;
+  }) => {
+    if (scrollRetriesRef.current >= MAX_SCROLL_RETRIES) return;
+    scrollRetriesRef.current += 1;
+    listRef.current?.scrollToOffset({
+      offset: averageItemLength * index,
+      animated: false,
+    });
+    setTimeout(() => {
+      listRef.current?.scrollToIndex({
+        index,
+        viewPosition: 1,
+        animated: false,
+      });
+    }, 50);
+  };
 
   if (isPending) {
     return (
@@ -60,21 +122,12 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     );
   }
 
-  const messages = data.pages.flat();
-  const firstUnreadId =
-    readUpTo === undefined || !me
-      ? null
-      : findFirstUnreadId(messages, readUpTo, me.id, hasNextPage);
-  const items = buildChatItems(
-    messages,
-    dataUpdatedAt,
-    outgoing,
-    firstUnreadId,
-  );
-
   return (
     <FlatList
+      ref={listRef}
       inverted
+      initialNumToRender={items.length}
+      onScrollToIndexFailed={handleScrollToIndexFailed}
       maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
       showsVerticalScrollIndicator={false}
       renderScrollComponent={(props) => <ChatScrollView {...props} />}
