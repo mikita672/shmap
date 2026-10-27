@@ -13,7 +13,7 @@ import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
-import { useMarkReadOnOpen } from "@/hooks/useMarkChatRead";
+import { useMarkReadWhileOpen } from "@/hooks/useMarkChatRead";
 import { useReadPositionOnOpen } from "@/hooks/useReadPositionOnOpen";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { AuthErrorCode } from "@/lib/types/api";
@@ -25,7 +25,7 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { data: chat, isPending, error, refetch } = useChat(Number(chatId));
   const readUpTo = useReadPositionOnOpen(Number(chatId));
-  useMarkReadOnOpen(Number(chatId), readUpTo);
+  useMarkReadWhileOpen(Number(chatId), readUpTo);
   const { data: friends } = useFriends();
   const send = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();

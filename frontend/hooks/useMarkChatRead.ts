@@ -1,10 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { chatQueryOptions } from "@/hooks/useChat";
+import { useIsFocused } from "expo-router";
+import { chatQueryOptions, useChat } from "@/hooks/useChat";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { chatsQueryOptions } from "@/hooks/useChats";
 import { markChatRead } from "@/lib/api/chats";
 import { moveReadPosition, setChatUnreadCount } from "@/lib/chat-cache";
+
+const LIVE_READ_DELAY_MS = 1000;
 
 export function useMarkChatRead(chatId: number) {
   const queryClient = useQueryClient();
@@ -35,23 +38,27 @@ export function useMarkChatRead(chatId: number) {
   });
 }
 
-export function useMarkReadOnOpen(
+export function useMarkReadWhileOpen(
   chatId: number,
   readUpTo: number | null | undefined,
 ) {
   const { data, fetchStatus } = useChatMessages(chatId);
+  const { data: chat } = useChat(chatId);
   const { mutate } = useMarkChatRead(chatId);
+  const isFocused = useIsFocused();
   const hasMarkedRef = useRef(false);
   const newestId = data?.pages[0]?.[0]?.id;
+  const lastReadId = chat?.lastReadMessageId ?? null;
 
   useEffect(() => {
-    if (hasMarkedRef.current) return;
-    if (readUpTo === undefined || fetchStatus !== "idle") return;
-    if (newestId === undefined) return;
+    if (!isFocused || readUpTo === undefined || fetchStatus !== "idle") return;
+    if (newestId === undefined || newestId <= (lastReadId ?? 0)) return;
 
-    hasMarkedRef.current = true;
-    if (newestId > (readUpTo ?? 0)) {
+    const delay = hasMarkedRef.current ? LIVE_READ_DELAY_MS : 0;
+    const timer = setTimeout(() => {
+      hasMarkedRef.current = true;
       mutate(newestId);
-    }
-  }, [readUpTo, fetchStatus, newestId, mutate]);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [isFocused, readUpTo, fetchStatus, newestId, lastReadId, mutate]);
 }

@@ -6,7 +6,11 @@ import {
 import { toast } from "sonner-native";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { sendChatMessage } from "@/lib/api/chats";
-import { addMessageToCache, addMessageToChatList } from "@/lib/chat-cache";
+import {
+  addMessageToCache,
+  addMessageToChatList,
+  moveReadPosition,
+} from "@/lib/chat-cache";
 import type { OutgoingMessage } from "@/lib/chat-items";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -27,6 +31,7 @@ export function useSendMessage(chatId: number) {
     onSuccess: (message) => {
       addMessageToCache(queryClient, chatId, message);
       addMessageToChatList(queryClient, chatId, message);
+      moveReadPosition(queryClient, chatId, message.id);
     },
     onError: (error) => {
       if (!isErrorCode(error, AuthErrorCode.NOT_FRIENDS)) return;
