@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
+import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
 import com.mdzvtt.shmap.exception.ChatMessageNotFoundException;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
@@ -127,6 +128,11 @@ public class ChatService {
         return chatRepository.findMyChats(userId).stream()
                 .map(row -> toSummaryResponse(row, userId))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ChatUnreadCountResponse countUnread(Integer userId) {
+        return new ChatUnreadCountResponse(chatMessageRepository.countUnread(userId));
     }
 
     @Transactional(readOnly = true)

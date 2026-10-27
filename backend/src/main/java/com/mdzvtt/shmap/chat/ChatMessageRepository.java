@@ -18,4 +18,13 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     @Query("select max(m.id) from ChatMessage m where m.chat.id = :chatId")
     Long findLatestId(Long chatId);
+
+    @Query("""
+            select count(m) from ChatMessage m
+            join ChatMember mine on mine.chat = m.chat
+            where mine.user.id = :userId
+              and m.id > coalesce(mine.lastReadMessageId, 0L)
+              and m.sender.id <> :userId
+            """)
+    long countUnread(Integer userId);
 }

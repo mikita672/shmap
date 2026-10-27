@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.chat.dto.AddChatMembersRequest;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
+import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
 import com.mdzvtt.shmap.chat.dto.CreateGroupChatRequest;
 import com.mdzvtt.shmap.chat.dto.MarkChatReadRequest;
 import com.mdzvtt.shmap.chat.dto.SendChatMessageRequest;
@@ -34,6 +35,11 @@ public class ChatController {
     @GetMapping
     public List<ChatSummaryResponse> getChats(@AuthenticationPrincipal User user) {
         return chatService.getChats(user.getId());
+    }
+
+    @GetMapping("/unread/count")
+    public ChatUnreadCountResponse countUnread(@AuthenticationPrincipal User user) {
+        return chatService.countUnread(user.getId());
     }
 
     @PutMapping("/direct/{userId}")
