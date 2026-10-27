@@ -153,6 +153,7 @@ public class ChatService {
         }
         User sender = userRepository.getReferenceById(userId);
         ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
+        chatMemberRepository.markRead(chatId, userId, message.getId());
         ChatMessageResponse response = toMessageResponse(message);
         eventPublisher
                 .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));
