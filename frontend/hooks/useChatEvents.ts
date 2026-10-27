@@ -5,9 +5,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { chatsQueryOptions } from "@/hooks/useChats";
 import { getAccessToken, refreshAccessToken } from "@/lib/api/client";
-import { addMessageToCache, addMessageToChatList } from "@/lib/chat-cache";
+import {
+  addMessageToCache,
+  addMessageToChatList,
+  applyChatRead,
+} from "@/lib/chat-cache";
 import { EventStreamError, readEventStream } from "@/lib/api/events";
-import type { ChatMessageResponse } from "@/lib/types/api";
+import type { ChatMessageResponse, ChatReadEvent } from "@/lib/types/api";
 
 export function useChatEvents() {
   const { isAuthenticated } = useAuth();
@@ -101,6 +105,16 @@ export function useChatEvents() {
                 };
                 addMessageToCache(queryClient, chatId, message);
                 addMessageToChatList(queryClient, chatId, message);
+              } catch {}
+              return;
+            }
+
+            if (event.event === "chat.read") {
+              try {
+                applyChatRead(
+                  queryClient,
+                  JSON.parse(event.data) as ChatReadEvent,
+                );
               } catch {}
               return;
             }
