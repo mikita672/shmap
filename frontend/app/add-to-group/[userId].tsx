@@ -2,19 +2,43 @@ import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { toast } from "sonner-native";
 import { GroupPicker } from "@/components/chats/group-picker";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
+import { useAddChatMembers } from "@/hooks/useChatMutations";
 import { useFriends } from "@/hooks/useFriends";
-import { getErrorMessage } from "@/lib/utils/error";
+import { AuthErrorCode } from "@/lib/types/api";
+import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function AddToGroupScreen() {
   const insets = useSafeAreaInsets();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { data: friends, isPending, error, refetch } = useFriends();
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const addMembers = useAddChatMembers({
+    onAdded: (chat) => {
+      if (friend && chat.type === "GROUP") {
+        toast.success(`${friend.user.firstName} was added to ${chat.name}`);
+      }
+    },
+  });
+
+  const handleAdd = () => {
+    if (!friend || selectedId === null || addMembers.isPending) return;
+    addMembers.mutate(
+      { chatId: selectedId, userIds: [friend.user.id] },
+      {
+        onError: (error) => {
+          if (isErrorCode(error, AuthErrorCode.CHAT_NOT_FOUND)) {
+            setSelectedId(null);
+          }
+        },
+      },
+    );
+  };
   const friend = friends?.find((f) => f.user.id === Number(userId));
   const title = friend
     ? `Add ${friend.user.firstName} to a group`
@@ -55,8 +79,14 @@ export default function AddToGroupScreen() {
             className="px-6 pt-4"
             style={{ paddingBottom: insets.bottom + 24 }}
           >
-            <Button size="xl" disabled={selectedId === null}>
-              <Text className="text-2xl">Add</Text>
+            <Button
+              size="xl"
+              disabled={selectedId === null || addMembers.isPending}
+              onPress={handleAdd}
+            >
+              <Text className="text-2xl">
+                {addMembers.isPending ? "Adding…" : "Add"}
+              </Text>
             </Button>
           </View>
         </>

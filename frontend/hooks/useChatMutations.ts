@@ -8,9 +8,14 @@ import {
   openDirectChat,
 } from "@/lib/api/chats";
 import { refetchUnreadTotal } from "@/lib/chat-cache";
-import { AuthErrorCode, type CreateGroupChatRequest } from "@/lib/types/api";
+import {
+  AuthErrorCode,
+  type ChatResponse,
+  type CreateGroupChatRequest,
+} from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 import { chatQueryOptions } from "@/hooks/useChat";
+import { chatsQueryOptions } from "@/hooks/useChats";
 import { friendsQueryOptions } from "@/hooks/useFriends";
 
 export function useOpenDirectChat() {
@@ -101,7 +106,11 @@ interface AddChatMembersVariables {
   userIds: number[];
 }
 
-export function useAddChatMembers() {
+interface UseAddChatMembersOptions {
+  onAdded?: (chat: ChatResponse) => void;
+}
+
+export function useAddChatMembers({ onAdded }: UseAddChatMembersOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -112,9 +121,16 @@ export function useAddChatMembers() {
     onSuccess: async (chat) => {
       queryClient.setQueryData(["chats", chat.id], chat);
       await queryClient.refetchQueries({ queryKey: ["chats"], exact: true });
+      onAdded?.(chat);
       router.back();
     },
     onError: (error, { chatId }) => {
+      if (isErrorCode(error, AuthErrorCode.CHAT_NOT_FOUND)) {
+        void queryClient.invalidateQueries({
+          queryKey: chatsQueryOptions.queryKey,
+          exact: true,
+        });
+      }
       const isNotFriends = isErrorCode(error, AuthErrorCode.NOT_FRIENDS);
       if (isNotFriends) {
         void queryClient.invalidateQueries({
