@@ -209,6 +209,7 @@ export type ChatSummaryResponse = {
   id: number;
   lastMessage: ChatMessageResponse | null;
   unreadCount: number;
+  memberIds: number[];
 } & (
   | { type: "DIRECT"; name: null; otherUser: UserSummaryResponse }
   | { type: "GROUP"; name: string; otherUser: null }
