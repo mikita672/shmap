@@ -32,6 +32,11 @@ export default function AddToGroupScreen() {
 
   const handleAdd = () => {
     if (!friend || selectedId === null || addMembers.isPending) return;
+    const selectedGroup = chats?.find((chat) => chat.id === selectedId);
+    if (selectedGroup?.memberIds.includes(friend.user.id)) {
+      setSelectedId(null);
+      return;
+    }
     addMembers.mutate(
       { chatId: selectedId, userIds: [friend.user.id] },
       {
