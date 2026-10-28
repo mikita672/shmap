@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { GroupPicker } from "@/components/chats/group-picker";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
@@ -12,6 +14,7 @@ export default function AddToGroupScreen() {
   const insets = useSafeAreaInsets();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { data: friends, isPending, error, refetch } = useFriends();
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const friend = friends?.find((f) => f.user.id === Number(userId));
   const title = friend
     ? `Add ${friend.user.firstName} to a group`
@@ -43,12 +46,16 @@ export default function AddToGroupScreen() {
         </View>
       ) : (
         <>
-          <View className="flex-1" />
+          <GroupPicker
+            friendId={friend.user.id}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
           <View
             className="px-6 pt-4"
             style={{ paddingBottom: insets.bottom + 24 }}
           >
-            <Button size="xl" disabled>
+            <Button size="xl" disabled={selectedId === null}>
               <Text className="text-2xl">Add</Text>
             </Button>
           </View>
