@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { PickerRow } from "@/components/chats/picker-row";
 import { Button } from "@/components/ui/button";
+import { SearchField } from "@/components/ui/search-field";
 import { Text } from "@/components/ui/text";
 import { useChats } from "@/hooks/useChats";
+import { matchesChatSearch } from "@/lib/chat-search";
 import type { ChatSummaryResponse } from "@/lib/types/api";
 import { getErrorMessage } from "@/lib/utils/error";
 
@@ -20,6 +23,7 @@ export function GroupPicker({
   onSelect,
 }: GroupPickerProps) {
   const { data: chats, isPending, error, refetch } = useChats();
+  const [query, setQuery] = useState("");
 
   if (isPending) {
     return (
@@ -46,16 +50,32 @@ export function GroupPicker({
     (chat): chat is GroupChatSummary => chat.type === "GROUP",
   );
 
+  const matches = groups.filter((group) => matchesChatSearch(group, query));
+
   return (
     <View className="flex-1">
+      <SearchField
+        className="mx-6 mt-2"
+        placeholder="Search groups"
+        value={query}
+        onChangeText={setQuery}
+      />
+
       <Text className="px-11 pb-2 pt-3 text-sm font-medium leading-5 tracking-[0.5px] text-secondary">
         Groups · {groups.length}
       </Text>
 
       <FlatList
-        data={groups}
+        data={matches}
         keyExtractor={(group) => String(group.id)}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ItemSeparatorComponent={RowGap}
+        ListEmptyComponent={
+          <Text className="pt-10 text-center text-sm leading-5 text-secondary">
+            No groups found
+          </Text>
+        }
         contentContainerClassName="px-6 pb-6"
         renderItem={({ item: group }) => {
           const isMember = group.memberIds.includes(friendId);
