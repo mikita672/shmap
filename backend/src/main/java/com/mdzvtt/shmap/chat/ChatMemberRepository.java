@@ -21,6 +21,14 @@ public interface ChatMemberRepository extends JpaRepository<ChatMember, Long> {
   @Query("select m.user.id from ChatMember m where m.chat.id = :chatId")
   Set<Integer> findUserIdsByChatId(Long chatId);
 
+  @Query("""
+      select new com.mdzvtt.shmap.chat.ChatMemberIdRow(m.chat.id, m.user.id)
+      from ChatMember m
+      where m.chat.id in :chatIds
+        and m.user.id <> :userId
+      """)
+  List<ChatMemberIdRow> findOtherMemberIds(List<Long> chatIds, Integer userId);
+
   boolean existsByChatId(Long chatId);
 
   @Query("select m.lastReadMessageId from ChatMember m where m.chat.id = :chatId and m.user.id = :userId")
