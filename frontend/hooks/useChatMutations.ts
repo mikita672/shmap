@@ -48,10 +48,13 @@ export function useOpenDirectChat() {
   });
 }
 
+export const createGroupMutationKey = ["create-group"];
+
 export function useCreateGroup() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: createGroupMutationKey,
     mutationFn: async (data: CreateGroupChatRequest) => {
       const response = await createGroupChat(data);
       return response.data;

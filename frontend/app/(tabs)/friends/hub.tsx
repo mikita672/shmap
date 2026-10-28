@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { BackHandler, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
+import { useMutationState } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { FriendsList } from "@/components/friends/friends-list";
 import { RequestsList } from "@/components/friends/requests-list";
@@ -13,6 +14,7 @@ import {
   type Segment,
 } from "@/components/ui/segmented-control";
 import { Text } from "@/components/ui/text";
+import { createGroupMutationKey } from "@/hooks/useChatMutations";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 
@@ -23,6 +25,31 @@ const MAX_GROUP_PICKS = 50;
 export default function FriendsHubScreen() {
   const [tab, setTab] = useState<HubTab>("friends");
   const [selectedIds, setSelectedIds] = useState<Set<number> | null>(null);
+  const [selectStartedAt, setSelectStartedAt] = useState<number | null>(null);
+  const createdAt = useMutationState({
+    filters: { mutationKey: createGroupMutationKey, status: "success" },
+    select: (mutation) => mutation.state.submittedAt,
+  });
+  const lastCreatedAt = createdAt.at(-1);
+
+  if (
+    selectStartedAt !== null &&
+    lastCreatedAt !== undefined &&
+    lastCreatedAt > selectStartedAt
+  ) {
+    setSelectedIds(null);
+    setSelectStartedAt(null);
+  }
+
+  const startSelecting = () => {
+    setSelectedIds(new Set());
+    setSelectStartedAt(Date.now());
+  };
+
+  const stopSelecting = () => {
+    setSelectedIds(null);
+    setSelectStartedAt(null);
+  };
 
   const isSelecting = selectedIds !== null;
 
@@ -32,7 +59,7 @@ export default function FriendsHubScreen() {
       const subscription = BackHandler.addEventListener(
         "hardwareBackPress",
         () => {
-          setSelectedIds(null);
+          stopSelecting();
           return true;
         },
       );
@@ -53,6 +80,7 @@ export default function FriendsHubScreen() {
     }
     setSelectedIds(next);
   };
+
   const { data: requestCount = 0, refetch: refetchRequestCount } =
     useIncomingRequestCount();
   useRefreshOnFocus(refetchRequestCount);
@@ -65,10 +93,7 @@ export default function FriendsHubScreen() {
   return (
     <View className="flex-1 bg-background">
       {selectedIds ? (
-        <SelectionHeader
-          count={selectedIds.size}
-          onClose={() => setSelectedIds(null)}
-        />
+        <SelectionHeader count={selectedIds.size} onClose={stopSelecting} />
       ) : (
         <ScreenHeader title="Friends" />
       )}
@@ -79,7 +104,7 @@ export default function FriendsHubScreen() {
           value={tab}
           onValueChange={(next) => {
             setTab(next);
-            if (next !== "friends") setSelectedIds(null);
+            if (next !== "friends") stopSelecting();
           }}
           className="flex-1"
         />
@@ -94,7 +119,7 @@ export default function FriendsHubScreen() {
       {tab === "friends" && (
         <FriendsList
           selectedIds={selectedIds}
-          onStartSelect={() => setSelectedIds(new Set())}
+          onStartSelect={startSelecting}
           onToggle={handleToggle}
         />
       )}
