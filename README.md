@@ -17,6 +17,7 @@ The project is in early development. Accounts, profiles, friends, chats and the 
 - [API documentation](#api-documentation)
 - [Live updates](#live-updates)
 - [CI and releases](#ci-and-releases)
+- [Tasks: Jira and GitHub](#tasks-jira-and-github)
 - [License](#license)
 
 ## What works today
@@ -66,7 +67,9 @@ The website at [shmap.dev](https://shmap.dev) is a Cloudflare Worker with static
 │   ├── public/           static pages, styles and .well-known/assetlinks.json
 │   ├── src/              Worker and the profile page template
 │   └── wrangler.jsonc    Worker config: domain, routing, backend URL
-└── .github/workflows/    CI and release pipelines
+└── .github/
+    ├── workflows/        CI, release and Jira sync pipelines
+    └── scripts/jira-sync/ Jira ↔ GitHub issues sync
 ```
 
 ## Getting started
@@ -222,7 +225,7 @@ Instances share events through Redis pub/sub on one channel, so it doesn't matte
 
 Feature branches are merged into `develop`. A pull request from `develop` into `release` starts a release.
 
-Every push and pull request runs ESLint and the TypeScript type check on the app. When a pull request into `release` is merged, the release workflow:
+Every push and pull request runs ESLint and the TypeScript type check on the app, and type-checks the Jira sync script. When a pull request into `release` is merged, the release workflow:
 
 1. picks the next `v0.0.x` version,
 2. builds an Android APK and an iOS simulator build with EAS, plus an unsigned iOS IPA on a macOS runner,
@@ -231,6 +234,35 @@ Every push and pull request runs ESLint and the TypeScript type check on the app
 5. publishes a GitHub release with the three app builds attached.
 
 You can download the app from the [releases page](https://github.com/mikita672/shmap/releases). The APK installs directly on Android. The IPA has to be signed with your own certificate before you can install it on an iPhone.
+
+## Tasks: Jira and GitHub
+
+Work is planned in [Jira](https://mdzvtt.atlassian.net/jira/software/projects/SCRUM/boards/1) (project `SCRUM`). Every ticket that isn't done gets a GitHub issue, and the two stay in sync through the [Jira Sync](.github/workflows/jira-sync.yml) workflow:
+
+| What | Direction |
+| --- | --- |
+| Title | both ways |
+| Labels | both ways, same names: `feat`, `fix`, `chore`, `refactor`, `mobile`, `backend`, `ops`, `database` |
+| Status | both ways: Do zrobienia = open, W toku = open + `in-progress`, W trakcie weryfikacji = open + `in-review`, Gotowe = closed |
+| Description | Jira → GitHub only. Edit it in Jira; edits on GitHub get replaced |
+
+Changes made in Jira reach GitHub within about 5 minutes (a scheduled check; GitHub can delay it at busy times). Changes made on GitHub reach Jira right away. If the same field changes on both sides before a sync, Jira wins. Labels merge, so a label added on one side and another removed on the other both survive. Comments, sprints and assignees aren't synced, and a new GitHub issue doesn't create a ticket. `eas-build`, `in-progress` and `in-review` exist only on GitHub.
+
+Pull requests move tickets too. Opening one (or marking it ready) moves its tickets to W trakcie weryfikacji, a draft moves them to W toku, and merging moves them to Gotowe and closes their GitHub issues. A pull request belongs to the tickets named in its title or branch (`SCRUM-123`), and to the tickets of the issues it closes (`Closes #45`). If only `Closes #45` links it, the workflow adds the key to the title.
+
+To see branches, commits and pull requests on a ticket, put the key in the branch name, for example `feature/SCRUM-123-chat-search`. The ticket's "Create branch" button does this for you. Jira shows them through the free [GitHub for Atlassian](https://marketplace.atlassian.com/apps/1219592/github-for-atlassian) app, and `SCRUM-123` in GitHub text links to the ticket.
+
+How it works: each ticket keeps a hidden property `shmap-github-sync` with its GitHub issue number and the state at the last sync. The script compares both sides with that state to see which side changed. Writes to GitHub use the workflow's `GITHUB_TOKEN`, which never starts another workflow run, so the sync doesn't loop. All runs wait in one queue. A full check of every ticket runs nightly, and you can start one from the Actions tab (Run workflow → "Check every ticket").
+
+Setup: the repository secrets `JIRA_EMAIL` and `JIRA_API_TOKEN` hold an Atlassian API token with the scopes `read:jira-work`, `write:jira-work` and `read:jira-user`. The token expires after at most a year; when the workflow starts failing with 401, create a new one and update the secret. To run the script locally, use Node 24, copy `.github/scripts/jira-sync/.env.example` to `.env` (with a fine-grained GitHub token that can write issues and pull requests), then:
+
+```sh
+cd .github/scripts/jira-sync
+npm ci
+npm run sync -- check
+npm run sync -- sync SCRUM-110          # prints what would change
+npm run sync -- sync SCRUM-110 --apply  # changes it
+```
 
 ## License
 
