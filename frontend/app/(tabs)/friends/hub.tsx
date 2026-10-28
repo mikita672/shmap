@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
+import { toast } from "sonner-native";
 import { FriendsList } from "@/components/friends/friends-list";
 import { RequestsList } from "@/components/friends/requests-list";
 import { RoundButton } from "@/components/ui/round-button";
@@ -14,8 +15,25 @@ import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 
 type HubTab = "friends" | "requests";
 
+const MAX_GROUP_PICKS = 50;
+
 export default function FriendsHubScreen() {
   const [tab, setTab] = useState<HubTab>("friends");
+  const [selectedIds, setSelectedIds] = useState<Set<number> | null>(null);
+
+  const handleToggle = (friendId: number) => {
+    const current = selectedIds ?? new Set<number>();
+    const next = new Set(current);
+    if (next.has(friendId)) {
+      next.delete(friendId);
+    } else if (next.size >= MAX_GROUP_PICKS) {
+      toast(`A group can start with up to ${MAX_GROUP_PICKS} friends`);
+      return;
+    } else {
+      next.add(friendId);
+    }
+    setSelectedIds(next);
+  };
   const { data: requestCount = 0, refetch: refetchRequestCount } =
     useIncomingRequestCount();
   useRefreshOnFocus(refetchRequestCount);
@@ -44,7 +62,13 @@ export default function FriendsHubScreen() {
         />
       </View>
 
-      {tab === "friends" && <FriendsList />}
+      {tab === "friends" && (
+        <FriendsList
+          selectedIds={selectedIds}
+          onStartSelect={() => setSelectedIds(new Set())}
+          onToggle={handleToggle}
+        />
+      )}
       {tab === "requests" && <RequestsList />}
     </View>
   );
