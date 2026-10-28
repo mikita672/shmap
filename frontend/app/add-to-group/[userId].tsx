@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import { GroupPicker } from "@/components/chats/group-picker";
@@ -9,6 +9,7 @@ import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
 import { useAddChatMembers } from "@/hooks/useChatMutations";
+import { useChats } from "@/hooks/useChats";
 import { useFriends } from "@/hooks/useFriends";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -17,6 +18,9 @@ export default function AddToGroupScreen() {
   const insets = useSafeAreaInsets();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { data: friends, isPending, error, refetch } = useFriends();
+  const friend = friends?.find((f) => f.user.id === Number(userId));
+  const { data: chats } = useChats();
+  const hasGroups = Boolean(chats?.some((chat) => chat.type === "GROUP"));
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const addMembers = useAddChatMembers({
     onAdded: (chat) => {
@@ -39,7 +43,7 @@ export default function AddToGroupScreen() {
       },
     );
   };
-  const friend = friends?.find((f) => f.user.id === Number(userId));
+
   const title = friend
     ? `Add ${friend.user.firstName} to a group`
     : "Add to a group";
@@ -72,23 +76,32 @@ export default function AddToGroupScreen() {
         <>
           <GroupPicker
             friendId={friend.user.id}
+            friendName={friend.user.firstName}
             selectedId={selectedId}
             onSelect={setSelectedId}
+            onNewGroup={() =>
+              router.push({
+                pathname: "/new-group",
+                params: { memberIds: JSON.stringify([friend.user.id]) },
+              })
+            }
           />
-          <View
-            className="px-6 pt-4"
-            style={{ paddingBottom: insets.bottom + 24 }}
-          >
-            <Button
-              size="xl"
-              disabled={selectedId === null || addMembers.isPending}
-              onPress={handleAdd}
+          {hasGroups && (
+            <View
+              className="px-6 pt-4"
+              style={{ paddingBottom: insets.bottom + 24 }}
             >
-              <Text className="text-2xl">
-                {addMembers.isPending ? "Adding…" : "Add"}
-              </Text>
-            </Button>
-          </View>
+              <Button
+                size="xl"
+                disabled={selectedId === null || addMembers.isPending}
+                onPress={handleAdd}
+              >
+                <Text className="text-2xl">
+                  {addMembers.isPending ? "Adding…" : "Add"}
+                </Text>
+              </Button>
+            </View>
+          )}
         </>
       )}
     </View>

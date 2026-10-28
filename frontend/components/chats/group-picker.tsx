@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";
+import { ChatsEmpty } from "@/components/chats/chats-empty";
 import { PickerRow } from "@/components/chats/picker-row";
 import { Button } from "@/components/ui/button";
 import { SearchField } from "@/components/ui/search-field";
@@ -13,14 +14,18 @@ type GroupChatSummary = Extract<ChatSummaryResponse, { type: "GROUP" }>;
 
 export interface GroupPickerProps {
   friendId: number;
+  friendName: string;
   selectedId: number | null;
   onSelect: (chatId: number | null) => void;
+  onNewGroup: () => void;
 }
 
 export function GroupPicker({
   friendId,
+  friendName,
   selectedId,
   onSelect,
+  onNewGroup,
 }: GroupPickerProps) {
   const { data: chats, isPending, error, refetch } = useChats();
   const [query, setQuery] = useState("");
@@ -49,6 +54,16 @@ export function GroupPicker({
   const groups = chats.filter(
     (chat): chat is GroupChatSummary => chat.type === "GROUP",
   );
+
+  if (groups.length === 0) {
+    return (
+      <ChatsEmpty
+        title="No groups yet"
+        description={`Create a group with ${friendName} to plan a route together`}
+        onNewGroup={onNewGroup}
+      />
+    );
+  }
 
   const matches = groups.filter((group) => matchesChatSearch(group, query));
 
