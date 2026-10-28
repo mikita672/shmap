@@ -88,8 +88,13 @@ export function keyFromBody(body: string | null | undefined): string | undefined
   return (body?.match(BODY_MARKER) ?? body?.match(LEGACY_BODY_LINK))?.[1];
 }
 
+// Like GitHub, ignore keywords inside code blocks, inline code and HTML comments.
 export function closingIssueNumbers(body: string | null | undefined): number[] {
-  return [...(body ?? "").matchAll(CLOSING_REFERENCE)].map((match) => Number(match[1]));
+  const text = (body ?? "")
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`[^`\n]*`/g, "")
+    .replace(/<!--[\s\S]*?-->/g, "");
+  return [...text.matchAll(CLOSING_REFERENCE)].map((match) => Number(match[1]));
 }
 
 export function sameItems(a: string[], b: string[]): boolean {
