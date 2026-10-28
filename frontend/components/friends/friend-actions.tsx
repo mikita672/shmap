@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { router } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
@@ -48,7 +49,16 @@ export function FriendActions({
         />
       </View>
 
-      <Button variant="secondary" size="xl" disabled>
+      <Button
+        variant="secondary"
+        size="xl"
+        onPress={() =>
+          router.push({
+            pathname: "/add-to-group/[userId]",
+            params: { userId: String(friendId) },
+          })
+        }
+      >
         <Text>Add to group</Text>
       </Button>
     </View>
