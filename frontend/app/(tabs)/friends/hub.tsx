@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { View } from "react-native";
-import { router } from "expo-router";
+import { useCallback, useState } from "react";
+import { BackHandler, View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
 import { toast } from "sonner-native";
 import { FriendsList } from "@/components/friends/friends-list";
 import { RequestsList } from "@/components/friends/requests-list";
 import { RoundButton } from "@/components/ui/round-button";
 import { ScreenHeader } from "@/components/ui/screen-header";
+import { SelectionHeader } from "@/components/ui/selection-header";
 import {
   SegmentedControl,
   type Segment,
@@ -20,6 +21,22 @@ const MAX_GROUP_PICKS = 50;
 export default function FriendsHubScreen() {
   const [tab, setTab] = useState<HubTab>("friends");
   const [selectedIds, setSelectedIds] = useState<Set<number> | null>(null);
+
+  const isSelecting = selectedIds !== null;
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isSelecting) return;
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          setSelectedIds(null);
+          return true;
+        },
+      );
+      return () => subscription.remove();
+    }, [isSelecting]),
+  );
 
   const handleToggle = (friendId: number) => {
     const current = selectedIds ?? new Set<number>();
@@ -45,13 +62,23 @@ export default function FriendsHubScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <ScreenHeader title="Friends" />
+      {selectedIds ? (
+        <SelectionHeader
+          count={selectedIds.size}
+          onClose={() => setSelectedIds(null)}
+        />
+      ) : (
+        <ScreenHeader title="Friends" />
+      )}
 
       <View className="flex-row items-center gap-2 px-6 pt-3">
         <SegmentedControl
           segments={segments}
           value={tab}
-          onValueChange={setTab}
+          onValueChange={(next) => {
+            setTab(next);
+            if (next !== "friends") setSelectedIds(null);
+          }}
           className="flex-1"
         />
         <RoundButton
