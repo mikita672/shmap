@@ -23,12 +23,14 @@ export interface FriendsListProps {
   selectedIds: Set<number> | null;
   onStartSelect: () => void;
   onToggle: (friendId: number) => void;
+  onLongPressFriend: (friendId: number) => void;
 }
 
 export function FriendsList({
   selectedIds,
   onStartSelect,
   onToggle,
+  onLongPressFriend,
 }: FriendsListProps) {
   const { data: friends, isPending, error, refetch } = useFriends();
   useRefreshOnFocus(refetch);
@@ -112,6 +114,7 @@ export function FriendsList({
               avatarUrl={user.avatarUrl}
               disabled={openChat.isPending && openChat.variables === user.id}
               onPress={() => router.push(getProfileHref(user.username))}
+              onLongPress={() => onLongPressFriend(user.id)}
               onMessage={() => handleMessage(user.id)}
               onMore={() =>
                 menu.open({ user, isFriend: true, favorite, muted })

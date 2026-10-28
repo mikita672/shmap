@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { BackHandler, View } from "react-native";
+import * as Haptics from "expo-haptics";
 import { router, useFocusEffect } from "expo-router";
 import { useMutationState } from "@tanstack/react-query";
 import { toast } from "sonner-native";
@@ -41,8 +42,8 @@ export default function FriendsHubScreen() {
     setSelectStartedAt(null);
   }
 
-  const startSelecting = () => {
-    setSelectedIds(new Set());
+  const startSelecting = (firstId?: number) => {
+    setSelectedIds(new Set(firstId === undefined ? [] : [firstId]));
     setSelectStartedAt(Date.now());
   };
 
@@ -119,7 +120,11 @@ export default function FriendsHubScreen() {
       {tab === "friends" && (
         <FriendsList
           selectedIds={selectedIds}
-          onStartSelect={startSelecting}
+          onStartSelect={() => startSelecting()}
+          onLongPressFriend={(friendId) => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            startSelecting(friendId);
+          }}
           onToggle={handleToggle}
         />
       )}
