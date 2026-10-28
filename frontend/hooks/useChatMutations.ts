@@ -1,12 +1,47 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { toast } from "sonner-native";
-import { addChatMembers, createGroupChat, leaveChat } from "@/lib/api/chats";
+import {
+  addChatMembers,
+  createGroupChat,
+  leaveChat,
+  openDirectChat,
+} from "@/lib/api/chats";
 import { refetchUnreadTotal } from "@/lib/chat-cache";
 import { AuthErrorCode, type CreateGroupChatRequest } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { friendsQueryOptions } from "@/hooks/useFriends";
+
+export function useOpenDirectChat() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await openDirectChat(userId);
+      return response.data;
+    },
+    onSuccess: (chat) => {
+      queryClient.setQueryData(chatQueryOptions(chat.id).queryKey, chat);
+      router.push({
+        pathname: "/chat/[chatId]",
+        params: { chatId: String(chat.id) },
+      });
+    },
+    onError: (error) => {
+      const isGone =
+        isErrorCode(error, AuthErrorCode.NOT_FRIENDS) ||
+        isErrorCode(error, AuthErrorCode.USER_NOT_FOUND);
+      if (isGone) {
+        void queryClient.invalidateQueries({
+          queryKey: friendsQueryOptions.queryKey,
+        });
+        void queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      }
+      toast.error(getErrorMessage(error, "Couldn't open chat"));
+    },
+  });
+}
 
 export function useCreateGroup() {
   const queryClient = useQueryClient();
