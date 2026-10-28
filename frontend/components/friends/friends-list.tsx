@@ -9,6 +9,7 @@ import { RefreshControl } from "@/components/ui/refresh-control";
 import { SearchField } from "@/components/ui/search-field";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
+import { useOpenDirectChat } from "@/hooks/useChatMutations";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
@@ -23,6 +24,12 @@ export function FriendsList() {
   const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
   const [query, setQuery] = useState("");
   const menu = useFriendActionsMenu();
+  const openChat = useOpenDirectChat();
+
+  const handleMessage = (userId: number) => {
+    if (openChat.isPending) return;
+    openChat.mutate(userId);
+  };
 
   if (isPending) {
     return (
@@ -79,7 +86,9 @@ export function FriendsList() {
             name={`${user.firstName} ${user.lastName}`}
             subtitle={`@${user.username}`}
             avatarUrl={user.avatarUrl}
+            disabled={openChat.isPending && openChat.variables === user.id}
             onPress={() => router.push(getProfileHref(user.username))}
+            onMessage={() => handleMessage(user.id)}
             onMore={() => menu.open({ user, isFriend: true, favorite, muted })}
           />
         )}
