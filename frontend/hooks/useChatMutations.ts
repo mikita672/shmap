@@ -1,17 +1,60 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { toast } from "sonner-native";
-import { addChatMembers, createGroupChat, leaveChat } from "@/lib/api/chats";
+import {
+  addChatMembers,
+  createGroupChat,
+  leaveChat,
+  openDirectChat,
+} from "@/lib/api/chats";
 import { refetchUnreadTotal } from "@/lib/chat-cache";
-import { AuthErrorCode, type CreateGroupChatRequest } from "@/lib/types/api";
+import {
+  AuthErrorCode,
+  type ChatResponse,
+  type CreateGroupChatRequest,
+} from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 import { chatQueryOptions } from "@/hooks/useChat";
+import { chatsQueryOptions } from "@/hooks/useChats";
 import { friendsQueryOptions } from "@/hooks/useFriends";
+
+export function useOpenDirectChat() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await openDirectChat(userId);
+      return response.data;
+    },
+    onSuccess: (chat) => {
+      queryClient.setQueryData(chatQueryOptions(chat.id).queryKey, chat);
+      router.push({
+        pathname: "/chat/[chatId]",
+        params: { chatId: String(chat.id) },
+      });
+    },
+    onError: (error) => {
+      const isGone =
+        isErrorCode(error, AuthErrorCode.NOT_FRIENDS) ||
+        isErrorCode(error, AuthErrorCode.USER_NOT_FOUND);
+      if (isGone) {
+        void queryClient.invalidateQueries({
+          queryKey: friendsQueryOptions.queryKey,
+        });
+        void queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      }
+      toast.error(getErrorMessage(error, "Couldn't open chat"));
+    },
+  });
+}
+
+export const createGroupMutationKey = ["create-group"];
 
 export function useCreateGroup() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: createGroupMutationKey,
     mutationFn: async (data: CreateGroupChatRequest) => {
       const response = await createGroupChat(data);
       return response.data;
@@ -66,7 +109,11 @@ interface AddChatMembersVariables {
   userIds: number[];
 }
 
-export function useAddChatMembers() {
+interface UseAddChatMembersOptions {
+  onAdded?: (chat: ChatResponse) => void;
+}
+
+export function useAddChatMembers({ onAdded }: UseAddChatMembersOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -77,9 +124,16 @@ export function useAddChatMembers() {
     onSuccess: async (chat) => {
       queryClient.setQueryData(["chats", chat.id], chat);
       await queryClient.refetchQueries({ queryKey: ["chats"], exact: true });
+      onAdded?.(chat);
       router.back();
     },
     onError: (error, { chatId }) => {
+      if (isErrorCode(error, AuthErrorCode.CHAT_NOT_FOUND)) {
+        void queryClient.invalidateQueries({
+          queryKey: chatsQueryOptions.queryKey,
+          exact: true,
+        });
+      }
       const isNotFriends = isErrorCode(error, AuthErrorCode.NOT_FRIENDS);
       if (isNotFriends) {
         void queryClient.invalidateQueries({

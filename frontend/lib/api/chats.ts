@@ -19,6 +19,9 @@ export const markChatRead = (chatId: number, messageId: number) =>
 export const getChat = (chatId: number) =>
   apiClient.get<ChatResponse>(`/api/v1/chats/${chatId}`);
 
+export const openDirectChat = (userId: number) =>
+  apiClient.put<ChatResponse>(`/api/v1/chats/direct/${userId}`);
+
 export const getChatMessages = (chatId: number, before: number | null) =>
   apiClient.get<ChatMessageResponse[]>(`/api/v1/chats/${chatId}/messages`, {
     params: { before: before ?? undefined },

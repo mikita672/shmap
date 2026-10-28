@@ -26,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -125,8 +127,19 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public List<ChatSummaryResponse> getChats(Integer userId) {
-        return chatRepository.findMyChats(userId).stream()
-                .map(row -> toSummaryResponse(row, userId))
+        List<ChatListRow> rows = chatRepository.findMyChats(userId);
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> chatIds = rows.stream().map(row -> row.chat().getId()).toList();
+        Map<Long, List<Integer>> memberIds = chatMemberRepository.findOtherMemberIds(chatIds, userId).stream()
+                .collect(Collectors.groupingBy(ChatMemberIdRow::chatId,
+                        Collectors.mapping(ChatMemberIdRow::userId, Collectors.toList())));
+
+        return rows.stream()
+                .map(row -> toSummaryResponse(row, userId,
+                        memberIds.getOrDefault(row.chat().getId(), List.of())))
                 .toList();
     }
 
@@ -244,7 +257,7 @@ public class ChatService {
                 chatMemberRepository.findLastReadMessageId(chat.getId(), userId));
     }
 
-    private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId) {
+    private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId, List<Integer> memberIds) {
         Chat chat = row.chat();
         User otherUser = null;
         if (chat.getType() == ChatType.DIRECT) {
@@ -259,7 +272,8 @@ public class ChatService {
                 chat.getName(),
                 otherUser == null ? null : toSummary(otherUser),
                 lastMessage == null ? null : toMessageResponse(lastMessage, row.lastMessageSender()),
-                row.unreadCount());
+                row.unreadCount(),
+                memberIds);
     }
 
     private ChatMessageResponse toMessageResponse(ChatMessage message) {
