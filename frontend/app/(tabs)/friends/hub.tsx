@@ -4,6 +4,7 @@ import { router, useFocusEffect } from "expo-router";
 import { toast } from "sonner-native";
 import { FriendsList } from "@/components/friends/friends-list";
 import { RequestsList } from "@/components/friends/requests-list";
+import { Button } from "@/components/ui/button";
 import { RoundButton } from "@/components/ui/round-button";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { SelectionHeader } from "@/components/ui/selection-header";
@@ -11,6 +12,7 @@ import {
   SegmentedControl,
   type Segment,
 } from "@/components/ui/segmented-control";
+import { Text } from "@/components/ui/text";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 
@@ -97,6 +99,27 @@ export default function FriendsHubScreen() {
         />
       )}
       {tab === "requests" && <RequestsList />}
+
+      {selectedIds && (
+        <View className="px-6 py-3">
+          <Button
+            size="xl"
+            disabled={selectedIds.size === 0}
+            onPress={() =>
+              router.push({
+                pathname: "/new-group/details",
+                params: { memberIds: JSON.stringify(Array.from(selectedIds)) },
+              })
+            }
+          >
+            <Text className="text-2xl">
+              {selectedIds.size > 0
+                ? `Create group · ${selectedIds.size}`
+                : "Create group"}
+            </Text>
+          </Button>
+        </View>
+      )}
     </View>
   );
 }
