@@ -1,8 +1,4 @@
-import type {
-  ChatMessageResponse,
-  ChatSummaryResponse,
-  SendChatMessageRequest,
-} from "@/lib/types/api";
+import type { ChatMessageResponse, ChatSummaryResponse } from "@/lib/types/api";
 
 export function getChatName(chat: ChatSummaryResponse) {
   if (chat.type === "GROUP") return chat.name;
@@ -12,11 +8,6 @@ export function getChatName(chat: ChatSummaryResponse) {
 export function getMessagePreview(message: ChatMessageResponse) {
   if (message.type === "PLACE") return `📍 ${message.place.name}`;
   return message.text;
-}
-
-export function getContentPreview(content: SendChatMessageRequest) {
-  if ("place" in content) return `📍 ${content.place.name}`;
-  return content.text;
 }
 
 export function getChatPreview(chat: ChatSummaryResponse, myId?: number) {
