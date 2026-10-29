@@ -88,6 +88,9 @@ public class ChatController {
     @ResponseStatus(HttpStatus.CREATED)
     public ChatMessageResponse send(@AuthenticationPrincipal User user, @PathVariable Long chatId,
             @Valid @RequestBody SendChatMessageRequest request) {
-        return chatService.send(user.getId(), chatId, request.text());
+        if (request.place() != null) {
+            return chatService.sendPlace(user.getId(), chatId, request.place().toPlace());
+        }
+        return chatService.sendText(user.getId(), chatId, request.text());
     }
 }

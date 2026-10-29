@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
+import com.mdzvtt.shmap.chat.dto.ChatPlaceResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
@@ -28,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 @Service
@@ -134,8 +136,8 @@ public class ChatService {
 
         List<Long> chatIds = rows.stream().map(row -> row.chat().getId()).toList();
         Map<Long, List<Integer>> memberIds = chatMemberRepository.findOtherMemberIds(chatIds, userId).stream()
-                .collect(Collectors.groupingBy(ChatMemberIdRow::chatId,
-                        Collectors.mapping(ChatMemberIdRow::userId, Collectors.toList())));
+                .collect(Collectors.groupingBy(row -> row.chatId(),
+                        Collectors.mapping(row -> row.userId(), Collectors.toList())));
 
         return rows.stream()
                 .map(row -> toSummaryResponse(row, userId,
@@ -165,14 +167,23 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatMessageResponse send(Integer userId, Long chatId, String text) {
+    public ChatMessageResponse sendText(Integer userId, Long chatId, String text) {
+        return post(userId, chatId, (chat, sender) -> ChatMessage.text(chat, sender, text));
+    }
+
+    @Transactional
+    public ChatMessageResponse sendPlace(Integer userId, Long chatId, MessagePlace place) {
+        return post(userId, chatId, (chat, sender) -> ChatMessage.place(chat, sender, place));
+    }
+
+    private ChatMessageResponse post(Integer userId, Long chatId, BiFunction<Chat, User, ChatMessage> create) {
         lockChat(chatId);
         Chat chat = findChat(userId, chatId);
         if (!canSend(chat, userId)) {
             throw new NotFriendsException("You can only message friends");
         }
         User sender = userRepository.getReferenceById(userId);
-        ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
+        ChatMessage message = chatMessageRepository.save(create.apply(chat, sender));
         ChatMessageResponse response = toMessageResponse(message);
         eventPublisher
                 .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));
@@ -284,7 +295,9 @@ public class ChatService {
         return new ChatMessageResponse(
                 message.getId(),
                 toSummary(sender),
+                message.getType(),
                 message.getText(),
+                ChatPlaceResponse.from(message.getPlace()),
                 message.getCreatedAt());
     }
 
