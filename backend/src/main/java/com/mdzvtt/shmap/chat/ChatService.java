@@ -136,8 +136,8 @@ public class ChatService {
 
         List<Long> chatIds = rows.stream().map(row -> row.chat().getId()).toList();
         Map<Long, List<Integer>> memberIds = chatMemberRepository.findOtherMemberIds(chatIds, userId).stream()
-                .collect(Collectors.groupingBy(ChatMemberIdRow::chatId,
-                        Collectors.mapping(ChatMemberIdRow::userId, Collectors.toList())));
+                .collect(Collectors.groupingBy(row -> row.chatId(),
+                        Collectors.mapping(row -> row.userId(), Collectors.toList())));
 
         return rows.stream()
                 .map(row -> toSummaryResponse(row, userId,

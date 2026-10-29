@@ -1,12 +1,16 @@
 package com.mdzvtt.shmap.chat.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.mdzvtt.shmap.validation.TextOrPlace;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 
+@TextOrPlace
 public record SendChatMessageRequest(
-        @NotBlank(message = "Message text is required") @Size(max = 2000, message = "Message must be at most 2000 characters") String text) {
+        @Size(max = 2000, message = "Message must be at most 2000 characters") String text,
+
+        @Valid ChatPlaceRequest place) {
 
     public SendChatMessageRequest {
-        text = text == null ? null : text.strip();
+        text = text == null || text.isBlank() ? null : text.strip();
     }
 }
