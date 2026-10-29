@@ -1,8 +1,10 @@
 import { View } from "react-native";
 import { useStaticMap } from "@/hooks/useStaticMap";
-import { Ionicons } from "@/lib/icons";
+import { Ionicons, MaterialIcons } from "@/lib/icons";
 import { Image } from "@/lib/image";
 import { cn } from "@/lib/utils";
+
+const PIN_TIP = 22 / 24;
 
 export interface MapPreviewProps {
   latitude: number;
@@ -18,7 +20,7 @@ export function MapPreview({
   longitude,
   width,
   height,
-  pinSize = 32,
+  pinSize = 36,
   className,
 }: MapPreviewProps) {
   const { data: uri, isError } = useStaticMap({
@@ -46,11 +48,14 @@ export function MapPreview({
             contentFit="cover"
             transition={150}
           />
-          <Ionicons
-            name="location-sharp"
+          <MaterialIcons
+            name="location-on"
             size={pinSize}
-            className="absolute text-destructive"
-            style={{ top: height / 2 - pinSize, left: width / 2 - pinSize / 2 }}
+            className="absolute text-map-pin"
+            style={{
+              top: height / 2 - pinSize * PIN_TIP,
+              left: width / 2 - pinSize / 2,
+            }}
           />
         </>
       ) : isError ? (
