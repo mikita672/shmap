@@ -200,8 +200,10 @@ function PlaceContent({
   onClose: () => void;
   renderActions: (place: PlaceDetails) => ReactNode;
 }) {
-  const { streetLine, localityLine, cityLine, coordsText } =
+  const { streetLine, localityLine, cityLine, coordsText, fullAddress } =
     getPlaceLines(place);
+  const fallbackAddress =
+    !fullAddress && place.displayName !== coordsText ? place.displayName : null;
 
   return (
     <View className="px-5 pb-4 pt-1 gap-3">
@@ -251,6 +253,9 @@ function PlaceContent({
         ) : null}
         {cityLine ? (
           <AddressRow icon="business-outline" text={cityLine} />
+        ) : null}
+        {fallbackAddress ? (
+          <AddressRow icon="location-outline" text={fallbackAddress} />
         ) : null}
         <Pressable
           onPress={() => copyPlace(place)}
