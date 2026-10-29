@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -18,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.EmbeddedColumnNaming;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -48,6 +50,10 @@ public class ChatMessage {
 
     @Column(length = 2000)
     private String text;
+
+    @Embedded
+    @EmbeddedColumnNaming("place_%s")
+    private MessagePlace place;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
