@@ -1,4 +1,4 @@
-import type { PlaceDetails } from "@/lib/api/geocoding";
+import { formatOsmCategory, type PlaceDetails } from "@/lib/api/geocoding";
 import type { ChatPlace } from "@/lib/types/api";
 
 const MAX_NAME = 200;
@@ -72,4 +72,21 @@ export function parsePlaceParam(param: string | string[] | undefined) {
     latitude: place.latitude,
     longitude: place.longitude,
   } satisfies ChatPlace;
+}
+
+export function toPlaceDetails(place: ChatPlace): PlaceDetails {
+  const osmKey = place.osmKey ?? undefined;
+  const osmValue = place.osmValue ?? undefined;
+  return {
+    id:
+      place.osmId ??
+      `pin_${place.latitude.toFixed(6)}_${place.longitude.toFixed(6)}`,
+    name: place.name,
+    displayName: place.address ?? "",
+    category: formatOsmCategory(osmKey, osmValue),
+    osmKey,
+    osmValue,
+    latitude: place.latitude,
+    longitude: place.longitude,
+  };
 }

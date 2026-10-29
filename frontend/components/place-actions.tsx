@@ -1,10 +1,19 @@
 import { Share } from "react-native";
+import { router } from "expo-router";
 import { toast } from "sonner-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import type { PlaceDetails } from "@/lib/api/geocoding";
 import { Ionicons, MaterialIcons } from "@/lib/icons";
+import { toChatPlace } from "@/lib/chat-place";
 import { getPlaceCopyText, getPlaceShareText } from "@/lib/place-format";
+
+export function openSendPlace(place: PlaceDetails) {
+  router.push({
+    pathname: "/send-place",
+    params: { place: JSON.stringify(toChatPlace(place)) },
+  });
+}
 
 export async function copyPlace(place: PlaceDetails) {
   try {
