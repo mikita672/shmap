@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.user.User;
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -26,7 +27,12 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.Instant;
 
 @Entity
-@Table(name = "chat_message", indexes = @Index(name = "idx_chat_message_chat_id", columnList = "chat_id, id desc"))
+@Table(name = "chat_message", indexes = @Index(name = "idx_chat_message_chat_id", columnList = "chat_id, id desc"), check = @CheckConstraint(name = "ck_chat_message_content", constraint = """
+        (type = 'TEXT' and text is not null
+            and place_name is null and place_latitude is null and place_longitude is null)
+        or (type = 'PLACE' and text is null
+            and place_name is not null and place_latitude is not null and place_longitude is not null)
+        """))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessage {
