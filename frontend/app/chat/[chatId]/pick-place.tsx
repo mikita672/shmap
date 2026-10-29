@@ -23,6 +23,7 @@ export default function PickPlaceScreen() {
   return (
     <PlaceMap
       leading="back"
+      sheetOpensExpanded
       renderActions={(place) => (
         <SendPlaceButton label={label} onPress={() => handleSend(place)} />
       )}

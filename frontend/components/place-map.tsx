@@ -6,7 +6,6 @@ import {
   Camera,
   UserLocation,
   LocationManager,
-  LogManager,
   ViewAnnotation,
   type CameraRef,
   type LngLat,
@@ -14,6 +13,7 @@ import {
   type TrackUserLocation,
 } from "@maplibre/maplibre-react-native";
 import type { NativeSyntheticEvent } from "react-native";
+import "@/lib/maplibre-log-filter";
 import { MapControls } from "@/components/map-controls";
 import {
   MapSearchBar,
@@ -30,17 +30,6 @@ import { getFlyDuration, waitForAnimation } from "@/lib/map-camera";
 import { MAP_STYLE } from "@/lib/map-style";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
-LogManager.onLog((log) => {
-  const { message, tag } = log;
-  if (
-    tag === "Mbgl-LocationComponent" &&
-    message.includes("Failed to obtain last location update")
-  ) {
-    return true;
-  }
-  return false;
-});
-
 const DEFAULT_ZOOM = 15;
 const FOLLOW_DELAY = 150;
 
@@ -53,12 +42,14 @@ export interface PlaceMapProps {
   initialPlace?: PlaceDetails;
   leading?: MapSearchBarProps["leading"];
   renderActions?: PlaceDetailsSheetProps["renderActions"];
+  sheetOpensExpanded?: boolean;
 }
 
 export function PlaceMap({
   initialPlace,
   leading,
   renderActions,
+  sheetOpensExpanded,
 }: PlaceMapProps = {}) {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(
     null,
@@ -314,6 +305,7 @@ export function PlaceMap({
         onClose={handleSheetClose}
         onRetry={handleSheetRetry}
         renderActions={renderActions}
+        opensExpanded={sheetOpensExpanded}
         animatedBottomOffset={animatedBottomOffset}
       />
     </View>

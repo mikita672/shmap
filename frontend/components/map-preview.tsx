@@ -1,5 +1,6 @@
 import { View } from "react-native";
 import { useStaticMap } from "@/hooks/useStaticMap";
+import "@/lib/maplibre-log-filter";
 import { Ionicons, MaterialIcons } from "@/lib/icons";
 import { Image } from "@/lib/image";
 import { cn } from "@/lib/utils";

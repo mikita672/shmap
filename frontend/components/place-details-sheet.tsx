@@ -302,6 +302,7 @@ export interface PlaceDetailsSheetProps {
   onClose: () => void;
   onRetry: () => void;
   renderActions?: (place: PlaceDetails) => ReactNode;
+  opensExpanded?: boolean;
   animatedBottomOffset?: import("react-native-reanimated").SharedValue<number>;
 }
 
@@ -321,6 +322,7 @@ export function PlaceDetailsSheet({
   onClose,
   onRetry,
   renderActions = defaultActions,
+  opensExpanded = false,
   animatedBottomOffset,
 }: PlaceDetailsSheetProps) {
   const insets = useSafeAreaInsets();
@@ -350,26 +352,33 @@ export function PlaceDetailsSheet({
         animatedBottomOffset.set(visibleHeight);
       }
 
-      if (visible && prev && curr.h !== prev.h && curr.h > 0 && prev.h > 0) {
+      if (
+        visible &&
+        !opensExpanded &&
+        prev &&
+        curr.h !== prev.h &&
+        curr.h > 0 &&
+        prev.h > 0
+      ) {
         const wasMinimized = Math.abs(prev.y - getMinimizedY(prev.h)) < 1;
         if (wasMinimized) {
           snapTo(getMinimizedY(curr.h));
         }
       }
     },
-    [visible],
+    [visible, opensExpanded],
   );
 
   useEffect(() => {
     if (visible) {
       if (sheetHeight.get() > 0) {
-        snapTo(getMinimizedY(sheetHeight.get()));
+        snapTo(opensExpanded ? 0 : getMinimizedY(sheetHeight.get()));
       }
     } else {
       const h = sheetHeight.get() > 0 ? sheetHeight.get() : 1000;
       translateY.set(withTiming(h, { duration: 250 }));
     }
-  }, [visible, sheetHeight, snapTo, translateY]);
+  }, [visible, opensExpanded, sheetHeight, snapTo, translateY]);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
@@ -425,7 +434,7 @@ export function PlaceDetailsSheet({
           if (isFirstMeasure) {
             if (visible) {
               translateY.set(h);
-              snapTo(getMinimizedY(h));
+              snapTo(opensExpanded ? 0 : getMinimizedY(h));
             } else {
               translateY.set(h);
             }
