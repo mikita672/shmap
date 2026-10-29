@@ -201,7 +201,6 @@ export function PlaceMap({
 
     return () => {
       cancelled = true;
-      LocationManager.stop();
     };
   }, []);
 
