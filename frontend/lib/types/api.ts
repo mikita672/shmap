@@ -208,6 +208,8 @@ export interface ChatPlace {
   longitude: number;
 }
 
+export type SendChatMessageRequest = { text: string } | { place: ChatPlace };
+
 export type ChatMessageResponse = {
   id: number;
   sender: UserSummaryResponse;

@@ -22,6 +22,7 @@ import {
   findFirstUnreadId,
   type ChatItem,
 } from "@/lib/chat-items";
+import { getContentPreview } from "@/lib/chat-preview";
 import { getErrorMessage } from "@/lib/utils/error";
 
 const MAX_SCROLL_RETRIES = 3;
@@ -157,7 +158,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
             onPress={() => retry(item.message)}
           >
             <MessageBubble
-              text={item.message.text}
+              text={getContentPreview(item.message.content)}
               isMine
               isPending={!item.message.failed}
               isFailed={item.message.failed}

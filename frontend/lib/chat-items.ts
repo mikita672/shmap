@@ -1,5 +1,8 @@
 import { formatDayLabel, isSameDay } from "@/lib/chat-time";
-import type { ChatMessageResponse } from "@/lib/types/api";
+import type {
+  ChatMessageResponse,
+  SendChatMessageRequest,
+} from "@/lib/types/api";
 
 export type ChatItem =
   | {
@@ -15,7 +18,7 @@ export type ChatItem =
 
 export interface OutgoingMessage {
   submittedAt: number;
-  text: string;
+  content: SendChatMessageRequest;
   failed: boolean;
 }
 

@@ -111,7 +111,7 @@ export default function ChatScreen() {
           />
           {chat.canSend ? (
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
-              <Composer onSend={(text) => send.mutate(text)} />
+              <Composer onSend={(text) => send.mutate({ text })} />
             </KeyboardStickyView>
           ) : (
             <ReadOnlyBar
