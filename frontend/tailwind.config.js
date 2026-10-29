@@ -83,6 +83,7 @@ module.exports = {
           "out-muted": "hsl(var(--bubble-out-muted))",
           sender: "hsl(var(--bubble-sender))",
         },
+        "map-pin": "hsl(var(--map-pin))",
         searchbar: "hsl(var(--searchbar))",
         "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
         avatar: {

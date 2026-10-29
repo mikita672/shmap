@@ -12,7 +12,7 @@ import {
   moveReadPosition,
 } from "@/lib/chat-cache";
 import type { OutgoingMessage } from "@/lib/chat-items";
-import { AuthErrorCode } from "@/lib/types/api";
+import { AuthErrorCode, type SendChatMessageRequest } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 const sendMutationKey = (chatId: number) => ["chats", chatId, "send"];
@@ -24,8 +24,8 @@ export function useSendMessage(chatId: number) {
     mutationKey: sendMutationKey(chatId),
     scope: { id: `chat-${chatId}` },
     gcTime: 24 * 60 * 60 * 1000,
-    mutationFn: async (text: string) => {
-      const { data } = await sendChatMessage(chatId, text);
+    mutationFn: async (content: SendChatMessageRequest) => {
+      const { data } = await sendChatMessage(chatId, content);
       return data;
     },
     onSuccess: (message) => {
@@ -65,7 +65,7 @@ export function useOutgoingMessages(chatId: number) {
     },
     select: ({ state }) => ({
       submittedAt: state.submittedAt,
-      text: String(state.variables),
+      content: state.variables as SendChatMessageRequest,
       failed: state.status === "error",
     }),
   });
@@ -76,7 +76,7 @@ export function useOutgoingMessages(chatId: number) {
       .findAll({ mutationKey: sendMutationKey(chatId), status: "error" })
       .find((mutation) => mutation.state.submittedAt === message.submittedAt);
     if (failed) mutationCache.remove(failed);
-    send.mutate(message.text);
+    send.mutate(message.content);
   };
 
   return { outgoing, retry };

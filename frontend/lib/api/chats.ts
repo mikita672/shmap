@@ -5,6 +5,7 @@ import type {
   ChatSummaryResponse,
   ChatUnreadCountResponse,
   CreateGroupChatRequest,
+  SendChatMessageRequest,
 } from "@/lib/types/api";
 
 export const getChats = () =>
@@ -27,10 +28,14 @@ export const getChatMessages = (chatId: number, before: number | null) =>
     params: { before: before ?? undefined },
   });
 
-export const sendChatMessage = (chatId: number, text: string) =>
-  apiClient.post<ChatMessageResponse>(`/api/v1/chats/${chatId}/messages`, {
-    text,
-  });
+export const sendChatMessage = (
+  chatId: number,
+  content: SendChatMessageRequest,
+) =>
+  apiClient.post<ChatMessageResponse>(
+    `/api/v1/chats/${chatId}/messages`,
+    content,
+  );
 
 export const createGroupChat = (data: CreateGroupChatRequest) =>
   apiClient.post<ChatResponse>("/api/v1/chats/groups", data);

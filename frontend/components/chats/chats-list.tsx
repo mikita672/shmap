@@ -49,7 +49,7 @@ export function ChatsList({ searchQuery }: ChatsListProps) {
   }
 
   if (chats.length === 0) {
-    return <ChatsEmpty onNewGroup={() => router.push("/new-group")} />;
+    return <ChatsEmpty onAction={() => router.push("/new-group")} />;
   }
 
   const matches = chats.filter((chat) => matchesChatSearch(chat, searchQuery));

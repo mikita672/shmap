@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DayChip } from "@/components/chats/day-chip";
 import { MessageBubble } from "@/components/chats/message-bubble";
 import { MessageRow } from "@/components/chats/message-row";
+import { PlaceMessageCard } from "@/components/chats/place-message-card";
 import { UnreadDivider } from "@/components/chats/unread-divider";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -156,12 +157,21 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
             }
             onPress={() => retry(item.message)}
           >
-            <MessageBubble
-              text={item.message.text}
-              isMine
-              isPending={!item.message.failed}
-              isFailed={item.message.failed}
-            />
+            {"place" in item.message.content ? (
+              <PlaceMessageCard
+                place={item.message.content.place}
+                isMine
+                isPending={!item.message.failed}
+                isFailed={item.message.failed}
+              />
+            ) : (
+              <MessageBubble
+                text={item.message.content.text}
+                isMine
+                isPending={!item.message.failed}
+                isFailed={item.message.failed}
+              />
+            )}
           </Pressable>
         ) : (
           <MessageRow
