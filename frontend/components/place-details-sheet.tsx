@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback } from "react";
-import { View, Pressable, Share } from "react-native";
+import React, { useEffect, useCallback, type ReactNode } from "react";
+import { View, Pressable } from "react-native";
 
 import Animated, {
   useSharedValue,
@@ -12,12 +12,17 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { toast } from "sonner-native";
 import { Ionicons } from "@/lib/icons";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  CopyPlaceButton,
+  SharePlaceButton,
+  copyPlace,
+} from "@/components/place-actions";
 import type { PlaceDetails } from "@/lib/api/geocoding";
+import { getPlaceLines } from "@/lib/place-format";
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -189,64 +194,14 @@ function AddressRow({ icon, text }: { icon: IoniconsName; text: string }) {
 function PlaceContent({
   place,
   onClose,
+  renderActions,
 }: {
   place: PlaceDetails;
   onClose: () => void;
+  renderActions: (place: PlaceDetails) => ReactNode;
 }) {
-  const streetLine = [place.street, place.housenumber]
-    .filter(Boolean)
-    .join(" ");
-
-  const localityLine = [place.locality, place.district]
-    .filter(Boolean)
-    .join(", ");
-
-  const cityLine = [place.city, place.postcode, place.country]
-    .filter(Boolean)
-    .join(", ");
-
-  const coordsText = `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`;
-
-  const fullAddress = [streetLine, localityLine, cityLine]
-    .filter(Boolean)
-    .join("\n");
-
-  const copyText = [place.name, fullAddress || place.displayName, coordsText]
-    .filter(Boolean)
-    .join("\n");
-
-  const shareText = [
-    place.name,
-    fullAddress || place.displayName,
-    `Coordinates: ${coordsText}`,
-    `https://www.openstreetmap.org/?mlat=${place.latitude}&mlon=${place.longitude}&zoom=17`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  const handleCopy = useCallback(async () => {
-    try {
-      const Clipboard = await import("expo-clipboard");
-      await Clipboard.setStringAsync(copyText);
-      toast.success("Copied to clipboard");
-    } catch (error) {
-      toast.error("Clipboard requires app rebuild");
-      console.warn(
-        "expo-clipboard native module missing. Rebuild your app.",
-        error,
-      );
-    }
-  }, [copyText]);
-
-  const handleShare = useCallback(async () => {
-    try {
-      await Share.share({ message: shareText, title: place.name });
-    } catch (error: unknown) {
-      if (error instanceof Error && error.message !== "User did not share") {
-        toast.error("Unable to share");
-      }
-    }
-  }, [shareText, place.name]);
+  const { streetLine, localityLine, cityLine, coordsText } =
+    getPlaceLines(place);
 
   return (
     <View className="px-5 pb-4 pt-1 gap-3">
@@ -298,7 +253,7 @@ function PlaceContent({
           <AddressRow icon="business-outline" text={cityLine} />
         ) : null}
         <Pressable
-          onPress={handleCopy}
+          onPress={() => copyPlace(place)}
           accessibilityLabel="Copy coordinates"
           className="flex-row items-start gap-3 active:opacity-60"
         >
@@ -320,32 +275,17 @@ function PlaceContent({
 
       <Separator />
 
-      <View className="flex-row gap-3">
-        <Button
-          variant="outline"
-          className="flex-1 gap-2"
-          onPress={handleCopy}
-          accessibilityLabel="Copy place info"
-        >
-          <Ionicons name="copy-outline" size={16} className="text-on-surface" />
-          <Text className="text-on-surface text-sm">Copy</Text>
-        </Button>
-
-        <Button
-          variant="outline"
-          className="flex-1 gap-2"
-          onPress={handleShare}
-          accessibilityLabel="Share place"
-        >
-          <Ionicons
-            name="share-social-outline"
-            size={16}
-            className="text-on-surface"
-          />
-          <Text className="text-on-surface text-sm">Share</Text>
-        </Button>
-      </View>
+      <View className="flex-row gap-3">{renderActions(place)}</View>
     </View>
+  );
+}
+
+function defaultActions(place: PlaceDetails) {
+  return (
+    <>
+      <CopyPlaceButton place={place} />
+      <SharePlaceButton place={place} />
+    </>
   );
 }
 
@@ -356,6 +296,7 @@ export interface PlaceDetailsSheetProps {
   isError: boolean;
   onClose: () => void;
   onRetry: () => void;
+  renderActions?: (place: PlaceDetails) => ReactNode;
   animatedBottomOffset?: import("react-native-reanimated").SharedValue<number>;
 }
 
@@ -374,6 +315,7 @@ export function PlaceDetailsSheet({
   isError,
   onClose,
   onRetry,
+  renderActions = defaultActions,
   animatedBottomOffset,
 }: PlaceDetailsSheetProps) {
   const insets = useSafeAreaInsets();
@@ -496,7 +438,11 @@ export function PlaceDetailsSheet({
           ) : isError ? (
             <ErrorState onRetry={onRetry} />
           ) : place ? (
-            <PlaceContent place={place} onClose={onClose} />
+            <PlaceContent
+              place={place}
+              onClose={onClose}
+              renderActions={renderActions}
+            />
           ) : null}
         </View>
       </Animated.View>
