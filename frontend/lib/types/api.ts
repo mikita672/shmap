@@ -198,12 +198,24 @@ export type PublicProfileResponse = {
 
 export type ChatType = "DIRECT" | "GROUP";
 
-export interface ChatMessageResponse {
+export interface ChatPlace {
+  osmId: string | null;
+  name: string;
+  address: string | null;
+  osmKey: string | null;
+  osmValue: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+export type ChatMessageResponse = {
   id: number;
   sender: UserSummaryResponse;
-  text: string;
   createdAt: string;
-}
+} & (
+  | { type: "TEXT"; text: string; place: null }
+  | { type: "PLACE"; text: null; place: ChatPlace }
+);
 
 export type ChatSummaryResponse = {
   id: number;

@@ -1,15 +1,20 @@
-import type { ChatSummaryResponse } from "@/lib/types/api";
+import type { ChatMessageResponse, ChatSummaryResponse } from "@/lib/types/api";
 
 export function getChatName(chat: ChatSummaryResponse) {
   if (chat.type === "GROUP") return chat.name;
   return `${chat.otherUser.firstName} ${chat.otherUser.lastName}`;
 }
 
+export function getMessagePreview(message: ChatMessageResponse) {
+  if (message.type === "PLACE") return `📍 ${message.place.name}`;
+  return message.text;
+}
+
 export function getChatPreview(chat: ChatSummaryResponse, myId?: number) {
   const message = chat.lastMessage;
   if (!message) return "No messages yet";
-  if (message.sender.id === myId) return `You: ${message.text}`;
-  if (chat.type === "GROUP")
-    return `${message.sender.firstName}: ${message.text}`;
-  return message.text;
+  const preview = getMessagePreview(message);
+  if (message.sender.id === myId) return `You: ${preview}`;
+  if (chat.type === "GROUP") return `${message.sender.firstName}: ${preview}`;
+  return preview;
 }
