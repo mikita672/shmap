@@ -284,6 +284,7 @@ public class ChatService {
         return new ChatMessageResponse(
                 message.getId(),
                 toSummary(sender),
+                message.getType(),
                 message.getText(),
                 message.getCreatedAt());
     }
