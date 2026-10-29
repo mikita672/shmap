@@ -83,7 +83,7 @@ export function PlaceMap({
     isLoading: reverseLoading,
     isError: reverseError,
     refetch: reverseRefetch,
-  } = useReverseGeocoding(selectedCoord);
+  } = useReverseGeocoding(searchPlaceOverride ? null : selectedCoord);
 
   const activePlace = searchPlaceOverride ?? reversePlace;
   const isLoading = reverseLoading && activePlace === null;
