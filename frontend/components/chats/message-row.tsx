@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { MessageBubble } from "@/components/chats/message-bubble";
+import { PlaceMessageCard } from "@/components/chats/place-message-card";
 import { Avatar } from "@/components/ui/avatar";
-import { getMessagePreview } from "@/lib/chat-preview";
 import { formatMessageTime } from "@/lib/chat-time";
 import type { ChatMessageResponse } from "@/lib/types/api";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,11 @@ export function MessageRow({
 }: MessageRowProps) {
   const showAuthor = isGroup && !isMine;
   const { sender } = message;
+  const time = formatMessageTime(message.createdAt);
+  const senderName =
+    showAuthor && isFirstInRun
+      ? `${sender.firstName} ${sender.lastName}`
+      : undefined;
 
   return (
     <View
@@ -40,16 +45,21 @@ export function MessageRow({
         ) : (
           <View style={{ width: AVATAR_SIZE }} />
         ))}
-      <MessageBubble
-        text={getMessagePreview(message)}
-        time={formatMessageTime(message.createdAt)}
-        isMine={isMine}
-        senderName={
-          showAuthor && isFirstInRun
-            ? `${sender.firstName} ${sender.lastName}`
-            : undefined
-        }
-      />
+      {message.type === "PLACE" ? (
+        <PlaceMessageCard
+          place={message.place}
+          time={time}
+          isMine={isMine}
+          senderName={senderName}
+        />
+      ) : (
+        <MessageBubble
+          text={message.text}
+          time={time}
+          isMine={isMine}
+          senderName={senderName}
+        />
+      )}
     </View>
   );
 }
