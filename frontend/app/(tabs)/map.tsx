@@ -21,6 +21,7 @@ import { PlaceDetailsSheet } from "@/components/place-details-sheet";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
 import { getFlyDuration, waitForAnimation } from "@/lib/map-camera";
+import { MAP_STYLE } from "@/lib/map-style";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 LogManager.onLog((log) => {
@@ -34,7 +35,6 @@ LogManager.onLog((log) => {
   return false;
 });
 
-const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 const DEFAULT_ZOOM = 15;
 const FOLLOW_DELAY = 150;
 
