@@ -25,7 +25,7 @@ import type { SearchPlace } from "@/lib/api/geocoding";
 const AVATAR_RING_WIDTH = 3;
 const ENTER_KEY_BLUR_DELAY_MS = 300;
 
-interface MapSearchBarProps {
+export interface MapSearchBarProps {
   mapCenter?: { lat: number; lon: number };
   onPlaceSelect: (place: SearchPlace) => void;
   onClear?: () => void;

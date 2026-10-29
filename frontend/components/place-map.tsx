@@ -15,9 +15,15 @@ import {
 } from "@maplibre/maplibre-react-native";
 import type { NativeSyntheticEvent } from "react-native";
 import { MapControls } from "@/components/map-controls";
-import { MapSearchBar } from "@/components/map-search-bar";
+import {
+  MapSearchBar,
+  type MapSearchBarProps,
+} from "@/components/map-search-bar";
 import { useSharedValue } from "react-native-reanimated";
-import { PlaceDetailsSheet } from "@/components/place-details-sheet";
+import {
+  PlaceDetailsSheet,
+  type PlaceDetailsSheetProps,
+} from "@/components/place-details-sheet";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
 import { getFlyDuration, waitForAnimation } from "@/lib/map-camera";
@@ -43,13 +49,23 @@ interface SelectedCoordinate {
   lon: number;
 }
 
-export function PlaceMap() {
+export interface PlaceMapProps {
+  initialPlace?: PlaceDetails;
+  leading?: MapSearchBarProps["leading"];
+  renderActions?: PlaceDetailsSheetProps["renderActions"];
+}
+
+export function PlaceMap({
+  initialPlace,
+  leading,
+  renderActions,
+}: PlaceMapProps = {}) {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(
     null,
   );
   const [trackUserLocation, setTrackUserLocation] = useState<
     TrackUserLocation | undefined
-  >("default");
+  >(initialPlace ? undefined : "default");
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
   const moveToUserAbortRef = useRef<AbortController>(null);
@@ -58,12 +74,14 @@ export function PlaceMap() {
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number }>();
 
   const [selectedCoord, setSelectedCoord] = useState<SelectedCoordinate | null>(
-    null,
+    initialPlace
+      ? { lat: initialPlace.latitude, lon: initialPlace.longitude }
+      : null,
   );
-  const [sheetVisible, setSheetVisible] = useState(false);
+  const [sheetVisible, setSheetVisible] = useState(Boolean(initialPlace));
 
   const [searchPlaceOverride, setSearchPlaceOverride] =
-    useState<PlaceDetails | null>(null);
+    useState<PlaceDetails | null>(initialPlace ?? null);
 
   const animatedBottomOffset = useSharedValue(0);
 
@@ -229,23 +247,27 @@ export function PlaceMap() {
           });
         }}
       >
-        {locationPermission && (
-          <>
-            <Camera
-              ref={cameraRef}
-              trackUserLocation={trackUserLocation}
-              onTrackUserLocationChange={(event) => {
-                setTrackUserLocation(
-                  (event.nativeEvent
-                    .trackUserLocation as TrackUserLocation | null) ??
-                    undefined,
-                );
-              }}
-              initialViewState={{ zoom: DEFAULT_ZOOM }}
-            />
-            <UserLocation animated accuracy />
-          </>
+        {(locationPermission || initialPlace) && (
+          <Camera
+            ref={cameraRef}
+            trackUserLocation={trackUserLocation}
+            onTrackUserLocationChange={(event) => {
+              setTrackUserLocation(
+                (event.nativeEvent
+                  .trackUserLocation as TrackUserLocation | null) ?? undefined,
+              );
+            }}
+            initialViewState={
+              initialPlace
+                ? {
+                    center: [initialPlace.longitude, initialPlace.latitude],
+                    zoom: DEFAULT_ZOOM,
+                  }
+                : { zoom: DEFAULT_ZOOM }
+            }
+          />
         )}
+        {locationPermission && <UserLocation animated accuracy />}
 
         {selectedCoord && (
           <ViewAnnotation
@@ -270,6 +292,7 @@ export function PlaceMap() {
         onClear={handleSheetClose}
         query={searchQuery}
         onQueryChange={setSearchQuery}
+        leading={leading}
       />
 
       {locationPermission && (
@@ -290,6 +313,7 @@ export function PlaceMap() {
         isError={reverseError}
         onClose={handleSheetClose}
         onRetry={handleSheetRetry}
+        renderActions={renderActions}
         animatedBottomOffset={animatedBottomOffset}
       />
     </View>
