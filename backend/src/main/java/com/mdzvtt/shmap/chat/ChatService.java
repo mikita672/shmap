@@ -172,7 +172,7 @@ public class ChatService {
             throw new NotFriendsException("You can only message friends");
         }
         User sender = userRepository.getReferenceById(userId);
-        ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
+        ChatMessage message = chatMessageRepository.save(ChatMessage.text(chat, sender, text));
         ChatMessageResponse response = toMessageResponse(message);
         eventPublisher
                 .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));

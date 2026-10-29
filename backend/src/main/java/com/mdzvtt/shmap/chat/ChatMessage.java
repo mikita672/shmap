@@ -59,10 +59,19 @@ public class ChatMessage {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    public ChatMessage(Chat chat, User sender, String text) {
+    private ChatMessage(Chat chat, User sender, ChatMessageType type, String text, MessagePlace place) {
         this.chat = chat;
         this.sender = sender;
-        this.type = ChatMessageType.TEXT;
+        this.type = type;
         this.text = text;
+        this.place = place;
+    }
+
+    public static ChatMessage text(Chat chat, User sender, String text) {
+        return new ChatMessage(chat, sender, ChatMessageType.TEXT, text, null);
+    }
+
+    public static ChatMessage place(Chat chat, User sender, MessagePlace place) {
+        return new ChatMessage(chat, sender, ChatMessageType.PLACE, null, place);
     }
 }
