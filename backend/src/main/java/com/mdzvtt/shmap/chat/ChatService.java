@@ -171,6 +171,11 @@ public class ChatService {
         return post(userId, chatId, (chat, sender) -> ChatMessage.text(chat, sender, text));
     }
 
+    @Transactional
+    public ChatMessageResponse sendPlace(Integer userId, Long chatId, MessagePlace place) {
+        return post(userId, chatId, (chat, sender) -> ChatMessage.place(chat, sender, place));
+    }
+
     private ChatMessageResponse post(Integer userId, Long chatId, BiFunction<Chat, User, ChatMessage> create) {
         lockChat(chatId);
         Chat chat = findChat(userId, chatId);
