@@ -179,7 +179,7 @@ All routes live under `/api/v1`:
 | `/friend-suggestions`         | "People you may know" and dismissing suggestions                        |
 | `/friend-activity`            | Your recent friend activity, newest first                               |
 | `/blocks`                     | Blocking and unblocking users, and the list of users you blocked        |
-| `/chats`                      | Your chats, 1:1 and group chats, members, messages and unread counts    |
+| `/chats`                      | 1:1 and group chats, members, text and place messages, unread counts    |
 | `/events`                     | The live event stream. See Live updates                                 |
 
 ## Live updates
@@ -191,7 +191,7 @@ event:ready
 data:{}
 
 event:chat.message
-data:{"chatId":12,"message":{"id":345,"sender":{...},"text":"Hi","createdAt":"2026-10-24T10:00:00Z"}}
+data:{"chatId":12,"message":{"id":345,"sender":{...},"type":"TEXT","text":"Hi","place":null,"createdAt":"2026-10-24T10:00:00Z"}}
 
 event:chat.changed
 data:{"chatId":12}
