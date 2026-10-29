@@ -107,14 +107,16 @@ export default function MapScreen() {
     const coord = { lat: place.latitude, lon: place.longitude };
     setSelectedCoord(coord);
 
-    setSearchPlaceOverride({
-      id: place.id,
-      name: place.name,
-      displayName: place.displayName,
-      category: "Place",
-      latitude: place.latitude,
-      longitude: place.longitude,
-    });
+    setSearchPlaceOverride(
+      place.details ?? {
+        id: place.id,
+        name: place.name,
+        displayName: place.displayName,
+        category: "Place",
+        latitude: place.latitude,
+        longitude: place.longitude,
+      },
+    );
     setSheetVisible(true);
 
     if (cameraRef.current && mapRef.current) {
