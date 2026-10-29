@@ -6,5 +6,5 @@ import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import java.time.Instant;
 
 public record ChatMessageResponse(Long id, UserSummaryResponse sender, ChatMessageType type, String text,
-                Instant createdAt) {
+        ChatPlaceResponse place, Instant createdAt) {
 }

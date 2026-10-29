@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
+import com.mdzvtt.shmap.chat.dto.ChatPlaceResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
@@ -286,6 +287,7 @@ public class ChatService {
                 toSummary(sender),
                 message.getType(),
                 message.getText(),
+                ChatPlaceResponse.from(message.getPlace()),
                 message.getCreatedAt());
     }
 
