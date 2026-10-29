@@ -46,7 +46,7 @@ public class ChatMessage {
     @ColumnDefault("'TEXT'")
     private ChatMessageType type;
 
-    @Column(nullable = false, length = 2000)
+    @Column(length = 2000)
     private String text;
 
     @CreationTimestamp
