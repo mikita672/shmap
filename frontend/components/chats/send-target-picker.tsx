@@ -25,13 +25,13 @@ interface TargetRow {
 export interface SendTargetPickerProps {
   selectedKeys: Set<string>;
   onToggle: (target: SendTarget) => void;
-  onNewGroup: () => void;
+  onAddFriends: () => void;
 }
 
 export function SendTargetPicker({
   selectedKeys,
   onToggle,
-  onNewGroup,
+  onAddFriends,
 }: SendTargetPickerProps) {
   const [query, setQuery] = useState("");
   const chats = useChats();
@@ -91,8 +91,10 @@ export function SendTargetPicker({
     return (
       <ChatsEmpty
         title="No one to send to yet"
-        description="Add friends or start a group to share places with them"
-        onNewGroup={onNewGroup}
+        description="Add friends to share places with them"
+        actionLabel="Add friends"
+        actionIcon="person-add"
+        onAction={onAddFriends}
       />
     );
   }

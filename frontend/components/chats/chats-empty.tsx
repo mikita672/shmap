@@ -1,18 +1,22 @@
 import { Pressable, View } from "react-native";
 import { Text } from "@/components/ui/text";
-import { MaterialIcons } from "@/lib/icons";
+import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 export interface ChatsEmptyProps {
   title?: string;
   description?: string;
-  onNewGroup?: () => void;
+  actionLabel?: string;
+  actionIcon?: MaterialIconName;
+  onAction?: () => void;
 }
 
 export function ChatsEmpty({
   title = "No chats yet",
   description = "Message a friend from their profile, or start a group to plan a route together",
-  onNewGroup,
+  actionLabel = "New group",
+  actionIcon = "group-add",
+  onAction,
 }: ChatsEmptyProps) {
   return (
     <View className="flex-1 items-center justify-center px-12">
@@ -24,21 +28,21 @@ export function ChatsEmpty({
           {description}
         </Text>
         <Pressable
-          onPress={onNewGroup}
-          disabled={!onNewGroup}
+          onPress={onAction}
+          disabled={!onAction}
           accessibilityRole="button"
           className={cn(
             "flex-row items-center gap-2 px-3 py-2.5 active:opacity-60",
-            !onNewGroup && "opacity-50",
+            !onAction && "opacity-50",
           )}
         >
           <MaterialIcons
-            name="group-add"
+            name={actionIcon}
             size={24}
             className="text-chat-list-foreground"
           />
           <Text className="text-base font-medium leading-6 text-chat-list-foreground">
-            New group
+            {actionLabel}
           </Text>
         </Pressable>
       </View>

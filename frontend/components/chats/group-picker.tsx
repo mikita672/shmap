@@ -60,7 +60,7 @@ export function GroupPicker({
       <ChatsEmpty
         title="No groups yet"
         description={`Create a group with ${friendName} to plan a route together`}
-        onNewGroup={onNewGroup}
+        onAction={onNewGroup}
       />
     );
   }

@@ -92,7 +92,7 @@ export default function SendPlaceScreen() {
           <SendTargetPicker
             selectedKeys={new Set(selected.keys())}
             onToggle={handleToggle}
-            onNewGroup={() => router.push("/new-group")}
+            onAddFriends={() => router.push("/friends/add")}
           />
           <View
             className="px-6 pt-4"
