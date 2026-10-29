@@ -29,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 @Service
@@ -166,14 +167,18 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatMessageResponse send(Integer userId, Long chatId, String text) {
+    public ChatMessageResponse sendText(Integer userId, Long chatId, String text) {
+        return post(userId, chatId, (chat, sender) -> ChatMessage.text(chat, sender, text));
+    }
+
+    private ChatMessageResponse post(Integer userId, Long chatId, BiFunction<Chat, User, ChatMessage> create) {
         lockChat(chatId);
         Chat chat = findChat(userId, chatId);
         if (!canSend(chat, userId)) {
             throw new NotFriendsException("You can only message friends");
         }
         User sender = userRepository.getReferenceById(userId);
-        ChatMessage message = chatMessageRepository.save(ChatMessage.text(chat, sender, text));
+        ChatMessage message = chatMessageRepository.save(create.apply(chat, sender));
         ChatMessageResponse response = toMessageResponse(message);
         eventPublisher
                 .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));
