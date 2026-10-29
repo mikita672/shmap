@@ -15,10 +15,10 @@ export function openSendPlace(place: PlaceDetails) {
   });
 }
 
-export async function copyPlace(place: PlaceDetails) {
+export async function copyText(text: string) {
   try {
     const Clipboard = await import("expo-clipboard");
-    await Clipboard.setStringAsync(getPlaceCopyText(place));
+    await Clipboard.setStringAsync(text);
     toast.success("Copied to clipboard");
   } catch (error) {
     toast.error("Clipboard requires app rebuild");
@@ -27,6 +27,10 @@ export async function copyPlace(place: PlaceDetails) {
       error,
     );
   }
+}
+
+export function copyPlace(place: PlaceDetails) {
+  return copyText(getPlaceCopyText(place));
 }
 
 export async function sharePlace(place: PlaceDetails) {

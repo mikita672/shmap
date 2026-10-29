@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   CopyPlaceButton,
   SharePlaceButton,
-  copyPlace,
+  copyText,
 } from "@/components/place-actions";
 import type { PlaceDetails } from "@/lib/api/geocoding";
 import { getPlaceLines } from "@/lib/place-format";
@@ -258,7 +258,7 @@ function PlaceContent({
           <AddressRow icon="location-outline" text={fallbackAddress} />
         ) : null}
         <Pressable
-          onPress={() => copyPlace(place)}
+          onPress={() => copyText(coordsText)}
           accessibilityLabel="Copy coordinates"
           className="flex-row items-start gap-3 active:opacity-60"
         >
