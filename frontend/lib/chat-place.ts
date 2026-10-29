@@ -28,3 +28,48 @@ export function toChatPlace(place: PlaceDetails): ChatPlace {
     longitude: place.longitude,
   };
 }
+
+function isOptionalString(value: unknown): value is string | null | undefined {
+  return value === null || value === undefined || typeof value === "string";
+}
+
+function isCoordinate(value: unknown, max: number): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    Math.abs(value) <= max
+  );
+}
+
+export function parsePlaceParam(param: string | string[] | undefined) {
+  if (typeof param !== "string") return null;
+  let value: unknown;
+  try {
+    value = JSON.parse(param);
+  } catch {
+    return null;
+  }
+  if (typeof value !== "object" || value === null) return null;
+  const place = value as Record<string, unknown>;
+  if (
+    typeof place.name !== "string" ||
+    !place.name.trim() ||
+    !isCoordinate(place.latitude, 90) ||
+    !isCoordinate(place.longitude, 180) ||
+    !isOptionalString(place.osmId) ||
+    !isOptionalString(place.address) ||
+    !isOptionalString(place.osmKey) ||
+    !isOptionalString(place.osmValue)
+  ) {
+    return null;
+  }
+  return {
+    osmId: place.osmId ?? null,
+    name: place.name,
+    address: place.address ?? null,
+    osmKey: place.osmKey ?? null,
+    osmValue: place.osmValue ?? null,
+    latitude: place.latitude,
+    longitude: place.longitude,
+  } satisfies ChatPlace;
+}
