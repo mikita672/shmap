@@ -3,7 +3,7 @@ import { toast } from "sonner-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import type { PlaceDetails } from "@/lib/api/geocoding";
-import { Ionicons } from "@/lib/icons";
+import { Ionicons, MaterialIcons } from "@/lib/icons";
 import { getPlaceCopyText, getPlaceShareText } from "@/lib/place-format";
 
 export async function copyPlace(place: PlaceDetails) {
@@ -58,6 +58,34 @@ export function SharePlaceButton({ place }: { place: PlaceDetails }) {
         className="text-on-surface"
       />
       <Text className="text-on-surface text-sm">Share</Text>
+    </Button>
+  );
+}
+
+export interface SendPlaceButtonProps {
+  label?: string;
+  disabled?: boolean;
+  onPress: () => void;
+}
+
+export function SendPlaceButton({
+  label = "Send",
+  disabled,
+  onPress,
+}: SendPlaceButtonProps) {
+  return (
+    <Button
+      className="flex-1 gap-2"
+      disabled={disabled}
+      onPress={onPress}
+      accessibilityLabel={label}
+    >
+      <MaterialIcons
+        name="send"
+        size={16}
+        className="text-primary-foreground"
+      />
+      <Text className="text-sm">{label}</Text>
     </Button>
   );
 }
