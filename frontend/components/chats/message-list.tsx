@@ -6,11 +6,11 @@ import {
   Pressable,
   View,
   type GestureResponderEvent,
-  type ScrollViewProps,
 } from "react-native";
 import {
   KeyboardChatScrollView,
   KeyboardController,
+  type KeyboardChatScrollViewProps,
 } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DayChip } from "@/components/chats/day-chip";
@@ -23,6 +23,7 @@ import { Text } from "@/components/ui/text";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { useProfile } from "@/hooks/useProfile";
 import { useOutgoingMessages } from "@/hooks/useSendMessage";
+import { useStickToBottom } from "@/hooks/useStickToBottom";
 import {
   buildChatItems,
   findFirstUnreadId,
@@ -98,6 +99,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     firstUnreadId,
   );
   const unreadIndex = items.findIndex((item) => item.kind === "unread");
+  const stick = useStickToBottom(listRef, items[0]?.key, items.length);
 
   useEffect(() => {
     if (hasDecidedScrollRef.current || !canDecideScroll) return;
@@ -162,11 +164,17 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
       inverted
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      {...stick.scrollHandlers}
       initialNumToRender={items.length}
       onScrollToIndexFailed={handleScrollToIndexFailed}
       maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
       showsVerticalScrollIndicator={false}
-      renderScrollComponent={(props) => <ChatScrollView {...props} />}
+      renderScrollComponent={(props) => (
+        <ChatScrollView
+          {...props}
+          onContentInsetChange={stick.onContentInsetChange}
+        />
+      )}
       data={items}
       keyExtractor={(item) => item.key}
       renderItem={({ item }) =>
@@ -222,7 +230,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
   );
 }
 
-function ChatScrollView(props: ScrollViewProps) {
+function ChatScrollView(props: KeyboardChatScrollViewProps) {
   const insets = useSafeAreaInsets();
 
   return (
