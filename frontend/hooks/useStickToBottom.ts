@@ -19,6 +19,7 @@ export function useStickToBottom<T>(
   const isUserScrollingRef = useRef(false);
   const momentumAfterDragRef = useRef(false);
   const followPendingRef = useRef(false);
+  const checkNextScrollRef = useRef(false);
   const insetTopRef = useRef(0);
   const previousRef = useRef({ newestKey, itemCount, latestSendAt });
 
@@ -55,13 +56,20 @@ export function useStickToBottom<T>(
     });
   };
 
+  const syncWithNextScroll = () => {
+    checkNextScrollRef.current = true;
+    followPendingRef.current = false;
+  };
+
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentInset } = event.nativeEvent;
     const distance = contentOffset.y + contentInset.top;
+    const isChecking = checkNextScrollRef.current;
+    checkNextScrollRef.current = false;
 
     if (distance <= AT_BOTTOM_THRESHOLD) {
       setIsAtBottom(true);
-    } else if (isUserScrollingRef.current) {
+    } else if (isUserScrollingRef.current || isChecking) {
       setIsAtBottom(false);
     }
 
@@ -78,6 +86,7 @@ export function useStickToBottom<T>(
     isUserScrollingRef.current = true;
     momentumAfterDragRef.current = false;
     followPendingRef.current = false;
+    checkNextScrollRef.current = false;
   };
 
   const onScrollEndDrag = () => {
@@ -101,6 +110,7 @@ export function useStickToBottom<T>(
   return {
     isAtBottom,
     scrollToBottom,
+    syncWithNextScroll,
     scrollHandlers: {
       onScroll,
       onScrollBeginDrag,

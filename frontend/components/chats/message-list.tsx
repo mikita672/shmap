@@ -116,13 +116,14 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     if (unreadIndex < 0) return;
 
     requestAnimationFrame(() => {
+      stick.syncWithNextScroll();
       listRef.current?.scrollToIndex({
         index: unreadIndex,
         viewPosition: 1,
         animated: false,
       });
     });
-  }, [canDecideScroll, unreadIndex]);
+  }, [canDecideScroll, unreadIndex, stick]);
 
   const handleScrollToIndexFailed = ({
     index,
@@ -133,11 +134,13 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
   }) => {
     if (scrollRetriesRef.current >= MAX_SCROLL_RETRIES) return;
     scrollRetriesRef.current += 1;
+    stick.syncWithNextScroll();
     listRef.current?.scrollToOffset({
       offset: averageItemLength * index,
       animated: false,
     });
     setTimeout(() => {
+      stick.syncWithNextScroll();
       listRef.current?.scrollToIndex({
         index,
         viewPosition: 1,
