@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Platform,
   Pressable,
   View,
+  type GestureResponderEvent,
   type ScrollViewProps,
 } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
   KeyboardChatScrollView,
   KeyboardController,
@@ -31,6 +31,7 @@ import {
 import { getErrorMessage } from "@/lib/utils/error";
 
 const MAX_SCROLL_RETRIES = 3;
+const TAP_SLOP = 10;
 
 export interface MessageListProps {
   chatId: number;
@@ -55,15 +56,25 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
   const listRef = useRef<FlatList<ChatItem>>(null);
   const hasDecidedScrollRef = useRef(false);
   const scrollRetriesRef = useRef(0);
-  const dismissKeyboardTap = useMemo(
-    () =>
-      Gesture.Tap()
-        .runOnJS(true)
-        .onEnd(() => {
-          KeyboardController.dismiss();
-        }),
-    [],
-  );
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: GestureResponderEvent) => {
+    touchStartRef.current = {
+      x: e.nativeEvent.pageX,
+      y: e.nativeEvent.pageY,
+    };
+  };
+
+  const handleTouchEnd = (e: GestureResponderEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const moved = Math.hypot(
+      e.nativeEvent.pageX - start.x,
+      e.nativeEvent.pageY - start.y,
+    );
+    if (moved <= TAP_SLOP) KeyboardController.dismiss();
+  };
 
   const [newestAtOpen, setNewestAtOpen] = useState<number | undefined>(
     undefined,
@@ -146,68 +157,68 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
   }
 
   return (
-    <GestureDetector gesture={dismissKeyboardTap}>
-      <FlatList
-        ref={listRef}
-        inverted
-        initialNumToRender={items.length}
-        onScrollToIndexFailed={handleScrollToIndexFailed}
-        maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
-        showsVerticalScrollIndicator={false}
-        renderScrollComponent={(props) => <ChatScrollView {...props} />}
-        data={items}
-        keyExtractor={(item) => item.key}
-        renderItem={({ item }) =>
-          item.kind === "day" ? (
-            <DayChip label={item.label} />
-          ) : item.kind === "unread" ? (
-            <UnreadDivider />
-          ) : item.kind === "outgoing" ? (
-            <Pressable
-              className="flex-row justify-end pt-1"
-              disabled={!item.message.failed}
-              accessibilityRole={item.message.failed ? "button" : undefined}
-              accessibilityHint={
-                item.message.failed ? "Sends the message again" : undefined
-              }
-              onPress={() => retry(item.message)}
-            >
-              {"place" in item.message.content ? (
-                <PlaceMessageCard
-                  place={item.message.content.place}
-                  isMine
-                  isPending={!item.message.failed}
-                  isFailed={item.message.failed}
-                />
-              ) : (
-                <MessageBubble
-                  text={item.message.content.text}
-                  isMine
-                  isPending={!item.message.failed}
-                  isFailed={item.message.failed}
-                />
-              )}
-            </Pressable>
-          ) : (
-            <MessageRow
-              message={item.message}
-              isMine={item.message.sender.id === me?.id}
-              isGroup={isGroup}
-              isFirstInRun={item.isFirstInRun}
-              isLastInRun={item.isLastInRun}
-            />
-          )
-        }
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-        }}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          isFetchingNextPage ? <ActivityIndicator className="py-3" /> : null
-        }
-        contentContainerClassName="px-3 py-2"
-      />
-    </GestureDetector>
+    <FlatList
+      ref={listRef}
+      inverted
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      initialNumToRender={items.length}
+      onScrollToIndexFailed={handleScrollToIndexFailed}
+      maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
+      showsVerticalScrollIndicator={false}
+      renderScrollComponent={(props) => <ChatScrollView {...props} />}
+      data={items}
+      keyExtractor={(item) => item.key}
+      renderItem={({ item }) =>
+        item.kind === "day" ? (
+          <DayChip label={item.label} />
+        ) : item.kind === "unread" ? (
+          <UnreadDivider />
+        ) : item.kind === "outgoing" ? (
+          <Pressable
+            className="flex-row justify-end pt-1"
+            disabled={!item.message.failed}
+            accessibilityRole={item.message.failed ? "button" : undefined}
+            accessibilityHint={
+              item.message.failed ? "Sends the message again" : undefined
+            }
+            onPress={() => retry(item.message)}
+          >
+            {"place" in item.message.content ? (
+              <PlaceMessageCard
+                place={item.message.content.place}
+                isMine
+                isPending={!item.message.failed}
+                isFailed={item.message.failed}
+              />
+            ) : (
+              <MessageBubble
+                text={item.message.content.text}
+                isMine
+                isPending={!item.message.failed}
+                isFailed={item.message.failed}
+              />
+            )}
+          </Pressable>
+        ) : (
+          <MessageRow
+            message={item.message}
+            isMine={item.message.sender.id === me?.id}
+            isGroup={isGroup}
+            isFirstInRun={item.isFirstInRun}
+            isLastInRun={item.isLastInRun}
+          />
+        )
+      }
+      onEndReached={() => {
+        if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+      }}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={
+        isFetchingNextPage ? <ActivityIndicator className="py-3" /> : null
+      }
+      contentContainerClassName="px-3 py-2"
+    />
   );
 }
 
