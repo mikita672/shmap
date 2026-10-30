@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   Pressable,
   View,
   type ScrollViewProps,
@@ -203,7 +204,7 @@ function ChatScrollView(props: ScrollViewProps) {
       {...props}
       inverted
       offset={insets.bottom}
-      keyboardDismissMode="interactive"
+      keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
       automaticallyAdjustContentInsets={false}
       contentInsetAdjustmentBehavior="never"
     />
