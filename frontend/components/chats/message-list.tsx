@@ -99,7 +99,16 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     firstUnreadId,
   );
   const unreadIndex = items.findIndex((item) => item.kind === "unread");
-  const stick = useStickToBottom(listRef, items[0]?.key, items.length);
+  const latestSendAt = Math.max(
+    0,
+    ...outgoing.map((message) => message.submittedAt),
+  );
+  const stick = useStickToBottom(
+    listRef,
+    items[0]?.key,
+    items.length,
+    latestSendAt,
+  );
 
   useEffect(() => {
     if (hasDecidedScrollRef.current || !canDecideScroll) return;

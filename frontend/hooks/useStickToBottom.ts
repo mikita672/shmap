@@ -12,17 +12,28 @@ export function useStickToBottom<T>(
   listRef: RefObject<FlatList<T> | null>,
   newestKey: string | undefined,
   itemCount: number,
+  latestSendAt: number,
 ) {
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const [seenSendAt, setSeenSendAt] = useState(latestSendAt);
   const isUserScrollingRef = useRef(false);
   const momentumAfterDragRef = useRef(false);
   const followPendingRef = useRef(false);
   const insetTopRef = useRef(0);
-  const previousRef = useRef({ newestKey, itemCount });
+  const previousRef = useRef({ newestKey, itemCount, latestSendAt });
+
+  if (latestSendAt > seenSendAt) {
+    setSeenSendAt(latestSendAt);
+    setIsAtBottom(true);
+  }
 
   useLayoutEffect(() => {
     const previous = previousRef.current;
-    previousRef.current = { newestKey, itemCount };
+    previousRef.current = { newestKey, itemCount, latestSendAt };
+    if (latestSendAt > previous.latestSendAt) {
+      isUserScrollingRef.current = false;
+      momentumAfterDragRef.current = false;
+    }
     if (
       isAtBottom &&
       previous.newestKey !== undefined &&
@@ -31,7 +42,7 @@ export function useStickToBottom<T>(
     ) {
       followPendingRef.current = true;
     }
-  }, [newestKey, itemCount, isAtBottom]);
+  }, [newestKey, itemCount, latestSendAt, isAtBottom]);
 
   const scrollToBottom = () => {
     isUserScrollingRef.current = false;
