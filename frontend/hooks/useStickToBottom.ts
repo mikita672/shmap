@@ -1,10 +1,17 @@
-import { useLayoutEffect, useRef, useState, type RefObject } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import {
   Platform,
   type FlatList,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
+import { KeyboardEvents } from "react-native-keyboard-controller";
 
 const AT_BOTTOM_THRESHOLD = 40;
 
@@ -20,6 +27,7 @@ export function useStickToBottom<T>(
   const momentumAfterDragRef = useRef(false);
   const followPendingRef = useRef(false);
   const checkNextScrollRef = useRef(false);
+  const keyboardMovingRef = useRef(false);
   const insetTopRef = useRef(0);
   const previousRef = useRef({ newestKey, itemCount, latestSendAt });
 
@@ -45,6 +53,19 @@ export function useStickToBottom<T>(
     }
   }, [newestKey, itemCount, latestSendAt, isAtBottom]);
 
+  useEffect(() => {
+    const setMoving = (moving: boolean) => () => {
+      keyboardMovingRef.current = moving;
+    };
+    const subscriptions = [
+      KeyboardEvents.addListener("keyboardWillShow", setMoving(true)),
+      KeyboardEvents.addListener("keyboardWillHide", setMoving(true)),
+      KeyboardEvents.addListener("keyboardDidShow", setMoving(false)),
+      KeyboardEvents.addListener("keyboardDidHide", setMoving(false)),
+    ];
+    return () => subscriptions.forEach((subscription) => subscription.remove());
+  }, []);
+
   const scrollToBottom = () => {
     isUserScrollingRef.current = false;
     momentumAfterDragRef.current = false;
@@ -64,12 +85,16 @@ export function useStickToBottom<T>(
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentInset } = event.nativeEvent;
     const distance = contentOffset.y + contentInset.top;
+    const isKeyboardMoving = keyboardMovingRef.current;
     const isChecking = checkNextScrollRef.current;
-    checkNextScrollRef.current = false;
+    if (!isKeyboardMoving) checkNextScrollRef.current = false;
 
     if (distance <= AT_BOTTOM_THRESHOLD) {
       setIsAtBottom(true);
-    } else if (isUserScrollingRef.current || isChecking) {
+    } else if (
+      !isKeyboardMoving &&
+      (isUserScrollingRef.current || isChecking)
+    ) {
       setIsAtBottom(false);
     }
 
