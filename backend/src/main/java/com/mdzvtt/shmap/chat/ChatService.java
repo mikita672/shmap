@@ -168,12 +168,12 @@ public class ChatService {
 
     @Transactional
     public ChatMessageResponse sendText(Integer userId, Long chatId, String text) {
-        return post(userId, chatId, (chat, sender) -> ChatMessage.text(chat, sender, text));
+        return post(userId, chatId, (chat, sender) -> ChatMessage.text(chat, sender, text, null));
     }
 
     @Transactional
     public ChatMessageResponse sendPlace(Integer userId, Long chatId, MessagePlace place) {
-        return post(userId, chatId, (chat, sender) -> ChatMessage.place(chat, sender, place));
+        return post(userId, chatId, (chat, sender) -> ChatMessage.place(chat, sender, place, null));
     }
 
     private ChatMessageResponse post(Integer userId, Long chatId, BiFunction<Chat, User, ChatMessage> create) {
