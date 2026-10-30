@@ -11,9 +11,14 @@ import type { SendTarget } from "@/lib/send-target";
 import { AuthErrorCode, type ChatPlace } from "@/lib/types/api";
 import { isErrorCode } from "@/lib/utils/error";
 
+export interface SendPlaceTarget {
+  target: SendTarget;
+  clientId: string;
+}
+
 export interface SendPlaceVariables {
   place: ChatPlace;
-  targets: SendTarget[];
+  targets: SendPlaceTarget[];
 }
 
 export type SendPlaceResult =
@@ -23,7 +28,10 @@ export type SendPlaceResult =
 export function useSendPlace() {
   const queryClient = useQueryClient();
 
-  const sendToTarget = async (place: ChatPlace, target: SendTarget) => {
+  const sendToTarget = async (
+    place: ChatPlace,
+    { target, clientId }: SendPlaceTarget,
+  ) => {
     let chatId: number;
     if (target.kind === "group") {
       chatId = target.chatId;
@@ -33,7 +41,10 @@ export function useSendPlace() {
       chatId = chat.id;
     }
 
-    const { data: message } = await sendChatMessage(chatId, { place });
+    const { data: message } = await sendChatMessage(chatId, {
+      place,
+      clientId,
+    });
     addMessageToCache(queryClient, chatId, message);
     addMessageToChatList(queryClient, chatId, message);
     moveReadPosition(queryClient, chatId, message.id);
@@ -49,8 +60,12 @@ export function useSendPlace() {
       );
       return settled.map((outcome, index) =>
         outcome.status === "fulfilled"
-          ? { target: targets[index], ok: true }
-          : { target: targets[index], ok: false, error: outcome.reason },
+          ? { target: targets[index].target, ok: true }
+          : {
+              target: targets[index].target,
+              ok: false,
+              error: outcome.reason,
+            },
       );
     },
     onSuccess: (results) => {

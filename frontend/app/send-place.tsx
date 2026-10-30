@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import * as Crypto from "expo-crypto";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import { PlaceSummary } from "@/components/chats/place-summary";
@@ -25,6 +26,7 @@ export default function SendPlaceScreen() {
   const { data: chats } = useChats();
   const { data: friends } = useFriends();
   const sendPlace = useSendPlace();
+  const clientIds = useRef(new Map<string, string>());
 
   const handleToggle = (target: SendTarget) => {
     setSelected((current) => {
@@ -43,6 +45,9 @@ export default function SendPlaceScreen() {
           .firstName;
 
   const handleResults = (results: SendPlaceResult[]) => {
+    for (const result of results) {
+      if (result.ok) clientIds.current.delete(sendTargetKey(result.target));
+    }
     const failed = results.filter((result) => !result.ok);
     if (failed.length === 0) {
       const name = results.length === 1 && getTargetName(results[0].target);
@@ -65,10 +70,20 @@ export default function SendPlaceScreen() {
     );
   };
 
+  const withClientId = (target: SendTarget) => {
+    const key = sendTargetKey(target);
+    let clientId = clientIds.current.get(key);
+    if (!clientId) {
+      clientId = Crypto.randomUUID();
+      clientIds.current.set(key, clientId);
+    }
+    return { target, clientId };
+  };
+
   const handleSend = () => {
     if (!place || selected.size === 0 || sendPlace.isPending) return;
     sendPlace.mutate(
-      { place, targets: Array.from(selected.values()) },
+      { place, targets: Array.from(selected.values(), withClientId) },
       { onSuccess: handleResults },
     );
   };
