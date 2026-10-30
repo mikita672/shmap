@@ -104,12 +104,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     0,
     ...outgoing.map((message) => message.submittedAt),
   );
-  const stick = useStickToBottom(
-    listRef,
-    items[0]?.key,
-    items.length,
-    latestSendAt,
-  );
+  const stick = useStickToBottom(listRef, latestSendAt, items[0]?.key);
 
   const [newBelowAfterId, setNewBelowAfterId] = useState<number | null>(null);
   if (stick.isAtBottom && newBelowAfterId !== null) {
@@ -259,7 +254,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
       <ScrollToBottomButton
         visible={!stick.isAtBottom}
         badge={newBelowCount}
-        onPress={stick.scrollToBottom}
+        onPress={() => stick.scrollToBottom()}
       />
     </View>
   );

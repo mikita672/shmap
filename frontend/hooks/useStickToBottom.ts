@@ -17,19 +17,18 @@ const AT_BOTTOM_THRESHOLD = 40;
 
 export function useStickToBottom<T>(
   listRef: RefObject<FlatList<T> | null>,
-  newestKey: string | undefined,
-  itemCount: number,
   latestSendAt: number,
+  newestKey: string | undefined,
 ) {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [seenSendAt, setSeenSendAt] = useState(latestSendAt);
   const isUserScrollingRef = useRef(false);
   const momentumAfterDragRef = useRef(false);
-  const followPendingRef = useRef(false);
   const checkNextScrollRef = useRef(false);
   const keyboardMovingRef = useRef(false);
+  const lastDistanceRef = useRef(0);
   const insetTopRef = useRef(0);
-  const previousRef = useRef({ newestKey, itemCount, latestSendAt });
+  const previousSendAtRef = useRef(latestSendAt);
 
   if (latestSendAt > seenSendAt) {
     setSeenSendAt(latestSendAt);
@@ -37,57 +36,56 @@ export function useStickToBottom<T>(
   }
 
   useLayoutEffect(() => {
-    const previous = previousRef.current;
-    previousRef.current = { newestKey, itemCount, latestSendAt };
-    if (latestSendAt > previous.latestSendAt) {
+    if (latestSendAt > previousSendAtRef.current) {
       isUserScrollingRef.current = false;
       momentumAfterDragRef.current = false;
     }
-    if (
-      isAtBottom &&
-      previous.newestKey !== undefined &&
-      newestKey !== previous.newestKey &&
-      itemCount > previous.itemCount
-    ) {
-      followPendingRef.current = true;
-    }
-  }, [newestKey, itemCount, latestSendAt, isAtBottom]);
+    previousSendAtRef.current = latestSendAt;
+  }, [latestSendAt]);
+
+  useLayoutEffect(() => {
+    checkNextScrollRef.current = false;
+  }, [newestKey]);
 
   useEffect(() => {
-    const setMoving = (moving: boolean) => () => {
-      keyboardMovingRef.current = moving;
+    const onMoveStart = () => {
+      keyboardMovingRef.current = true;
+      checkNextScrollRef.current = false;
+    };
+    const onMoveEnd = () => {
+      keyboardMovingRef.current = false;
     };
     const subscriptions = [
-      KeyboardEvents.addListener("keyboardWillShow", setMoving(true)),
-      KeyboardEvents.addListener("keyboardWillHide", setMoving(true)),
-      KeyboardEvents.addListener("keyboardDidShow", setMoving(false)),
-      KeyboardEvents.addListener("keyboardDidHide", setMoving(false)),
+      KeyboardEvents.addListener("keyboardWillShow", onMoveStart),
+      KeyboardEvents.addListener("keyboardWillHide", onMoveStart),
+      KeyboardEvents.addListener("keyboardDidShow", onMoveEnd),
+      KeyboardEvents.addListener("keyboardDidHide", onMoveEnd),
     ];
     return () => subscriptions.forEach((subscription) => subscription.remove());
   }, []);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (animated = true) => {
     isUserScrollingRef.current = false;
     momentumAfterDragRef.current = false;
-    followPendingRef.current = false;
     setIsAtBottom(true);
     listRef.current?.scrollToOffset({
       offset: Platform.OS === "ios" ? -insetTopRef.current : 0,
-      animated: true,
+      animated,
     });
   };
 
   const syncWithNextScroll = () => {
     checkNextScrollRef.current = true;
-    followPendingRef.current = false;
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentInset } = event.nativeEvent;
     const distance = contentOffset.y + contentInset.top;
+    const movedAway = distance > lastDistanceRef.current + 1;
+    lastDistanceRef.current = distance;
     const isKeyboardMoving = keyboardMovingRef.current;
     const isChecking = checkNextScrollRef.current;
-    if (!isKeyboardMoving) checkNextScrollRef.current = false;
+    checkNextScrollRef.current = false;
 
     if (distance <= AT_BOTTOM_THRESHOLD) {
       setIsAtBottom(true);
@@ -99,18 +97,19 @@ export function useStickToBottom<T>(
     }
 
     if (
-      followPendingRef.current &&
+      isAtBottom &&
+      movedAway &&
       !isUserScrollingRef.current &&
-      distance > 1
+      !isKeyboardMoving &&
+      !isChecking
     ) {
-      scrollToBottom();
+      scrollToBottom(false);
     }
   };
 
   const onScrollBeginDrag = () => {
     isUserScrollingRef.current = true;
     momentumAfterDragRef.current = false;
-    followPendingRef.current = false;
     checkNextScrollRef.current = false;
   };
 
@@ -125,7 +124,16 @@ export function useStickToBottom<T>(
   };
 
   const onMomentumScrollEnd = () => {
+    const wasUserScrolling = isUserScrollingRef.current;
     isUserScrollingRef.current = false;
+    if (
+      isAtBottom &&
+      !wasUserScrolling &&
+      !keyboardMovingRef.current &&
+      lastDistanceRef.current > 1
+    ) {
+      scrollToBottom(false);
+    }
   };
 
   const onContentInsetChange = (insets: { top: number }) => {
