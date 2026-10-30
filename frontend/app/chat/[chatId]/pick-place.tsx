@@ -9,14 +9,14 @@ import { toChatPlace } from "@/lib/chat-place";
 export default function PickPlaceScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
   const { data: chat } = useChat(Number(chatId));
-  const send = useSendMessage(Number(chatId));
+  const { send } = useSendMessage(Number(chatId));
 
   const chatName =
     chat?.type === "GROUP" ? chat.name : chat?.members[0]?.firstName;
   const label = chatName ? `Send to ${chatName}` : "Send";
 
   const handleSend = (place: PlaceDetails) => {
-    send.mutate({ place: toChatPlace(place) });
+    send({ place: toChatPlace(place) });
     router.back();
   };
 

@@ -3,6 +3,7 @@ import {
   useMutationState,
   useQueryClient,
 } from "@tanstack/react-query";
+import * as Crypto from "expo-crypto";
 import { toast } from "sonner-native";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { sendChatMessage } from "@/lib/api/chats";
@@ -12,12 +13,18 @@ import {
   moveReadPosition,
 } from "@/lib/chat-cache";
 import type { OutgoingMessage } from "@/lib/chat-items";
-import { AuthErrorCode, type SendChatMessageRequest } from "@/lib/types/api";
+import {
+  AuthErrorCode,
+  type ChatPlace,
+  type SendChatMessageRequest,
+} from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
+
+export type MessageContent = { text: string } | { place: ChatPlace };
 
 const sendMutationKey = (chatId: number) => ["chats", chatId, "send"];
 
-export function useSendMessage(chatId: number) {
+function useSendMutation(chatId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -51,9 +58,18 @@ export function useSendMessage(chatId: number) {
   });
 }
 
+export function useSendMessage(chatId: number) {
+  const { mutate } = useSendMutation(chatId);
+
+  const send = (content: MessageContent) =>
+    mutate({ ...content, clientId: Crypto.randomUUID() });
+
+  return { send };
+}
+
 export function useOutgoingMessages(chatId: number) {
   const queryClient = useQueryClient();
-  const send = useSendMessage(chatId);
+  const { mutate } = useSendMutation(chatId);
 
   const outgoing: OutgoingMessage[] = useMutationState({
     filters: {
@@ -76,7 +92,7 @@ export function useOutgoingMessages(chatId: number) {
       .findAll({ mutationKey: sendMutationKey(chatId), status: "error" })
       .find((mutation) => mutation.state.submittedAt === message.submittedAt);
     if (failed) mutationCache.remove(failed);
-    send.mutate(message.content);
+    mutate(message.content);
   };
 
   return { outgoing, retry };

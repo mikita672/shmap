@@ -29,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -167,18 +168,25 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatMessageResponse sendText(Integer userId, Long chatId, String text) {
-        return post(userId, chatId, (chat, sender) -> ChatMessage.text(chat, sender, text));
+    public ChatMessageResponse sendText(Integer userId, Long chatId, String text, UUID clientId) {
+        return post(userId, chatId, clientId, (chat, sender) -> ChatMessage.text(chat, sender, text, clientId));
     }
 
     @Transactional
-    public ChatMessageResponse sendPlace(Integer userId, Long chatId, MessagePlace place) {
-        return post(userId, chatId, (chat, sender) -> ChatMessage.place(chat, sender, place));
+    public ChatMessageResponse sendPlace(Integer userId, Long chatId, MessagePlace place, UUID clientId) {
+        return post(userId, chatId, clientId, (chat, sender) -> ChatMessage.place(chat, sender, place, clientId));
     }
 
-    private ChatMessageResponse post(Integer userId, Long chatId, BiFunction<Chat, User, ChatMessage> create) {
+    private ChatMessageResponse post(Integer userId, Long chatId, UUID clientId,
+            BiFunction<Chat, User, ChatMessage> create) {
         lockChat(chatId);
         Chat chat = findChat(userId, chatId);
+        if (clientId != null) {
+            var sent = chatMessageRepository.findByChatIdAndSenderIdAndClientId(chatId, userId, clientId);
+            if (sent.isPresent()) {
+                return toMessageResponse(sent.get());
+            }
+        }
         if (!canSend(chat, userId)) {
             throw new NotFriendsException("You can only message friends");
         }
@@ -298,7 +306,8 @@ public class ChatService {
                 message.getType(),
                 message.getText(),
                 ChatPlaceResponse.from(message.getPlace()),
-                message.getCreatedAt());
+                message.getCreatedAt(),
+                message.getClientId());
     }
 
     private UserSummaryResponse toSummary(User user) {

@@ -25,14 +25,17 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
-@Table(name = "chat_message", indexes = @Index(name = "idx_chat_message_chat_id", columnList = "chat_id, id desc"), check = @CheckConstraint(name = "ck_chat_message_content", constraint = """
-        (type = 'TEXT' and text is not null
-            and place_name is null and place_latitude is null and place_longitude is null)
-        or (type = 'PLACE' and text is null
-            and place_name is not null and place_latitude is not null and place_longitude is not null)
-        """))
+@Table(name = "chat_message", indexes = {
+        @Index(name = "idx_chat_message_chat_id", columnList = "chat_id, id desc"),
+        @Index(name = "uk_chat_message_client_id", columnList = "chat_id, sender_id, client_id", unique = true) }, check = @CheckConstraint(name = "ck_chat_message_content", constraint = """
+                (type = 'TEXT' and text is not null
+                    and place_name is null and place_latitude is null and place_longitude is null)
+                or (type = 'PLACE' and text is null
+                    and place_name is not null and place_latitude is not null and place_longitude is not null)
+                """))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessage {
@@ -65,19 +68,24 @@ public class ChatMessage {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    private ChatMessage(Chat chat, User sender, ChatMessageType type, String text, MessagePlace place) {
+    @Column(updatable = false)
+    private UUID clientId;
+
+    private ChatMessage(Chat chat, User sender, ChatMessageType type, String text, MessagePlace place,
+            UUID clientId) {
         this.chat = chat;
         this.sender = sender;
         this.type = type;
         this.text = text;
         this.place = place;
+        this.clientId = clientId;
     }
 
-    public static ChatMessage text(Chat chat, User sender, String text) {
-        return new ChatMessage(chat, sender, ChatMessageType.TEXT, text, null);
+    public static ChatMessage text(Chat chat, User sender, String text, UUID clientId) {
+        return new ChatMessage(chat, sender, ChatMessageType.TEXT, text, null, clientId);
     }
 
-    public static ChatMessage place(Chat chat, User sender, MessagePlace place) {
-        return new ChatMessage(chat, sender, ChatMessageType.PLACE, null, place);
+    public static ChatMessage place(Chat chat, User sender, MessagePlace place, UUID clientId) {
+        return new ChatMessage(chat, sender, ChatMessageType.PLACE, null, place, clientId);
     }
 }

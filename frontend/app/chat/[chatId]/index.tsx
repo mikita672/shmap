@@ -35,7 +35,7 @@ export default function ChatScreen() {
     }, [chatId]),
   );
   const { data: friends } = useFriends();
-  const send = useSendMessage(Number(chatId));
+  const { send } = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();
 
   const handleMore = () => {
@@ -112,7 +112,7 @@ export default function ChatScreen() {
           {chat.canSend ? (
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
               <Composer
-                onSend={(text) => send.mutate({ text })}
+                onSend={(text) => send({ text })}
                 onPickPlace={() =>
                   router.push({
                     pathname: "/chat/[chatId]/pick-place",
