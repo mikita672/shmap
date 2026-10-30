@@ -17,6 +17,7 @@ import { DayChip } from "@/components/chats/day-chip";
 import { MessageBubble } from "@/components/chats/message-bubble";
 import { MessageRow } from "@/components/chats/message-row";
 import { PlaceMessageCard } from "@/components/chats/place-message-card";
+import { ScrollToBottomButton } from "@/components/chats/scroll-to-bottom-button";
 import { UnreadDivider } from "@/components/chats/unread-divider";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -171,74 +172,80 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
   }
 
   return (
-    <FlatList
-      ref={listRef}
-      inverted
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      {...stick.scrollHandlers}
-      initialNumToRender={items.length}
-      onScrollToIndexFailed={handleScrollToIndexFailed}
-      maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
-      showsVerticalScrollIndicator={false}
-      renderScrollComponent={(props) => (
-        <ChatScrollView
-          {...props}
-          onContentInsetChange={stick.onContentInsetChange}
-        />
-      )}
-      data={items}
-      keyExtractor={(item) => item.key}
-      renderItem={({ item }) =>
-        item.kind === "day" ? (
-          <DayChip label={item.label} />
-        ) : item.kind === "unread" ? (
-          <UnreadDivider />
-        ) : item.kind === "outgoing" ? (
-          <Pressable
-            className="flex-row justify-end pt-1"
-            disabled={!item.message.failed}
-            accessibilityRole={item.message.failed ? "button" : undefined}
-            accessibilityHint={
-              item.message.failed ? "Sends the message again" : undefined
-            }
-            onPress={() => retry(item.message)}
-          >
-            {"place" in item.message.content ? (
-              <PlaceMessageCard
-                place={item.message.content.place}
-                isMine
-                isPending={!item.message.failed}
-                isFailed={item.message.failed}
-              />
-            ) : (
-              <MessageBubble
-                text={item.message.content.text}
-                isMine
-                isPending={!item.message.failed}
-                isFailed={item.message.failed}
-              />
-            )}
-          </Pressable>
-        ) : (
-          <MessageRow
-            message={item.message}
-            isMine={item.message.sender.id === me?.id}
-            isGroup={isGroup}
-            isFirstInRun={item.isFirstInRun}
-            isLastInRun={item.isLastInRun}
+    <View className="flex-1">
+      <FlatList
+        ref={listRef}
+        inverted
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        {...stick.scrollHandlers}
+        initialNumToRender={items.length}
+        onScrollToIndexFailed={handleScrollToIndexFailed}
+        maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
+        showsVerticalScrollIndicator={false}
+        renderScrollComponent={(props) => (
+          <ChatScrollView
+            {...props}
+            onContentInsetChange={stick.onContentInsetChange}
           />
-        )
-      }
-      onEndReached={() => {
-        if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-      }}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={
-        isFetchingNextPage ? <ActivityIndicator className="py-3" /> : null
-      }
-      contentContainerClassName="px-3 py-2"
-    />
+        )}
+        data={items}
+        keyExtractor={(item) => item.key}
+        renderItem={({ item }) =>
+          item.kind === "day" ? (
+            <DayChip label={item.label} />
+          ) : item.kind === "unread" ? (
+            <UnreadDivider />
+          ) : item.kind === "outgoing" ? (
+            <Pressable
+              className="flex-row justify-end pt-1"
+              disabled={!item.message.failed}
+              accessibilityRole={item.message.failed ? "button" : undefined}
+              accessibilityHint={
+                item.message.failed ? "Sends the message again" : undefined
+              }
+              onPress={() => retry(item.message)}
+            >
+              {"place" in item.message.content ? (
+                <PlaceMessageCard
+                  place={item.message.content.place}
+                  isMine
+                  isPending={!item.message.failed}
+                  isFailed={item.message.failed}
+                />
+              ) : (
+                <MessageBubble
+                  text={item.message.content.text}
+                  isMine
+                  isPending={!item.message.failed}
+                  isFailed={item.message.failed}
+                />
+              )}
+            </Pressable>
+          ) : (
+            <MessageRow
+              message={item.message}
+              isMine={item.message.sender.id === me?.id}
+              isGroup={isGroup}
+              isFirstInRun={item.isFirstInRun}
+              isLastInRun={item.isLastInRun}
+            />
+          )
+        }
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingNextPage ? <ActivityIndicator className="py-3" /> : null
+        }
+        contentContainerClassName="px-3 py-2"
+      />
+      <ScrollToBottomButton
+        visible={!stick.isAtBottom}
+        onPress={stick.scrollToBottom}
+      />
+    </View>
   );
 }
 
