@@ -2,11 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   Pressable,
   View,
+  type GestureResponderEvent,
   type ScrollViewProps,
 } from "react-native";
-import { KeyboardChatScrollView } from "react-native-keyboard-controller";
+import {
+  KeyboardChatScrollView,
+  KeyboardController,
+} from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DayChip } from "@/components/chats/day-chip";
 import { MessageBubble } from "@/components/chats/message-bubble";
@@ -26,6 +31,7 @@ import {
 import { getErrorMessage } from "@/lib/utils/error";
 
 const MAX_SCROLL_RETRIES = 3;
+const TAP_SLOP = 10;
 
 export interface MessageListProps {
   chatId: number;
@@ -50,6 +56,25 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
   const listRef = useRef<FlatList<ChatItem>>(null);
   const hasDecidedScrollRef = useRef(false);
   const scrollRetriesRef = useRef(0);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: GestureResponderEvent) => {
+    touchStartRef.current = {
+      x: e.nativeEvent.pageX,
+      y: e.nativeEvent.pageY,
+    };
+  };
+
+  const handleTouchEnd = (e: GestureResponderEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const moved = Math.hypot(
+      e.nativeEvent.pageX - start.x,
+      e.nativeEvent.pageY - start.y,
+    );
+    if (moved <= TAP_SLOP) KeyboardController.dismiss();
+  };
 
   const [newestAtOpen, setNewestAtOpen] = useState<number | undefined>(
     undefined,
@@ -135,6 +160,8 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     <FlatList
       ref={listRef}
       inverted
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       initialNumToRender={items.length}
       onScrollToIndexFailed={handleScrollToIndexFailed}
       maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
@@ -203,7 +230,7 @@ function ChatScrollView(props: ScrollViewProps) {
       {...props}
       inverted
       offset={insets.bottom}
-      keyboardDismissMode="interactive"
+      keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
       automaticallyAdjustContentInsets={false}
       contentInsetAdjustmentBehavior="never"
     />
