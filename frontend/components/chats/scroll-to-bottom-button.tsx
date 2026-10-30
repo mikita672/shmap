@@ -9,11 +9,13 @@ const EXITING = ZoomOut.duration(150);
 
 export interface ScrollToBottomButtonProps {
   visible: boolean;
+  badge: number;
   onPress: () => void;
 }
 
 export function ScrollToBottomButton({
   visible,
+  badge,
   onPress,
 }: ScrollToBottomButtonProps) {
   const insets = useSafeAreaInsets();
@@ -29,6 +31,7 @@ export function ScrollToBottomButton({
             icon="keyboard-arrow-down"
             size="md"
             accessibilityLabel="Scroll to the newest message"
+            badge={badge}
             className="shadow-sm shadow-black/20 elevation-3"
             onPress={onPress}
           />

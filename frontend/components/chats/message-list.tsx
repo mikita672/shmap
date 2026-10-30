@@ -111,6 +111,21 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     latestSendAt,
   );
 
+  const [newBelowAfterId, setNewBelowAfterId] = useState<number | null>(null);
+  if (stick.isAtBottom && newBelowAfterId !== null) {
+    setNewBelowAfterId(null);
+  }
+  if (!stick.isAtBottom && newBelowAfterId === null) {
+    setNewBelowAfterId(messages[0]?.id ?? 0);
+  }
+  const newBelowCount =
+    newBelowAfterId === null
+      ? 0
+      : messages.filter(
+          (message) =>
+            message.id > newBelowAfterId && message.sender.id !== me?.id,
+        ).length;
+
   useEffect(() => {
     if (hasDecidedScrollRef.current || !canDecideScroll) return;
     hasDecidedScrollRef.current = true;
@@ -243,6 +258,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
       />
       <ScrollToBottomButton
         visible={!stick.isAtBottom}
+        badge={newBelowCount}
         onPress={stick.scrollToBottom}
       />
     </View>
