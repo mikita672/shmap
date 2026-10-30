@@ -306,7 +306,8 @@ public class ChatService {
                 message.getType(),
                 message.getText(),
                 ChatPlaceResponse.from(message.getPlace()),
-                message.getCreatedAt());
+                message.getCreatedAt(),
+                message.getClientId());
     }
 
     private UserSummaryResponse toSummary(User user) {

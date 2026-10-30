@@ -182,6 +182,8 @@ All routes live under `/api/v1`:
 | `/chats`                      | 1:1 and group chats, members, text and place messages, unread counts    |
 | `/events`                     | The live event stream. See Live updates                                 |
 
+Sending a message (`POST /chats/{chatId}/messages`) takes an optional `clientId`, a UUID the app makes for each new message. If the same sender sends the same `clientId` to the same chat again, for example after a lost response, the server returns the message it already saved instead of a new one. Messages carry their `clientId` (or `null`), so the app can match a pending bubble to the saved message.
+
 ## Live updates
 
 The app keeps one stream open to `GET /api/v1/events` and gets chat changes as they happen. Sending a message is still a normal REST call, and the stream only delivers. Send the access token as `Authorization: Bearer <token>`. The response is `text/event-stream` and stays open:
@@ -191,7 +193,7 @@ event:ready
 data:{}
 
 event:chat.message
-data:{"chatId":12,"message":{"id":345,"sender":{...},"type":"TEXT","text":"Hi","place":null,"createdAt":"2026-10-24T10:00:00Z"}}
+data:{"chatId":12,"message":{"id":345,"sender":{...},"type":"TEXT","text":"Hi","place":null,"createdAt":"2026-10-24T10:00:00Z","clientId":"6f1c2a3e-…"}}
 
 event:chat.changed
 data:{"chatId":12}
