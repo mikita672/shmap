@@ -8,8 +8,6 @@ import type {
   SendChatMessageRequest,
 } from "@/lib/types/api";
 
-const SEND_TIMEOUT_MS = 30_000;
-
 export const getChats = () =>
   apiClient.get<ChatSummaryResponse[]>("/api/v1/chats");
 
@@ -37,7 +35,6 @@ export const sendChatMessage = (
   apiClient.post<ChatMessageResponse>(
     `/api/v1/chats/${chatId}/messages`,
     content,
-    { timeout: SEND_TIMEOUT_MS },
   );
 
 export const createGroupChat = (data: CreateGroupChatRequest) =>
