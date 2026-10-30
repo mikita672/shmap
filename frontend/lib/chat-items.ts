@@ -54,11 +54,18 @@ export function buildChatItems(
   outgoing: OutgoingMessage[] = [],
   firstUnreadId: number | null = null,
 ): ChatItem[] {
-  const items: ChatItem[] = [...outgoing]
+  const sentClientIds = new Set(
+    messages.flatMap((message) => message.clientId ?? []),
+  );
+  const items: ChatItem[] = outgoing
+    .filter(
+      ({ content }) =>
+        !content.clientId || !sentClientIds.has(content.clientId),
+    )
     .sort((a, b) => b.submittedAt - a.submittedAt)
     .map((message) => ({
       kind: "outgoing",
-      key: `outgoing-${message.submittedAt}`,
+      key: `outgoing-${message.content.clientId ?? message.submittedAt}`,
       message,
     }));
 
