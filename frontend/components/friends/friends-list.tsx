@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, SectionList, View } from "react-native";
 import { router } from "expo-router";
+import { PickerRow } from "@/components/chats/picker-row";
 import { FriendActionsMenu } from "@/components/friends/friend-actions-menu";
 import { FriendRow } from "@/components/friends/friend-row";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { RefreshControl } from "@/components/ui/refresh-control";
 import { SearchField } from "@/components/ui/search-field";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
+import { useOpenDirectChat } from "@/hooks/useChatMutations";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
@@ -17,12 +19,30 @@ import { matchesFriendSearch } from "@/lib/friend-search";
 import { getProfileHref } from "@/lib/profile-link";
 import { getErrorMessage } from "@/lib/utils/error";
 
-export function FriendsList() {
+export interface FriendsListProps {
+  selectedIds: Set<number> | null;
+  onStartSelect: () => void;
+  onToggle: (friendId: number) => void;
+  onLongPressFriend: (friendId: number) => void;
+}
+
+export function FriendsList({
+  selectedIds,
+  onStartSelect,
+  onToggle,
+  onLongPressFriend,
+}: FriendsListProps) {
   const { data: friends, isPending, error, refetch } = useFriends();
   useRefreshOnFocus(refetch);
   const { isRefetchingByUser, refetchByUser } = useRefreshByUser(refetch);
   const [query, setQuery] = useState("");
   const menu = useFriendActionsMenu();
+  const openChat = useOpenDirectChat();
+
+  const handleMessage = (userId: number) => {
+    if (openChat.isPending) return;
+    openChat.mutate(userId);
+  };
 
   if (isPending) {
     return (
@@ -62,6 +82,10 @@ export function FriendsList() {
     },
   ].filter((section) => section.data.length > 0);
 
+  const selectSectionKey = sections.some((section) => section.key === "all")
+    ? "all"
+    : sections[0]?.key;
+
   return (
     <View className="flex-1">
       <SearchField
@@ -73,18 +97,41 @@ export function FriendsList() {
       <SectionList
         sections={sections}
         keyExtractor={(friend) => String(friend.user.id)}
-        renderItem={({ item: { user, favorite, muted } }) => (
-          <FriendRow
-            variant="actions"
-            name={`${user.firstName} ${user.lastName}`}
-            subtitle={`@${user.username}`}
-            avatarUrl={user.avatarUrl}
-            onPress={() => router.push(getProfileHref(user.username))}
-            onMore={() => menu.open({ user, isFriend: true, favorite, muted })}
-          />
-        )}
+        renderItem={({ item: { user, favorite, muted } }) =>
+          selectedIds ? (
+            <PickerRow
+              name={`${user.firstName} ${user.lastName}`}
+              subtitle={`@${user.username}`}
+              avatarUrl={user.avatarUrl}
+              selected={selectedIds.has(user.id) ? "on" : "off"}
+              onPress={() => onToggle(user.id)}
+            />
+          ) : (
+            <FriendRow
+              variant="actions"
+              name={`${user.firstName} ${user.lastName}`}
+              subtitle={`@${user.username}`}
+              avatarUrl={user.avatarUrl}
+              disabled={openChat.isPending && openChat.variables === user.id}
+              onPress={() => router.push(getProfileHref(user.username))}
+              onLongPress={() => onLongPressFriend(user.id)}
+              onMessage={() => handleMessage(user.id)}
+              onMore={() =>
+                menu.open({ user, isFriend: true, favorite, muted })
+              }
+            />
+          )
+        }
         renderSectionHeader={({ section }) => (
-          <SectionLabel title={section.title} className="pb-2 pt-4" />
+          <SectionLabel
+            title={section.title}
+            action={
+              !selectedIds && section.key === selectSectionKey
+                ? { label: "Select", onPress: onStartSelect }
+                : undefined
+            }
+            className="pb-2 pt-4"
+          />
         )}
         stickySectionHeadersEnabled={false}
         keyboardShouldPersistTaps="handled"

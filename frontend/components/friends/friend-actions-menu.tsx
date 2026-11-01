@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import { toast } from "sonner-native";
 import { Avatar } from "@/components/ui/avatar";
 import { ConfirmCard } from "@/components/ui/confirm-card";
@@ -63,6 +64,14 @@ export function FriendActionsMenu({
   const handleToggleMuted = () => {
     setMuted.mutate({ friend: user, muted: !person.muted });
     onClose();
+  };
+
+  const handleAddToGroup = () => {
+    onClose();
+    router.push({
+      pathname: "/add-to-group/[userId]",
+      params: { userId: String(user.id) },
+    });
   };
 
   const handleShare = async () => {
@@ -146,7 +155,7 @@ export function FriendActionsMenu({
             }
             onPress={handleToggleFavorite}
           />
-          <SheetItem label="Add to group" disabled />
+          <SheetItem label="Add to group" onPress={handleAddToGroup} />
           <SheetItem
             label={person.muted ? "Unmute routes" : "Mute routes"}
             onPress={handleToggleMuted}

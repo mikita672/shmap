@@ -1,5 +1,6 @@
 import { Pressable, View } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
+import { GroupAvatar } from "@/components/ui/group-avatar";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,7 @@ export interface PickerRowProps {
   avatarUrl?: string | null;
   selected?: "off" | "on" | "member";
   showCheck?: boolean;
+  group?: boolean;
   onPress?: () => void;
 }
 
@@ -19,6 +21,7 @@ export function PickerRow({
   avatarUrl,
   selected = "off",
   showCheck = true,
+  group = false,
   onPress,
 }: PickerRowProps) {
   const isMember = selected === "member";
@@ -40,7 +43,11 @@ export function PickerRow({
         isMember && "opacity-55 active:opacity-55",
       )}
     >
-      <Avatar uri={avatarUrl} size={48} tone="surface" />
+      {group ? (
+        <GroupAvatar size={48} />
+      ) : (
+        <Avatar uri={avatarUrl} size={48} tone="surface" />
+      )}
 
       <View className="flex-1">
         <Text

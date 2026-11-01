@@ -6,9 +6,10 @@ const MAX_LENGTH = 2000;
 
 export interface ComposerProps {
   onSend?: (text: string) => void;
+  onPickPlace?: () => void;
 }
 
-export function Composer({ onSend }: ComposerProps) {
+export function Composer({ onSend, onPickPlace }: ComposerProps) {
   const [text, setText] = useState("");
   const trimmed = text.trim();
 
@@ -24,7 +25,8 @@ export function Composer({ onSend }: ComposerProps) {
         icon="location-on"
         size="md"
         accessibilityLabel="Send a place"
-        disabled
+        disabled={!onPickPlace}
+        onPress={onPickPlace}
       />
       <View className="min-h-12 flex-1 justify-center rounded-3xl bg-surface px-5">
         <TextInput

@@ -1,7 +1,9 @@
 import { View } from "react-native";
+import { router } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { useOpenDirectChat } from "@/hooks/useChatMutations";
 import { useSetFavorite } from "@/hooks/useFriendMutations";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +19,7 @@ export function FriendActions({
   className,
 }: FriendActionsProps) {
   const setFavorite = useSetFavorite();
+  const openChat = useOpenDirectChat();
   const shownFavorite = setFavorite.isPending
     ? setFavorite.variables.favorite
     : favorite;
@@ -24,7 +27,12 @@ export function FriendActions({
   return (
     <View className={cn("gap-3", className)}>
       <View className="flex-row items-center gap-2">
-        <Button size="xl" className="flex-1" disabled>
+        <Button
+          size="xl"
+          className="flex-1"
+          disabled={openChat.isPending}
+          onPress={() => openChat.mutate(friendId)}
+        >
           <Text className="text-2xl">Message</Text>
         </Button>
         <RoundButton
@@ -41,7 +49,16 @@ export function FriendActions({
         />
       </View>
 
-      <Button variant="secondary" size="xl" disabled>
+      <Button
+        variant="secondary"
+        size="xl"
+        onPress={() =>
+          router.push({
+            pathname: "/add-to-group/[userId]",
+            params: { userId: String(friendId) },
+          })
+        }
+      >
         <Text>Add to group</Text>
       </Button>
     </View>

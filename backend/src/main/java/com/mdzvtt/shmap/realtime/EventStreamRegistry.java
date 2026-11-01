@@ -9,7 +9,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.mdzvtt.shmap.configuration.JwtService;
 import com.mdzvtt.shmap.token.TokenRepository;
-import io.jsonwebtoken.Claims;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -148,7 +147,7 @@ public class EventStreamRegistry {
     }
 
     private Duration timeoutFor(String token) {
-        Instant expiresAt = jwtService.extractClaim(token, Claims::getExpiration).toInstant();
+        Instant expiresAt = jwtService.extractClaim(token, claims -> claims.getExpiration()).toInstant();
         Duration untilExpiry = Duration.between(Instant.now(), expiresAt);
         Duration timeout = untilExpiry.compareTo(properties.streamTimeout()) < 0 ? untilExpiry
                 : properties.streamTimeout();
@@ -156,6 +155,6 @@ public class EventStreamRegistry {
     }
 
     private int openCount() {
-        return streams.values().stream().mapToInt(Set::size).sum();
+        return streams.values().stream().mapToInt(set -> set.size()).sum();
     }
 }

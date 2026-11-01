@@ -4,7 +4,9 @@ import com.mdzvtt.shmap.chat.dto.AddChatMembersRequest;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
+import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
 import com.mdzvtt.shmap.chat.dto.CreateGroupChatRequest;
+import com.mdzvtt.shmap.chat.dto.MarkChatReadRequest;
 import com.mdzvtt.shmap.chat.dto.SendChatMessageRequest;
 import com.mdzvtt.shmap.user.User;
 import jakarta.validation.Valid;
@@ -33,6 +35,11 @@ public class ChatController {
     @GetMapping
     public List<ChatSummaryResponse> getChats(@AuthenticationPrincipal User user) {
         return chatService.getChats(user.getId());
+    }
+
+    @GetMapping("/unread/count")
+    public ChatUnreadCountResponse countUnread(@AuthenticationPrincipal User user) {
+        return chatService.countUnread(user.getId());
     }
 
     @PutMapping("/direct/{userId}")
@@ -64,6 +71,13 @@ public class ChatController {
         chatService.leave(user.getId(), chatId);
     }
 
+    @PutMapping("/{chatId}/read")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void markRead(@AuthenticationPrincipal User user, @PathVariable Long chatId,
+            @Valid @RequestBody MarkChatReadRequest request) {
+        chatService.markRead(user.getId(), chatId, request.messageId());
+    }
+
     @GetMapping("/{chatId}/messages")
     public List<ChatMessageResponse> getMessages(@AuthenticationPrincipal User user, @PathVariable Long chatId,
             @RequestParam(required = false) Long before) {
@@ -74,6 +88,9 @@ public class ChatController {
     @ResponseStatus(HttpStatus.CREATED)
     public ChatMessageResponse send(@AuthenticationPrincipal User user, @PathVariable Long chatId,
             @Valid @RequestBody SendChatMessageRequest request) {
-        return chatService.send(user.getId(), chatId, request.text());
+        if (request.place() != null) {
+            return chatService.sendPlace(user.getId(), chatId, request.place().toPlace(), request.clientId());
+        }
+        return chatService.sendText(user.getId(), chatId, request.text(), request.clientId());
     }
 }

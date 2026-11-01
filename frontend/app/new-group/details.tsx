@@ -12,6 +12,7 @@ import { useCreateGroup } from "@/hooks/useChatMutations";
 import { useFriends } from "@/hooks/useFriends";
 import { useProfile } from "@/hooks/useProfile";
 import { KeyboardAvoidingView } from "@/lib/keyboard";
+import { parseMemberIds } from "@/lib/member-ids";
 
 export default function NewGroupDetailsScreen() {
   const insets = useSafeAreaInsets();
@@ -114,26 +115,6 @@ export default function NewGroupDetailsScreen() {
       </View>
     </KeyboardAvoidingView>
   );
-}
-
-function parseMemberIds(raw?: string): number[] {
-  if (!raw) {
-    return [];
-  }
-  try {
-    if (raw.startsWith("[")) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return parsed.map(Number).filter((n) => !Number.isNaN(n) && n > 0);
-      }
-    }
-    return raw
-      .split(",")
-      .map(Number)
-      .filter((n) => !Number.isNaN(n) && n > 0);
-  } catch {
-    return [];
-  }
 }
 
 function RowGap() {

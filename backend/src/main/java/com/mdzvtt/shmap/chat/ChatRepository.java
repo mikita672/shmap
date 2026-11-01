@@ -24,7 +24,11 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
   Optional<Chat> findForMember(Long chatId, Integer userId);
 
   @Query("""
-      select new com.mdzvtt.shmap.chat.ChatListRow(c, low, high, last, sender)
+      select new com.mdzvtt.shmap.chat.ChatListRow(c, low, high, last, sender,
+          (select count(unread) from ChatMessage unread
+           where unread.chat = c
+             and unread.id > coalesce(mine.lastReadMessageId, 0L)
+             and unread.sender.id <> :userId))
       from ChatMember mine
       join mine.chat c
       left join c.directUserLow low

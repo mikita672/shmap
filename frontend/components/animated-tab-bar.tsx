@@ -17,6 +17,7 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import type { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Badge } from "@/components/ui/badge";
 import { useTabColors } from "@/hooks/useTabColors";
 
 type TabBarProps = Parameters<
@@ -208,6 +209,16 @@ export function AnimatedTabBar({
                     color: iconColor,
                     size: 24,
                   })}
+                {typeof options.tabBarBadge === "number" && (
+                  <View
+                    style={[
+                      styles.badgeRing,
+                      { borderColor: colors.background },
+                    ]}
+                  >
+                    <Badge count={options.tabBarBadge} />
+                  </View>
+                )}
               </View>
 
               {typeof label === "string" ? (
@@ -265,6 +276,13 @@ const styles = StyleSheet.create({
     height: BUBBLE_HEIGHT,
     alignItems: "center",
     justifyContent: "center",
+  },
+  badgeRing: {
+    position: "absolute",
+    left: 28,
+    top: -6,
+    borderWidth: 2,
+    borderRadius: 12,
   },
   label: {
     fontSize: 12,

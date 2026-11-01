@@ -25,13 +25,14 @@ import type { SearchPlace } from "@/lib/api/geocoding";
 const AVATAR_RING_WIDTH = 3;
 const ENTER_KEY_BLUR_DELAY_MS = 300;
 
-interface MapSearchBarProps {
+export interface MapSearchBarProps {
   mapCenter?: { lat: number; lon: number };
   onPlaceSelect: (place: SearchPlace) => void;
   onClear?: () => void;
   query: string;
   onQueryChange: (text: string) => void;
   onAvatarPress?: () => void;
+  leading?: "avatar" | "back";
 }
 
 export function MapSearchBar({
@@ -41,6 +42,7 @@ export function MapSearchBar({
   query,
   onQueryChange,
   onAvatarPress,
+  leading = "avatar",
 }: MapSearchBarProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -57,6 +59,11 @@ export function MapSearchBar({
       router.push("/profile");
     }
   }, [onAvatarPress, router]);
+
+  const handleBackPress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.back();
+  }, [router]);
 
   const { results, isSearching, searchNow } = useGeocoding(
     query,
@@ -183,18 +190,28 @@ export function MapSearchBar({
       >
         <View className="flex-row items-center gap-2.5">
           <Pressable
-            onPress={handleAvatarPress}
+            onPress={leading === "back" ? handleBackPress : handleAvatarPress}
             style={{ height: searchBarHeight, width: searchBarHeight }}
             className="rounded-full overflow-hidden bg-searchbar shadow-sm shadow-black/10 elevation-3 items-center justify-center active:scale-95 transition-transform"
-            accessibilityLabel="Open profile and settings"
+            accessibilityLabel={
+              leading === "back" ? "Go back" : "Open profile and settings"
+            }
             accessibilityRole="button"
           >
-            <Avatar
-              uri={profile?.avatarUrl}
-              size={searchBarHeight - AVATAR_RING_WIDTH * 2}
-              className="bg-searchbar"
-              iconClassName="text-searchbar-placeholder"
-            />
+            {leading === "back" ? (
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                className="text-searchbar-placeholder"
+              />
+            ) : (
+              <Avatar
+                uri={profile?.avatarUrl}
+                size={searchBarHeight - AVATAR_RING_WIDTH * 2}
+                className="bg-searchbar"
+                iconClassName="text-searchbar-placeholder"
+              />
+            )}
           </Pressable>
 
           <View

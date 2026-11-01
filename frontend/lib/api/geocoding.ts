@@ -50,6 +50,7 @@ export interface SearchPlace {
   displayName: string;
   longitude: number;
   latitude: number;
+  details?: PlaceDetails;
 }
 
 export interface PlaceDetails {
@@ -148,6 +149,7 @@ export function featureToPlace(feature: PhotonFeature): SearchPlace {
     displayName,
     longitude,
     latitude,
+    details: featureToPlaceDetails(feature, { lat: latitude, lon: longitude }),
   };
 }
 

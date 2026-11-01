@@ -24,7 +24,12 @@ public class RealtimeConfig {
                 .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
                 .socketOptions(SocketOptions.builder()
                         .connectTimeout(Duration.ofSeconds(2))
-                        .keepAlive(true)
+                        .keepAlive(SocketOptions.KeepAliveOptions.builder()
+                                .enable()
+                                .idle(Duration.ofSeconds(60))
+                                .interval(Duration.ofSeconds(10))
+                                .count(3)
+                                .build())
                         .build());
     }
 

@@ -68,6 +68,11 @@ module.exports = {
           DEFAULT: "hsl(var(--chat-list))",
           foreground: "hsl(var(--chat-list-foreground))",
           divider: "hsl(var(--chat-list-divider))",
+          unread: "hsl(var(--chat-list-unread))",
+        },
+        "unread-divider": {
+          DEFAULT: "hsl(var(--unread-divider))",
+          foreground: "hsl(var(--unread-divider-foreground))",
         },
         bubble: {
           in: "hsl(var(--bubble-in))",
@@ -78,6 +83,7 @@ module.exports = {
           "out-muted": "hsl(var(--bubble-out-muted))",
           sender: "hsl(var(--bubble-sender))",
         },
+        "map-pin": "hsl(var(--map-pin))",
         searchbar: "hsl(var(--searchbar))",
         "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
         avatar: {

@@ -38,3 +38,27 @@ jobs:
 
       - name: Typecheck (strict)
         run: npm run typecheck
+
+  jira-sync:
+    name: Typecheck Jira sync
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .github/scripts/jira-sync
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: .github/scripts/jira-sync/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck

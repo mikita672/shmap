@@ -25,6 +25,7 @@ export type FriendRowProps = FriendRowTrailingProps & {
   avatarUrl?: string | null;
   disabled?: boolean;
   onPress?: () => void;
+  onLongPress?: () => void;
 };
 
 export function FriendRow({
@@ -33,13 +34,15 @@ export function FriendRow({
   avatarUrl,
   disabled = false,
   onPress,
+  onLongPress,
   ...trailing
 }: FriendRowProps) {
   return (
     <View className="h-16 flex-row items-center gap-3 rounded-full bg-action pl-2 pr-3">
       <Pressable
         onPress={onPress}
-        disabled={!onPress}
+        onLongPress={onLongPress}
+        disabled={!onPress && !onLongPress}
         accessibilityRole={onPress ? "button" : undefined}
         className="flex-1 flex-row items-center gap-3 active:opacity-80"
       >

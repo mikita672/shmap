@@ -17,6 +17,7 @@ The project is in early development. Accounts, profiles, friends, chats and the 
 - [API documentation](#api-documentation)
 - [Live updates](#live-updates)
 - [CI and releases](#ci-and-releases)
+- [Tasks: Jira and GitHub](#tasks-jira-and-github)
 - [License](#license)
 
 ## What works today
@@ -29,7 +30,7 @@ The project is in early development. Accounts, profiles, friends, chats and the 
 - Get "People you may know" suggestions: friends of your friends, ranked by mutual friends. You can dismiss any suggestion.
 - See your recent friend activity: who accepted your requests and whose requests you accepted.
 - Mute friends and block users. Blocking removes the friendship, its activity and any pending requests, and the two users stop seeing each other in search and on profiles.
-- Chat one-on-one or in groups with your friends: browse your 1:1 and group chats with their last message, scroll through history with smooth keyboard handling, and send text messages. Live updates arrive via Server-Sent Events without polling. After an unfriend or a block, the 1:1 chat stays readable with an Add friend shortcut but takes no new messages. Create group chats with a searchable friend picker, view group info with member lists, add friends, and leave groups.
+- Chat one-on-one or in groups with your friends: browse your 1:1 and group chats with their last message, scroll through history with smooth keyboard handling, and send text messages. Live updates arrive via Server-Sent Events without polling. Unread messages show as count badges on each chat and as a total on the Chats tab. Opening a chat marks it read and starts at an "Unread messages" divider when the first unread message is loaded. After an unfriend or a block, the 1:1 chat stays readable with an Add friend shortcut but takes no new messages. Create group chats with a searchable friend picker, view group info with member lists, add friends, and leave groups. From the friends screens, message a friend straight from the list or their profile, add a friend to one of your groups, or select several friends (tap Select or long-press a row) and start a group with them.
 - Browse an OpenStreetMap-based map, search for places, and open details for any point you tap.
 - Use the Settings screen to pick a light, dark or system theme, change your password, and log out.
 
@@ -66,7 +67,9 @@ The website at [shmap.dev](https://shmap.dev) is a Cloudflare Worker with static
 │   ├── public/           static pages, styles and .well-known/assetlinks.json
 │   ├── src/              Worker and the profile page template
 │   └── wrangler.jsonc    Worker config: domain, routing, backend URL
-└── .github/workflows/    CI and release pipelines
+└── .github/
+    ├── workflows/        CI, release and Jira sync pipelines
+    └── scripts/jira-sync/ Jira ↔ GitHub issues sync
 ```
 
 ## Getting started
@@ -176,8 +179,10 @@ All routes live under `/api/v1`:
 | `/friend-suggestions`         | "People you may know" and dismissing suggestions                        |
 | `/friend-activity`            | Your recent friend activity, newest first                               |
 | `/blocks`                     | Blocking and unblocking users, and the list of users you blocked        |
-| `/chats`                      | Your chats, 1:1 and group chats, members, and messages                  |
-| `/events`                    | The live event stream. See Live updates                                 |
+| `/chats`                      | 1:1 and group chats, members, text and place messages, unread counts    |
+| `/events`                     | The live event stream. See Live updates                                 |
+
+Sending a message (`POST /chats/{chatId}/messages`) takes an optional `clientId`, a UUID the app makes for each new message. If the same sender sends the same `clientId` to the same chat again, for example after a lost response, the server returns the message it already saved instead of a new one. Messages carry their `clientId` (or `null`), so the app can match a pending bubble to the saved message.
 
 ## Live updates
 
@@ -188,10 +193,13 @@ event:ready
 data:{}
 
 event:chat.message
-data:{"chatId":12,"message":{"id":345,"sender":{...},"text":"Hi","createdAt":"2026-10-24T10:00:00Z"}}
+data:{"chatId":12,"message":{"id":345,"sender":{...},"type":"TEXT","text":"Hi","place":null,"createdAt":"2026-10-24T10:00:00Z","clientId":"6f1c2a3e-…"}}
 
 event:chat.changed
 data:{"chatId":12}
+
+event:chat.read
+data:{"chatId":12,"lastReadMessageId":345,"unreadCount":0,"totalUnreadCount":4}
 
 :
 ```
@@ -201,6 +209,7 @@ data:{"chatId":12}
 | `ready`        | The stream is registered                                                                                         | Reloads the chats list and the open chat's newest page over REST                |
 | `chat.message` | Someone sent a message, to every member including the sender                                                     | Appends the message, skipping ids it already has, and moves the chat to the top |
 | `chat.changed` | A group was created, people were added, someone left, or the two people in a 1:1 became or stopped being friends | Reloads the chats list and the open chat                                        |
+| `chat.read`    | You marked a chat read and your read position moved, to all of your own devices                                  | Sets that chat's unread badge and the total badge from the event                |
 | `:` (comment)  | Every 20 seconds                                                                                                 | Nothing. It keeps quiet connections open and detects dead clients               |
 
 The stream ends when any of these happens, and the app reconnects with a backoff, refreshes its token on a 401 and reloads after `ready`:
@@ -214,12 +223,11 @@ Close the stream when the app goes to the background. Cloud Run bills an instanc
 
 Instances share events through Redis pub/sub on one channel, so it doesn't matter which instance serves a stream or a send. Production uses an [Upstash](https://upstash.com) free database, and local development uses the `redis` container from Docker Compose. If Redis is down, REST keeps working and live updates pause until it returns. The timeouts and limits are under `app.realtime` in `application.yml`, and the Cloud Run request timeout (60 minutes) and concurrency (250) are set in the release workflow.
 
-
 ## CI and releases
 
 Feature branches are merged into `develop`. A pull request from `develop` into `release` starts a release.
 
-Every push and pull request runs ESLint and the TypeScript type check on the app. When a pull request into `release` is merged, the release workflow:
+Every push and pull request runs ESLint and the TypeScript type check on the app, and type-checks the Jira sync script. When a pull request into `release` is merged, the release workflow:
 
 1. picks the next `v0.0.x` version,
 2. builds an Android APK and an iOS simulator build with EAS, plus an unsigned iOS IPA on a macOS runner,
@@ -228,6 +236,35 @@ Every push and pull request runs ESLint and the TypeScript type check on the app
 5. publishes a GitHub release with the three app builds attached.
 
 You can download the app from the [releases page](https://github.com/mikita672/shmap/releases). The APK installs directly on Android. The IPA has to be signed with your own certificate before you can install it on an iPhone.
+
+## Tasks: Jira and GitHub
+
+Work is planned in [Jira](https://mdzvtt.atlassian.net/jira/software/projects/SCRUM/boards/1) (project `SCRUM`). Every ticket that isn't done gets a GitHub issue, and the two stay in sync through the [Jira Sync](.github/workflows/jira-sync.yml) workflow:
+
+| What | Direction |
+| --- | --- |
+| Title | both ways |
+| Labels | both ways, same names: `feat`, `fix`, `chore`, `refactor`, `mobile`, `backend`, `ops`, `database` |
+| Status | both ways: Do zrobienia = open, W toku = open + `in-progress`, W trakcie weryfikacji = open + `in-review`, Gotowe = closed |
+| Description | Jira → GitHub only. Edit it in Jira; edits on GitHub get replaced |
+
+Changes made in Jira reach GitHub within about 5 minutes (a scheduled check; GitHub can delay it at busy times). Changes made on GitHub reach Jira right away. If the same field changes on both sides before a sync, Jira wins. Labels merge, so a label added on one side and another removed on the other both survive. Comments, sprints and assignees aren't synced, and a new GitHub issue doesn't create a ticket. `eas-build`, `in-progress` and `in-review` exist only on GitHub.
+
+Pull requests move tickets too. Opening one (or marking it ready) moves its tickets to W trakcie weryfikacji, a draft moves them to W toku, and merging moves them to Gotowe and closes their GitHub issues. A pull request belongs to the tickets named in its title or branch (`SCRUM-123`), and to the tickets of the issues it closes (`Closes #45`). If only `Closes #45` links it, the workflow adds the key to the title.
+
+To see branches, commits and pull requests on a ticket, put the key in the branch name, for example `feature/SCRUM-123-chat-search`. The ticket's "Create branch" button does this for you. Jira shows them through the free [GitHub for Atlassian](https://marketplace.atlassian.com/apps/1219592/github-for-atlassian) app, and `SCRUM-123` in GitHub text links to the ticket.
+
+How it works: each ticket keeps a hidden property `shmap-github-sync` with its GitHub issue number and the state at the last sync. The script compares both sides with that state to see which side changed. Writes to GitHub use the workflow's `GITHUB_TOKEN`, which never starts another workflow run, so the sync doesn't loop. All runs wait in one queue. A full check of every ticket runs nightly, and you can start one from the Actions tab (Run workflow → "Check every ticket").
+
+Setup: the repository secrets `JIRA_EMAIL` and `JIRA_API_TOKEN` hold an Atlassian API token with the scopes `read:jira-work`, `write:jira-work` and `read:jira-user`. The token expires after at most a year; when the workflow starts failing with 401, create a new one and update the secret. To run the script locally, use Node 24, copy `.github/scripts/jira-sync/.env.example` to `.env` (with a fine-grained GitHub token that can write issues and pull requests), then:
+
+```sh
+cd .github/scripts/jira-sync
+npm ci
+npm run sync -- check
+npm run sync -- sync SCRUM-110          # prints what would change
+npm run sync -- sync SCRUM-110 --apply  # changes it
+```
 
 ## License
 

@@ -2,8 +2,11 @@ package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
+import com.mdzvtt.shmap.chat.dto.ChatPlaceResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
+import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
+import com.mdzvtt.shmap.exception.ChatMessageNotFoundException;
 import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
@@ -24,7 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -98,8 +105,9 @@ public class ChatService {
         List<User> newUsers = findUsers(newIds);
         requireFriends(userId, newIds);
 
+        Long latestMessageId = chatMessageRepository.findLatestId(chatId);
         List<ChatMember> newMembers = newUsers.stream()
-                .map(user -> new ChatMember(chat, user))
+                .map(user -> new ChatMember(chat, user, latestMessageId))
                 .toList();
         chatMemberRepository.saveAll(newMembers);
         eventPublisher.publishEvent(new ChatChanged(chatId, chatMemberRepository.findUserIdsByChatId(chatId)));
@@ -122,9 +130,25 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public List<ChatSummaryResponse> getChats(Integer userId) {
-        return chatRepository.findMyChats(userId).stream()
-                .map(row -> toSummaryResponse(row, userId))
+        List<ChatListRow> rows = chatRepository.findMyChats(userId);
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> chatIds = rows.stream().map(row -> row.chat().getId()).toList();
+        Map<Long, List<Integer>> memberIds = chatMemberRepository.findOtherMemberIds(chatIds, userId).stream()
+                .collect(Collectors.groupingBy(row -> row.chatId(),
+                        Collectors.mapping(row -> row.userId(), Collectors.toList())));
+
+        return rows.stream()
+                .map(row -> toSummaryResponse(row, userId,
+                        memberIds.getOrDefault(row.chat().getId(), List.of())))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ChatUnreadCountResponse countUnread(Integer userId) {
+        return new ChatUnreadCountResponse(chatMessageRepository.countUnread(userId));
     }
 
     @Transactional(readOnly = true)
@@ -144,17 +168,54 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatMessageResponse send(Integer userId, Long chatId, String text) {
+    public ChatMessageResponse sendText(Integer userId, Long chatId, String text, UUID clientId) {
+        return post(userId, chatId, clientId, (chat, sender) -> ChatMessage.text(chat, sender, text, clientId));
+    }
+
+    @Transactional
+    public ChatMessageResponse sendPlace(Integer userId, Long chatId, MessagePlace place, UUID clientId) {
+        return post(userId, chatId, clientId, (chat, sender) -> ChatMessage.place(chat, sender, place, clientId));
+    }
+
+    private ChatMessageResponse post(Integer userId, Long chatId, UUID clientId,
+            BiFunction<Chat, User, ChatMessage> create) {
+        lockChat(chatId);
         Chat chat = findChat(userId, chatId);
+        if (clientId != null) {
+            var sent = chatMessageRepository.findByChatIdAndSenderIdAndClientId(chatId, userId, clientId);
+            if (sent.isPresent()) {
+                return toMessageResponse(sent.get());
+            }
+        }
         if (!canSend(chat, userId)) {
             throw new NotFriendsException("You can only message friends");
         }
         User sender = userRepository.getReferenceById(userId);
-        ChatMessage message = chatMessageRepository.save(new ChatMessage(chat, sender, text));
+        ChatMessage message = chatMessageRepository.save(create.apply(chat, sender));
         ChatMessageResponse response = toMessageResponse(message);
         eventPublisher
                 .publishEvent(new ChatMessageSent(chatId, chatMemberRepository.findUserIdsByChatId(chatId), response));
+        advanceReadPosition(chatId, userId, message.getId());
         return response;
+    }
+
+    @Transactional
+    public void markRead(Integer userId, Long chatId, Long messageId) {
+        findChat(userId, chatId);
+        if (!chatMessageRepository.existsByIdAndChatId(messageId, chatId)) {
+            throw new ChatMessageNotFoundException();
+        }
+        advanceReadPosition(chatId, userId, messageId);
+    }
+
+    private void advanceReadPosition(Long chatId, Integer userId, Long messageId) {
+        userRepository.findAllByIdForUpdate(List.of(userId));
+        if (chatMemberRepository.markRead(chatId, userId, messageId) == 0) {
+            return;
+        }
+        long unreadCount = chatMessageRepository.countByChatIdAndIdGreaterThanAndSenderIdNot(chatId, messageId, userId);
+        long totalUnreadCount = chatMessageRepository.countUnread(userId);
+        eventPublisher.publishEvent(new ChatRead(chatId, userId, messageId, unreadCount, totalUnreadCount));
     }
 
     private Chat findChat(Integer userId, Long chatId) {
@@ -211,10 +272,11 @@ public class ChatService {
         List<UserSummaryResponse> members = chatMemberRepository.findOtherMembers(chat.getId(), userId).stream()
                 .map(this::toSummary)
                 .toList();
-        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members, canSend(chat, userId));
+        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members, canSend(chat, userId),
+                chatMemberRepository.findLastReadMessageId(chat.getId(), userId));
     }
 
-    private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId) {
+    private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId, List<Integer> memberIds) {
         Chat chat = row.chat();
         User otherUser = null;
         if (chat.getType() == ChatType.DIRECT) {
@@ -228,7 +290,9 @@ public class ChatService {
                 chat.getType(),
                 chat.getName(),
                 otherUser == null ? null : toSummary(otherUser),
-                lastMessage == null ? null : toMessageResponse(lastMessage, row.lastMessageSender()));
+                lastMessage == null ? null : toMessageResponse(lastMessage, row.lastMessageSender()),
+                row.unreadCount(),
+                memberIds);
     }
 
     private ChatMessageResponse toMessageResponse(ChatMessage message) {
@@ -239,8 +303,11 @@ public class ChatService {
         return new ChatMessageResponse(
                 message.getId(),
                 toSummary(sender),
+                message.getType(),
                 message.getText(),
-                message.getCreatedAt());
+                ChatPlaceResponse.from(message.getPlace()),
+                message.getCreatedAt(),
+                message.getClientId());
     }
 
     private UserSummaryResponse toSummary(User user) {

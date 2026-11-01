@@ -6,15 +6,18 @@ import type { AuthenticationResponse } from "@/lib/types/api";
 
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
+const REQUEST_TIMEOUT_MS = 15_000;
 
 const refreshClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  timeout: REQUEST_TIMEOUT_MS,
 });
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  timeout: REQUEST_TIMEOUT_MS,
 });
 
 type SessionClearCallback = () => void;

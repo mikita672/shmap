@@ -1,0 +1,20 @@
+{
+  "name": "shmap-jira-sync",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "sync": "node --env-file-if-exists=.env src/main.ts",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "turndown": "^7.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/turndown": "^5.0.6",
+    "typescript": "^7.0.2"
+  }
+}

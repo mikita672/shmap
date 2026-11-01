@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { View } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FriendPicker } from "@/components/chats/friend-picker";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
+import { parseMemberIds } from "@/lib/member-ids";
 
 export default function NewGroupScreen() {
   const insets = useSafeAreaInsets();
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const { memberIds } = useLocalSearchParams<{ memberIds?: string }>();
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(
+    () => new Set(parseMemberIds(memberIds)),
+  );
 
   const handleToggle = (friendId: number) => {
     setSelectedIds((prev) => {
