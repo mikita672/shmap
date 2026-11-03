@@ -11,6 +11,7 @@ import { Popup } from "@/components/ui/popup";
 import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
 import { useLeaveChat } from "@/hooks/useChatMutations";
+import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { MaterialIcons } from "@/lib/icons";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -22,6 +23,7 @@ export default function GroupInfoScreen() {
   const { data: me } = useProfile();
   const [leaveConfirmVisible, setLeaveConfirmVisible] = useState(false);
   const leaveChat = useLeaveChat();
+  const openProfile = useOpenProfile();
 
   if (isPending) {
     return (
@@ -53,12 +55,14 @@ export default function GroupInfoScreen() {
       name: me ? `${me.firstName} ${me.lastName}`.trim() || me.username : "You",
       subtitle: "you",
       avatarUrl: me?.avatarUrl,
+      onPress: me ? () => openProfile(me) : undefined,
     },
     ...otherMembers.map((member) => ({
       id: member.id,
       name: `${member.firstName} ${member.lastName}`.trim() || member.username,
       subtitle: `@${member.username}`,
       avatarUrl: member.avatarUrl,
+      onPress: () => openProfile(member),
     })),
   ];
 
@@ -139,6 +143,7 @@ export default function GroupInfoScreen() {
             subtitle={item.subtitle}
             avatarUrl={item.avatarUrl}
             showCheck={false}
+            onPress={item.onPress}
           />
         )}
       />
