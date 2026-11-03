@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.chat;
 
+import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
@@ -62,7 +63,7 @@ public class ChatMessage {
 
     @Embedded
     @EmbeddedColumnNaming("place_%s")
-    private MessagePlace place;
+    private PlaceSnapshot place;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -71,7 +72,7 @@ public class ChatMessage {
     @Column(updatable = false)
     private UUID clientId;
 
-    private ChatMessage(Chat chat, User sender, ChatMessageType type, String text, MessagePlace place,
+    private ChatMessage(Chat chat, User sender, ChatMessageType type, String text, PlaceSnapshot place,
             UUID clientId) {
         this.chat = chat;
         this.sender = sender;
@@ -85,7 +86,7 @@ public class ChatMessage {
         return new ChatMessage(chat, sender, ChatMessageType.TEXT, text, null, clientId);
     }
 
-    public static ChatMessage place(Chat chat, User sender, MessagePlace place, UUID clientId) {
+    public static ChatMessage place(Chat chat, User sender, PlaceSnapshot place, UUID clientId) {
         return new ChatMessage(chat, sender, ChatMessageType.PLACE, null, place, clientId);
     }
 }

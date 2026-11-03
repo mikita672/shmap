@@ -1,8 +1,8 @@
-package com.mdzvtt.shmap.chat.dto;
+package com.mdzvtt.shmap.place.dto;
 
-import com.mdzvtt.shmap.chat.MessagePlace;
+import com.mdzvtt.shmap.place.PlaceSnapshot;
 
-public record ChatPlaceResponse(
+public record PlaceResponse(
         String osmId,
         String name,
         String address,
@@ -11,11 +11,11 @@ public record ChatPlaceResponse(
         Double latitude,
         Double longitude) {
 
-    public static ChatPlaceResponse from(MessagePlace place) {
+    public static PlaceResponse from(PlaceSnapshot place) {
         if (place == null) {
             return null;
         }
-        return new ChatPlaceResponse(
+        return new PlaceResponse(
                 place.osmId(),
                 place.name(),
                 place.address(),

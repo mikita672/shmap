@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.chat.dto;
 
+import com.mdzvtt.shmap.place.dto.PlaceRequest;
 import com.mdzvtt.shmap.validation.TextOrPlace;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public record SendChatMessageRequest(
         @Size(max = 2000, message = "Message must be at most 2000 characters") String text,
 
-        @Valid ChatPlaceRequest place,
+        @Valid PlaceRequest place,
 
         UUID clientId) {
 

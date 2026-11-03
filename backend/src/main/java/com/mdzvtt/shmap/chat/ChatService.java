@@ -2,7 +2,6 @@ package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
-import com.mdzvtt.shmap.chat.dto.ChatPlaceResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
@@ -14,6 +13,8 @@ import com.mdzvtt.shmap.exception.NotGroupChatException;
 import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.FriendshipRepository;
+import com.mdzvtt.shmap.place.PlaceSnapshot;
+import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -173,7 +174,7 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatMessageResponse sendPlace(Integer userId, Long chatId, MessagePlace place, UUID clientId) {
+    public ChatMessageResponse sendPlace(Integer userId, Long chatId, PlaceSnapshot place, UUID clientId) {
         return post(userId, chatId, clientId, (chat, sender) -> ChatMessage.place(chat, sender, place, clientId));
     }
 
@@ -305,7 +306,7 @@ public class ChatService {
                 toSummary(sender),
                 message.getType(),
                 message.getText(),
-                ChatPlaceResponse.from(message.getPlace()),
+                PlaceResponse.from(message.getPlace()),
                 message.getCreatedAt(),
                 message.getClientId());
     }
