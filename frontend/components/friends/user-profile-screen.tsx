@@ -16,6 +16,7 @@ import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useMutualFriends } from "@/hooks/useMutualFriends";
+import { useProfileScope } from "@/hooks/useProfileScope";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { formatMonthYear } from "@/lib/format-date";
@@ -44,6 +45,7 @@ export function UserProfileScreen() {
     queryClient.invalidateQueries({ queryKey: ["profiles", username] }),
   );
   const menu = useFriendActionsMenu();
+  const scope = useProfileScope();
   const top = Math.max(insets.top + 8, 48);
 
   if (profile?.relationship === "SELF") {
@@ -136,7 +138,7 @@ export function UserProfileScreen() {
                     label: profile.friendsCount === 1 ? "friend" : "friends",
                     onPress: profile.friendsListVisible
                       ? () =>
-                          router.push(getProfileFriendsHref(username, "tabs"))
+                          router.push(getProfileFriendsHref(username, scope))
                       : undefined,
                   },
                 ]}
@@ -155,7 +157,7 @@ export function UserProfileScreen() {
                     count={profile.mutualFriendsCount}
                     users={mutualFriends}
                     onPress={() =>
-                      router.push(getMutualFriendsHref(username, "tabs"))
+                      router.push(getMutualFriendsHref(username, scope))
                     }
                   />
                 )}
