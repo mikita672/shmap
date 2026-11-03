@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ export interface MessageBubbleProps {
   isPending?: boolean;
   isFailed?: boolean;
   senderName?: string;
+  onSenderPress?: () => void;
 }
 
 export function MessageBubble({
@@ -19,6 +20,7 @@ export function MessageBubble({
   isPending = false,
   isFailed = false,
   senderName,
+  onSenderPress,
 }: MessageBubbleProps) {
   return (
     <View
@@ -30,9 +32,18 @@ export function MessageBubble({
       )}
     >
       {senderName ? (
-        <Text className="text-sm font-medium leading-5 text-bubble-sender">
-          {senderName}
-        </Text>
+        <Pressable
+          onPress={onSenderPress}
+          disabled={!onSenderPress}
+          accessibilityRole={onSenderPress ? "button" : undefined}
+          accessibilityHint={onSenderPress ? "Opens their profile" : undefined}
+          hitSlop={4}
+          className="self-start active:opacity-80"
+        >
+          <Text className="text-sm font-medium leading-5 text-bubble-sender">
+            {senderName}
+          </Text>
+        </Pressable>
       ) : null}
       <Text
         className={cn(

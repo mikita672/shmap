@@ -44,6 +44,9 @@ export function MessageRow({
     showAuthor && isFirstInRun
       ? `${sender.firstName} ${sender.lastName}`
       : undefined;
+  const handleSenderPress = onSenderPress
+    ? () => onSenderPress(sender)
+    : undefined;
 
   return (
     <View
@@ -56,8 +59,8 @@ export function MessageRow({
       {showAuthor &&
         (isLastInRun ? (
           <Pressable
-            onPress={() => onSenderPress?.(sender)}
-            disabled={!onSenderPress}
+            onPress={handleSenderPress}
+            disabled={!handleSenderPress}
             accessibilityRole="button"
             accessibilityLabel={`Open ${sender.firstName} ${sender.lastName}'s profile`}
             hitSlop={4}
@@ -80,6 +83,7 @@ export function MessageRow({
             time={time}
             isMine={isMine}
             senderName={senderName}
+            onSenderPress={handleSenderPress}
           />
         </Pressable>
       ) : (
@@ -88,6 +92,7 @@ export function MessageRow({
           time={time}
           isMine={isMine}
           senderName={senderName}
+          onSenderPress={handleSenderPress}
         />
       )}
     </View>
