@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { toast } from "sonner-native";
 import {
   addChatMembers,
@@ -20,6 +20,7 @@ import { friendsQueryOptions } from "@/hooks/useFriends";
 
 export function useOpenDirectChat() {
   const queryClient = useQueryClient();
+  const navigation = useNavigation();
 
   return useMutation({
     mutationFn: async (userId: number) => {
@@ -28,6 +29,16 @@ export function useOpenDirectChat() {
     },
     onSuccess: (chat) => {
       queryClient.setQueryData(chatQueryOptions(chat.id).queryKey, chat);
+      const state = navigation.getState();
+      const previous = state?.routes[state.index - 1];
+      const params = previous?.params as { chatId?: string } | undefined;
+      if (
+        previous?.name === "chat/[chatId]/index" &&
+        params?.chatId === String(chat.id)
+      ) {
+        router.back();
+        return;
+      }
       router.push({
         pathname: "/chat/[chatId]",
         params: { chatId: String(chat.id) },

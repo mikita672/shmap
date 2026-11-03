@@ -15,6 +15,7 @@ import { useChat } from "@/hooks/useChat";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
 import { useMarkReadWhileOpen } from "@/hooks/useMarkChatRead";
+import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useReadPositionOnOpen } from "@/hooks/useReadPositionOnOpen";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { setOpenChatId } from "@/lib/open-chat";
@@ -37,6 +38,7 @@ export default function ChatScreen() {
   const { data: friends } = useFriends();
   const { send } = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();
+  const openProfile = useOpenProfile();
 
   const handleMore = () => {
     if (chat?.type !== "DIRECT") {
@@ -62,6 +64,13 @@ export default function ChatScreen() {
     });
   };
 
+  const handleOpenProfile = () => {
+    const otherUser = chat?.members[0];
+    if (otherUser) {
+      openProfile(otherUser);
+    }
+  };
+
   return (
     <View
       className="flex-1 bg-background"
@@ -76,7 +85,13 @@ export default function ChatScreen() {
               ? handleOpenInfo
               : undefined
         }
-        onPress={chat?.type === "GROUP" ? handleOpenInfo : undefined}
+        onPress={
+          chat?.type === "GROUP"
+            ? handleOpenInfo
+            : chat?.type === "DIRECT"
+              ? handleOpenProfile
+              : undefined
+        }
       />
 
       {isPending ? (

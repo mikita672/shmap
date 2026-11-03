@@ -4,7 +4,11 @@ import { MessageBubble } from "@/components/chats/message-bubble";
 import { PlaceMessageCard } from "@/components/chats/place-message-card";
 import { Avatar } from "@/components/ui/avatar";
 import { formatMessageTime } from "@/lib/chat-time";
-import type { ChatMessageResponse, ChatPlace } from "@/lib/types/api";
+import type {
+  ChatMessageResponse,
+  ChatPlace,
+  UserSummaryResponse,
+} from "@/lib/types/api";
 import { cn } from "@/lib/utils";
 
 const AVATAR_SIZE = 32;
@@ -22,6 +26,7 @@ export interface MessageRowProps {
   isGroup: boolean;
   isFirstInRun: boolean;
   isLastInRun: boolean;
+  onSenderPress?: (sender: UserSummaryResponse) => void;
 }
 
 export function MessageRow({
@@ -30,6 +35,7 @@ export function MessageRow({
   isGroup,
   isFirstInRun,
   isLastInRun,
+  onSenderPress,
 }: MessageRowProps) {
   const showAuthor = isGroup && !isMine;
   const { sender } = message;
@@ -38,6 +44,9 @@ export function MessageRow({
     showAuthor && isFirstInRun
       ? `${sender.firstName} ${sender.lastName}`
       : undefined;
+  const handleSenderPress = onSenderPress
+    ? () => onSenderPress(sender)
+    : undefined;
 
   return (
     <View
@@ -49,7 +58,16 @@ export function MessageRow({
     >
       {showAuthor &&
         (isLastInRun ? (
-          <Avatar uri={sender.avatarUrl} size={AVATAR_SIZE} tone="surface" />
+          <Pressable
+            onPress={handleSenderPress}
+            disabled={!handleSenderPress}
+            accessibilityRole="button"
+            accessibilityLabel={`Open ${sender.firstName} ${sender.lastName}'s profile`}
+            hitSlop={4}
+            className="active:opacity-80"
+          >
+            <Avatar uri={sender.avatarUrl} size={AVATAR_SIZE} tone="surface" />
+          </Pressable>
         ) : (
           <View style={{ width: AVATAR_SIZE }} />
         ))}
@@ -65,6 +83,7 @@ export function MessageRow({
             time={time}
             isMine={isMine}
             senderName={senderName}
+            onSenderPress={handleSenderPress}
           />
         </Pressable>
       ) : (
@@ -73,6 +92,7 @@ export function MessageRow({
           time={time}
           isMine={isMine}
           senderName={senderName}
+          onSenderPress={handleSenderPress}
         />
       )}
     </View>

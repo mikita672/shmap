@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { MapPreview } from "@/components/map-preview";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
@@ -17,6 +17,7 @@ export interface PlaceMessageCardProps {
   isPending?: boolean;
   isFailed?: boolean;
   senderName?: string;
+  onSenderPress?: () => void;
 }
 
 export function PlaceMessageCard({
@@ -26,6 +27,7 @@ export function PlaceMessageCard({
   isPending = false,
   isFailed = false,
   senderName,
+  onSenderPress,
 }: PlaceMessageCardProps) {
   const foreground = isMine
     ? "text-bubble-out-foreground"
@@ -45,12 +47,20 @@ export function PlaceMessageCard({
       )}
     >
       {senderName ? (
-        <Text
-          numberOfLines={1}
-          className="px-2 py-1 text-sm font-medium leading-5 text-bubble-sender"
+        <Pressable
+          onPress={onSenderPress}
+          disabled={!onSenderPress}
+          accessibilityRole={onSenderPress ? "button" : undefined}
+          accessibilityHint={onSenderPress ? "Opens their profile" : undefined}
+          className="self-start active:opacity-80"
         >
-          {senderName}
-        </Text>
+          <Text
+            numberOfLines={1}
+            className="px-2 py-1 text-sm font-medium leading-5 text-bubble-sender"
+          >
+            {senderName}
+          </Text>
+        </Pressable>
       ) : null}
       <MapPreview
         latitude={place.latitude}
