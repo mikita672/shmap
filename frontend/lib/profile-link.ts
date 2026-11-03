@@ -11,8 +11,36 @@ export function getProfileUrl(username: string): string {
   return `${SHARE_ORIGIN}/u/${encodeURIComponent(username)}`;
 }
 
-export function getProfileHref(username: string): Href {
-  return { pathname: "/friends/profile/[username]", params: { username } };
+export type ProfileScope = "tabs" | "root";
+
+export function getProfileHref(
+  username: string,
+  scope: ProfileScope = "tabs",
+): Href {
+  return scope === "tabs"
+    ? { pathname: "/friends/profile/[username]", params: { username } }
+    : { pathname: "/user/[username]", params: { username } };
+}
+
+export function getProfileFriendsHref(
+  username: string,
+  scope: ProfileScope,
+): Href {
+  return scope === "tabs"
+    ? { pathname: "/friends/profile/[username]/friends", params: { username } }
+    : { pathname: "/user/[username]/friends", params: { username } };
+}
+
+export function getMutualFriendsHref(
+  username: string,
+  scope: ProfileScope,
+): Href {
+  return scope === "tabs"
+    ? {
+        pathname: "/friends/profile/[username]/mutual-friends",
+        params: { username },
+      }
+    : { pathname: "/user/[username]/mutual-friends", params: { username } };
 }
 
 export function parseProfileLink(text: string): string | null {

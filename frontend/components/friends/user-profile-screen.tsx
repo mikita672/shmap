@@ -19,6 +19,10 @@ import { useMutualFriends } from "@/hooks/useMutualFriends";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { formatMonthYear } from "@/lib/format-date";
+import {
+  getMutualFriendsHref,
+  getProfileFriendsHref,
+} from "@/lib/profile-link";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
@@ -132,10 +136,7 @@ export function UserProfileScreen() {
                     label: profile.friendsCount === 1 ? "friend" : "friends",
                     onPress: profile.friendsListVisible
                       ? () =>
-                          router.push({
-                            pathname: "/friends/profile/[username]/friends",
-                            params: { username },
-                          })
+                          router.push(getProfileFriendsHref(username, "tabs"))
                       : undefined,
                   },
                 ]}
@@ -154,10 +155,7 @@ export function UserProfileScreen() {
                     count={profile.mutualFriendsCount}
                     users={mutualFriends}
                     onPress={() =>
-                      router.push({
-                        pathname: "/friends/profile/[username]/mutual-friends",
-                        params: { username },
-                      })
+                      router.push(getMutualFriendsHref(username, "tabs"))
                     }
                   />
                 )}
