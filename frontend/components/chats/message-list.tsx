@@ -22,6 +22,7 @@ import { UnreadDivider } from "@/components/chats/unread-divider";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useChatMessages } from "@/hooks/useChatMessages";
+import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { useOutgoingMessages } from "@/hooks/useSendMessage";
 import { useStickToBottom } from "@/hooks/useStickToBottom";
@@ -54,6 +55,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     fetchStatus,
   } = useChatMessages(chatId);
   const { data: me } = useProfile();
+  const openProfile = useOpenProfile();
   const { outgoing, retry } = useOutgoingMessages(chatId);
   const listRef = useRef<FlatList<ChatItem>>(null);
   const hasDecidedScrollRef = useRef(false);
@@ -239,6 +241,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
               isGroup={isGroup}
               isFirstInRun={item.isFirstInRun}
               isLastInRun={item.isLastInRun}
+              onSenderPress={openProfile}
             />
           )
         }
