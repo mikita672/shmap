@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.route;
 
 import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.user.User;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,6 +22,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"))
@@ -47,6 +52,12 @@ public class Route {
 
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "route_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OrderColumn(name = "position")
+    private List<RouteStop> stops = new ArrayList<>();
 
     public Route(Chat chat, String name, User createdBy) {
         this.chat = chat;
