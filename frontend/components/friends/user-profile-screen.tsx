@@ -84,8 +84,8 @@ export function UserProfileScreen() {
           {isErrorCode(error, AuthErrorCode.USER_NOT_FOUND) ? (
             <NoteCard
               className="self-stretch"
-              title="This profile doesn't exist"
-              description="The link may be broken, or the username has changed"
+              title="This profile isn't available"
+              description="The account may have been deleted, or the link is broken"
             />
           ) : (
             <>
