@@ -1,10 +1,11 @@
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, useWindowDimensions } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSharedValue } from "react-native-reanimated";
 import { useLocalSearchParams } from "expo-router";
 import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
+import { RouteSheet } from "@/components/routes/route-sheet";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
@@ -17,7 +18,8 @@ import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function RouteScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
-  const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+  const sheetPosition = useSharedValue(height);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
     ...chatQueryOptions(route?.chatId ?? 0),
@@ -29,7 +31,8 @@ export default function RouteScreen() {
     return (
       <View className="flex-1 bg-background">
         <RouteMap route={route} />
-        <RouteCredit style={{ bottom: insets.bottom + 8 }} />
+        <RouteCredit sheetPosition={sheetPosition} />
+        <RouteSheet route={route} animatedPosition={sheetPosition} />
         <RouteHeader
           name={route.name}
           chatTitle={chat ? getChatTitle(chat) : undefined}
