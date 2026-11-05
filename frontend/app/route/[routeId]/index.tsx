@@ -1,6 +1,8 @@
 import { ActivityIndicator, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
+import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,7 @@ import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function RouteScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
+  const insets = useSafeAreaInsets();
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
     ...chatQueryOptions(route?.chatId ?? 0),
@@ -26,6 +29,7 @@ export default function RouteScreen() {
     return (
       <View className="flex-1 bg-background">
         <RouteMap route={route} />
+        <RouteCredit style={{ bottom: insets.bottom + 8 }} />
         <RouteHeader
           name={route.name}
           chatTitle={chat ? getChatTitle(chat) : undefined}
