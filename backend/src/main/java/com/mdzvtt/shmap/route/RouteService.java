@@ -56,6 +56,11 @@ public class RouteService {
     }
 
     @Transactional
+    public void delete(Integer userId, Long routeId) {
+        routeRepository.delete(lockRoute(userId, routeId));
+    }
+
+    @Transactional
     public RouteResponse addStop(Integer userId, Long routeId, PlaceSnapshot place) {
         Route route = lockRoute(userId, routeId);
         route.addStop(new RouteStop(place, userRepository.getReferenceById(userId)));

@@ -46,6 +46,12 @@ public class RouteController {
         return routeService.rename(user.getId(), routeId, request.name());
     }
 
+    @DeleteMapping("/routes/{routeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
+        routeService.delete(user.getId(), routeId);
+    }
+
     @PostMapping("/routes/{routeId}/stops")
     @ResponseStatus(HttpStatus.CREATED)
     public RouteResponse addStop(@AuthenticationPrincipal User user, @PathVariable Long routeId,
