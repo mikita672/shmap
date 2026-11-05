@@ -49,6 +49,13 @@ public class RouteService {
     }
 
     @Transactional
+    public RouteResponse rename(Integer userId, Long routeId, String name) {
+        Route route = lockRoute(userId, routeId);
+        route.rename(name);
+        return toResponse(route, userId);
+    }
+
+    @Transactional
     public RouteResponse addStop(Integer userId, Long routeId, PlaceSnapshot place) {
         Route route = lockRoute(userId, routeId);
         route.addStop(new RouteStop(place, userRepository.getReferenceById(userId)));

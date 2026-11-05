@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.route.dto.CreateRouteRequest;
 import com.mdzvtt.shmap.route.dto.ReorderRouteStopsRequest;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteSummaryResponse;
+import com.mdzvtt.shmap.route.dto.UpdateRouteRequest;
 import com.mdzvtt.shmap.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,6 +38,12 @@ public class RouteController {
     @GetMapping("/routes/{routeId}")
     public RouteResponse getRoute(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
         return routeService.getRoute(user.getId(), routeId);
+    }
+
+    @PatchMapping("/routes/{routeId}")
+    public RouteResponse rename(@AuthenticationPrincipal User user, @PathVariable Long routeId,
+            @Valid @RequestBody UpdateRouteRequest request) {
+        return routeService.rename(user.getId(), routeId, request.name());
     }
 
     @PostMapping("/routes/{routeId}/stops")

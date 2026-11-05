@@ -74,6 +74,11 @@ public class Route {
         this.updatedAt = Instant.now();
     }
 
+    public void rename(String name) {
+        this.name = name;
+        touch();
+    }
+
     public void addStop(RouteStop stop) {
         if (stops.size() >= MAX_STOPS) {
             throw new RouteFullException(MAX_STOPS);
