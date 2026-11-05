@@ -56,6 +56,13 @@ public class RouteService {
         return toResponse(route, userId);
     }
 
+    @Transactional
+    public RouteResponse removeStop(Integer userId, Long routeId, Long stopId) {
+        Route route = lockRoute(userId, routeId);
+        route.removeStop(stopId);
+        return toResponse(route, userId);
+    }
+
     private Route lockRoute(Integer userId, Long routeId) {
         routeRepository.findByIdForUpdate(routeId).orElseThrow(RouteNotFoundException::new);
         Route route = findRoute(userId, routeId);

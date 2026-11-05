@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.route;
 
 import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.exception.RouteFullException;
+import com.mdzvtt.shmap.exception.RouteStopNotFoundException;
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -74,6 +75,13 @@ public class Route {
             throw new RouteFullException(MAX_STOPS);
         }
         stops.add(stop);
+        touch();
+    }
+
+    public void removeStop(Long stopId) {
+        if (!stops.removeIf(stop -> stop.getId().equals(stopId))) {
+            throw new RouteStopNotFoundException();
+        }
         touch();
     }
 
