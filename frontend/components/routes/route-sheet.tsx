@@ -10,7 +10,10 @@ import { PathSummary } from "@/components/routes/path-summary";
 import { StopDetails } from "@/components/routes/stop-details";
 import { StopDragHandle, StopRow } from "@/components/routes/stop-row";
 import { TravelModeSwitch } from "@/components/routes/travel-mode-switch";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
+import { MaterialIcons } from "@/lib/icons";
 import { MAX_ROUTE_STOPS, formatStopSubtitle } from "@/lib/route-format";
 import type { RouteResponse, TravelMode } from "@/lib/types/api";
 
@@ -25,6 +28,7 @@ export interface RouteSheetProps {
   onRetryPath?: () => void;
   selectedStopId?: number | null;
   onSelectStop?: (stopId: number | null) => void;
+  onRemoveStop?: (stopId: number) => void;
 }
 
 export function RouteSheet({
@@ -35,6 +39,7 @@ export function RouteSheet({
   onRetryPath,
   selectedStopId,
   onSelectStop,
+  onRemoveStop,
 }: RouteSheetProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -67,6 +72,22 @@ export function RouteSheet({
             stop={selectedStop}
             number={selectedIndex + 1}
             onClose={() => onSelectStop?.(null)}
+            removeAction={
+              onRemoveStop ? (
+                <Button
+                  variant="destructive"
+                  className="h-11 flex-1 gap-2 rounded-xl"
+                  onPress={() => onRemoveStop(selectedStop.id)}
+                >
+                  <MaterialIcons
+                    name="delete-outline"
+                    size={18}
+                    className="text-white"
+                  />
+                  <Text className="text-sm font-medium">Remove</Text>
+                </Button>
+              ) : undefined
+            }
           />
         ) : (
           <>

@@ -9,6 +9,7 @@ import { routeQueryOptions } from "@/hooks/useRoute";
 import {
   addRouteStop,
   createRoute,
+  removeRouteStop,
   retryRoutePath,
   updateRoute,
 } from "@/lib/api/routes";
@@ -23,6 +24,13 @@ import { getErrorMessage } from "@/lib/utils/error";
 
 const PENDING_PATH: RoutePathResponse = {
   status: "PENDING",
+  distanceMeters: null,
+  durationSeconds: null,
+  polyline: null,
+};
+
+const NO_PATH: RoutePathResponse = {
+  status: "NONE",
   distanceMeters: null,
   durationSeconds: null,
   polyline: null,
@@ -78,6 +86,24 @@ export function useRetryPath(routeId: number) {
     },
     optimistic: (route) => ({ ...route, path: PENDING_PATH }),
     errorMessage: "Couldn't load the path",
+  });
+}
+
+export function useRemoveStop(routeId: number) {
+  return useOptimisticRouteEdit(routeId, {
+    request: async (stopId: number) => {
+      const response = await removeRouteStop(routeId, stopId);
+      return response.data;
+    },
+    optimistic: (route, stopId) => {
+      const stops = route.stops.filter((stop) => stop.id !== stopId);
+      return {
+        ...route,
+        stops,
+        path: stops.length < 2 ? NO_PATH : PENDING_PATH,
+      };
+    },
+    errorMessage: "Couldn't remove the place",
   });
 }
 

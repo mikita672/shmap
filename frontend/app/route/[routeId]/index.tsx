@@ -13,7 +13,11 @@ import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { useRoute } from "@/hooks/useRoute";
-import { useRetryPath, useSetTravelMode } from "@/hooks/useRouteMutations";
+import {
+  useRemoveStop,
+  useRetryPath,
+  useSetTravelMode,
+} from "@/hooks/useRouteMutations";
 import { useStalePathRetry } from "@/hooks/useStalePathRetry";
 import { getChatTitle } from "@/lib/chat-preview";
 import { AuthErrorCode } from "@/lib/types/api";
@@ -32,6 +36,7 @@ export default function RouteScreen() {
   });
   const setTravelMode = useSetTravelMode(Number(routeId));
   const retryPath = useRetryPath(Number(routeId));
+  const removeStop = useRemoveStop(Number(routeId));
   useStalePathRetry(route, () => retryPath.mutate());
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
@@ -49,6 +54,14 @@ export default function RouteScreen() {
           animatedPosition={sheetPosition}
           selectedStopId={selectedStopId}
           onSelectStop={setSelectedStopId}
+          onRemoveStop={
+            route.canEdit
+              ? (stopId) => {
+                  setSelectedStopId(null);
+                  removeStop.mutate(stopId);
+                }
+              : undefined
+          }
           onAddPlace={
             route.canEdit
               ? () =>
