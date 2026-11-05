@@ -65,4 +65,13 @@ public class Route {
         this.createdBy = createdBy;
         this.updatedAt = Instant.now();
     }
+
+    public void addStop(RouteStop stop) {
+        stops.add(stop);
+        touch();
+    }
+
+    private void touch() {
+        updatedAt = Instant.now();
+    }
 }

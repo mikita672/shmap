@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.route;
 
+import com.mdzvtt.shmap.route.dto.AddRouteStopRequest;
 import com.mdzvtt.shmap.route.dto.CreateRouteRequest;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteSummaryResponse;
@@ -32,6 +33,13 @@ public class RouteController {
     @GetMapping("/routes/{routeId}")
     public RouteResponse getRoute(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
         return routeService.getRoute(user.getId(), routeId);
+    }
+
+    @PostMapping("/routes/{routeId}/stops")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RouteResponse addStop(@AuthenticationPrincipal User user, @PathVariable Long routeId,
+            @Valid @RequestBody AddRouteStopRequest request) {
+        return routeService.addStop(user.getId(), routeId, request.place().toSnapshot());
     }
 
     @PostMapping("/chats/{chatId}/routes")

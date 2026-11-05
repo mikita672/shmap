@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.chat.ChatAccess;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
+import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
@@ -45,6 +46,21 @@ public class RouteService {
     @Transactional(readOnly = true)
     public RouteResponse getRoute(Integer userId, Long routeId) {
         return toResponse(findRoute(userId, routeId), userId);
+    }
+
+    @Transactional
+    public RouteResponse addStop(Integer userId, Long routeId, PlaceSnapshot place) {
+        Route route = lockRoute(userId, routeId);
+        route.addStop(new RouteStop(place, userRepository.getReferenceById(userId)));
+        routeRepository.flush();
+        return toResponse(route, userId);
+    }
+
+    private Route lockRoute(Integer userId, Long routeId) {
+        routeRepository.findByIdForUpdate(routeId).orElseThrow(RouteNotFoundException::new);
+        Route route = findRoute(userId, routeId);
+        requireCanEdit(route.getChat(), userId);
+        return route;
     }
 
     private Route findRoute(Integer userId, Long routeId) {
