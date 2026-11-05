@@ -18,9 +18,15 @@ const LINE_LAYOUT: LineLayerSpecification["layout"] = {
 
 export interface RouteLayersProps {
   route: RouteResponse;
+  selectedStopId?: number | null;
+  onPressStop?: (stopId: number) => void;
 }
 
-export function RouteLayers({ route }: RouteLayersProps) {
+export function RouteLayers({
+  route,
+  selectedStopId,
+  onPressStop,
+}: RouteLayersProps) {
   const encodedPath =
     route.path.status === "READY" ? route.path.polyline : null;
   const path = useMemo(
@@ -57,8 +63,9 @@ export function RouteLayers({ route }: RouteLayersProps) {
           id={`stop-${stop.id}`}
           lngLat={[stop.place.longitude, stop.place.latitude]}
           anchor="center"
+          onPress={onPressStop ? () => onPressStop(stop.id) : undefined}
         >
-          <RoutePin number={index + 1} />
+          <RoutePin number={index + 1} selected={stop.id === selectedStopId} />
         </ViewAnnotation>
       ))}
     </>

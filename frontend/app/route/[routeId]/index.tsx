@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ActivityIndicator, View, useWindowDimensions } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useSharedValue } from "react-native-reanimated";
@@ -23,6 +24,7 @@ export default function RouteScreen() {
   const router = useRouter();
   const { height } = useWindowDimensions();
   const sheetPosition = useSharedValue(height);
+  const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
     ...chatQueryOptions(route?.chatId ?? 0),
@@ -36,11 +38,17 @@ export default function RouteScreen() {
   if (route && !isDeleted) {
     return (
       <View className="flex-1 bg-background">
-        <RouteMap route={route} />
+        <RouteMap
+          route={route}
+          selectedStopId={selectedStopId}
+          onSelectStop={setSelectedStopId}
+        />
         <RouteCredit sheetPosition={sheetPosition} />
         <RouteSheet
           route={route}
           animatedPosition={sheetPosition}
+          selectedStopId={selectedStopId}
+          onSelectStop={setSelectedStopId}
           onAddPlace={
             route.canEdit
               ? () =>

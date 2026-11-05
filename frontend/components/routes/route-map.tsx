@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
@@ -25,9 +25,15 @@ const FOCUS_DURATION = 800;
 
 export interface RouteMapProps {
   route: RouteResponse;
+  selectedStopId?: number | null;
+  onSelectStop?: (stopId: number) => void;
 }
 
-export function RouteMap({ route }: RouteMapProps) {
+export function RouteMap({
+  route,
+  selectedStopId,
+  onSelectStop,
+}: RouteMapProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const cameraRef = useRef<CameraRef>(null);
@@ -53,6 +59,21 @@ export function RouteMap({ route }: RouteMapProps) {
     };
   });
 
+  const selectedPlace = route.stops.find(
+    (stop) => stop.id === selectedStopId,
+  )?.place;
+  const selectedLng = selectedPlace?.longitude;
+  const selectedLat = selectedPlace?.latitude;
+
+  useEffect(() => {
+    if (selectedLng === undefined || selectedLat === undefined) return;
+    cameraRef.current?.easeTo({
+      center: [selectedLng, selectedLat],
+      padding: { bottom: height * SHEET_SHARE },
+      duration: FOCUS_DURATION,
+    });
+  }, [selectedLng, selectedLat, height]);
+
   useFocusEffect(
     useCallback(() => {
       const point = takeRouteFocus(routeId);
@@ -74,7 +95,11 @@ export function RouteMap({ route }: RouteMapProps) {
       attributionPosition={{ bottom: 8, left: 8 }}
     >
       <Camera ref={cameraRef} initialViewState={initialViewState} />
-      <RouteLayers route={route} />
+      <RouteLayers
+        route={route}
+        selectedStopId={selectedStopId}
+        onPressStop={onSelectStop}
+      />
     </Map>
   );
 }

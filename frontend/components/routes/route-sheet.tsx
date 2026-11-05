@@ -7,6 +7,7 @@ import BottomSheet, {
 import Animated, { type SharedValue } from "react-native-reanimated";
 import { AddPlaceButton } from "@/components/routes/add-place-button";
 import { PathSummary } from "@/components/routes/path-summary";
+import { StopDetails } from "@/components/routes/stop-details";
 import { StopDragHandle, StopRow } from "@/components/routes/stop-row";
 import { TravelModeSwitch } from "@/components/routes/travel-mode-switch";
 import { useProfile } from "@/hooks/useProfile";
@@ -22,6 +23,8 @@ export interface RouteSheetProps {
   onAddPlace?: () => void;
   onTravelModeChange?: (travelMode: TravelMode) => void;
   onRetryPath?: () => void;
+  selectedStopId?: number | null;
+  onSelectStop?: (stopId: number | null) => void;
 }
 
 export function RouteSheet({
@@ -30,11 +33,17 @@ export function RouteSheet({
   onAddPlace,
   onTravelModeChange,
   onRetryPath,
+  selectedStopId,
+  onSelectStop,
 }: RouteSheetProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const { data: profile } = useProfile();
   const isFull = route.stops.length >= MAX_ROUTE_STOPS;
+  const selectedIndex = route.stops.findIndex(
+    (stop) => stop.id === selectedStopId,
+  );
+  const selectedStop = route.stops[selectedIndex];
 
   return (
     <BottomSheet
@@ -53,45 +62,58 @@ export function RouteSheet({
           paddingBottom: insets.bottom + 16,
         }}
       >
-        <View className="flex-row items-center gap-3">
-          <View className="flex-1">
-            <PathSummary
-              path={route.path}
-              stopCount={route.stops.length}
-              travelMode={route.travelMode}
-              onRetry={onRetryPath}
-            />
-          </View>
-          <TravelModeSwitch
-            value={route.travelMode}
-            onValueChange={onTravelModeChange}
+        {selectedStop ? (
+          <StopDetails
+            stop={selectedStop}
+            number={selectedIndex + 1}
+            onClose={() => onSelectStop?.(null)}
           />
-        </View>
-
-        <View className="h-px bg-on-surface-muted/25" />
-
-        {route.stops.length > 0 && (
-          <View>
-            {route.stops.map((stop, index) => (
-              <StopRow
-                key={stop.id}
-                number={index + 1}
-                name={stop.place.name}
-                subtitle={formatStopSubtitle(stop, profile?.id)}
-                lineAbove={index > 0}
-                lineBelow={index < route.stops.length - 1}
-                trailing={route.canEdit ? <StopDragHandle /> : undefined}
+        ) : (
+          <>
+            <View className="flex-row items-center gap-3">
+              <View className="flex-1">
+                <PathSummary
+                  path={route.path}
+                  stopCount={route.stops.length}
+                  travelMode={route.travelMode}
+                  onRetry={onRetryPath}
+                />
+              </View>
+              <TravelModeSwitch
+                value={route.travelMode}
+                onValueChange={onTravelModeChange}
               />
-            ))}
-          </View>
-        )}
+            </View>
 
-        {route.canEdit && (
-          <AddPlaceButton
-            label="Add place"
-            isFull={isFull}
-            onPress={onAddPlace}
-          />
+            <View className="h-px bg-on-surface-muted/25" />
+
+            {route.stops.length > 0 && (
+              <View>
+                {route.stops.map((stop, index) => (
+                  <StopRow
+                    key={stop.id}
+                    number={index + 1}
+                    name={stop.place.name}
+                    subtitle={formatStopSubtitle(stop, profile?.id)}
+                    lineAbove={index > 0}
+                    lineBelow={index < route.stops.length - 1}
+                    trailing={route.canEdit ? <StopDragHandle /> : undefined}
+                    onPress={
+                      onSelectStop ? () => onSelectStop(stop.id) : undefined
+                    }
+                  />
+                ))}
+              </View>
+            )}
+
+            {route.canEdit && (
+              <AddPlaceButton
+                label="Add place"
+                isFull={isFull}
+                onPress={onAddPlace}
+              />
+            )}
+          </>
         )}
       </BottomSheetScrollView>
     </BottomSheet>
