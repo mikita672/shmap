@@ -1,5 +1,6 @@
-import { Camera, Map } from "@maplibre/maplibre-react-native";
+import { Camera, Map, ViewAnnotation } from "@maplibre/maplibre-react-native";
 import "@/lib/maplibre-log-filter";
+import { RoutePin } from "@/components/routes/route-pin";
 import { MAP_STYLE } from "@/lib/map-style";
 import type { RouteResponse } from "@/lib/types/api";
 
@@ -30,6 +31,17 @@ export function RouteMap({ route }: RouteMapProps) {
             : { zoom: WORLD_ZOOM }
         }
       />
+
+      {route.stops.map((stop, index) => (
+        <ViewAnnotation
+          key={stop.id}
+          id={`stop-${stop.id}`}
+          lngLat={[stop.place.longitude, stop.place.latitude]}
+          anchor="center"
+        >
+          <RoutePin number={index + 1} />
+        </ViewAnnotation>
+      ))}
     </Map>
   );
 }
