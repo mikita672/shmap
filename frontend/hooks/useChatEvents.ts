@@ -3,8 +3,11 @@ import { AppState, type AppStateStatus } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { chatQueryOptions } from "@/hooks/useChat";
+import { chatRoutesQueryOptions } from "@/hooks/useChatRoutes";
 import { chatsQueryOptions } from "@/hooks/useChats";
 import { profileQueryOptions } from "@/hooks/useProfile";
+import { routeQueryOptions } from "@/hooks/useRoute";
+import { routeEditMutationKey } from "@/hooks/useRouteMutations";
 import { getAccessToken, refreshAccessToken } from "@/lib/api/client";
 import {
   addMessageToCache,
@@ -14,7 +17,11 @@ import {
 } from "@/lib/chat-cache";
 import { EventStreamError, readEventStream } from "@/lib/api/events";
 import { getOpenChatId } from "@/lib/open-chat";
-import type { ChatMessageResponse, ChatReadEvent } from "@/lib/types/api";
+import type {
+  ChatMessageResponse,
+  ChatReadEvent,
+  RouteEvent,
+} from "@/lib/types/api";
 
 export function useChatEvents() {
   const { isAuthenticated } = useAuth();
@@ -97,6 +104,9 @@ export function useChatEvents() {
               void queryClient.invalidateQueries({
                 queryKey: ["chats"],
               });
+              void queryClient.invalidateQueries({
+                queryKey: ["routes"],
+              });
               return;
             }
 
@@ -145,7 +155,36 @@ export function useChatEvents() {
                   queryKey: chatQueryOptions(chatId).queryKey,
                   exact: true,
                 });
+                void queryClient.invalidateQueries({
+                  queryKey: ["routes"],
+                });
                 void refetchUnreadTotal(queryClient);
+              } catch {}
+              return;
+            }
+
+            if (
+              event.event === "route.changed" ||
+              event.event === "route.deleted"
+            ) {
+              try {
+                const { chatId, routeId } = JSON.parse(
+                  event.data,
+                ) as RouteEvent;
+                void queryClient.invalidateQueries({
+                  queryKey: chatRoutesQueryOptions(chatId).queryKey,
+                  exact: true,
+                });
+                const hasQueuedEdits =
+                  queryClient.isMutating({
+                    mutationKey: routeEditMutationKey(routeId),
+                  }) > 0;
+                if (!hasQueuedEdits) {
+                  void queryClient.invalidateQueries({
+                    queryKey: routeQueryOptions(routeId).queryKey,
+                    exact: true,
+                  });
+                }
               } catch {}
               return;
             }

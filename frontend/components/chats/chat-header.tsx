@@ -5,6 +5,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { GroupAvatar } from "@/components/ui/group-avatar";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { getChatTitle } from "@/lib/chat-preview";
 import type { ChatResponse } from "@/lib/types/api";
 
 const AVATAR_SIZE = 44;
@@ -62,12 +63,6 @@ export function ChatHeader({ chat, onMore, onPress }: ChatHeaderProps) {
       )}
     </View>
   );
-}
-
-function getChatTitle(chat: ChatResponse) {
-  if (chat.type === "GROUP") return chat.name;
-  const other = chat.members[0];
-  return other ? `${other.firstName} ${other.lastName}` : "";
 }
 
 function getChatSubtitle(chat: ChatResponse) {
