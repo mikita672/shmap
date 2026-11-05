@@ -92,7 +92,7 @@ export function RouteMap({
       mapStyle={MAP_STYLE}
       style={{ flex: 1 }}
       compass={false}
-      attributionPosition={{ bottom: 8, left: 8 }}
+      attributionPosition={{ top: insets.top + HEADER_SPACE, left: 12 }}
     >
       <Camera ref={cameraRef} initialViewState={initialViewState} />
       <RouteLayers
