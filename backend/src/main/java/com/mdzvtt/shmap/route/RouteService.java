@@ -113,13 +113,20 @@ public class RouteService {
     @Transactional
     public Optional<RoutingRequest> pathToRetry(Integer userId, Long routeId) {
         routeRepository.findByIdForUpdate(routeId).orElseThrow(RouteNotFoundException::new);
-        return findRoute(userId, routeId).pathToRetry();
+        Route route = findRoute(userId, routeId);
+        PathStatus statusBefore = route.getPathStatus();
+        Optional<RoutingRequest> request = route.pathToRetry();
+        if (route.getPathStatus() != statusBefore) {
+            announceChanged(route);
+        }
+        return request;
     }
 
     @Transactional
     public void savePath(Long routeId, RoutingRequest builtFor, RoutingResult result) {
         routeRepository.findByIdForUpdate(routeId)
-                .ifPresent(route -> route.applyPath(builtFor, result));
+                .filter(route -> route.applyPath(builtFor, result))
+                .ifPresent(this::announceChanged);
     }
 
     private Route lockRoute(Integer userId, Long routeId) {
