@@ -15,6 +15,10 @@ export const AuthErrorCode = {
   CHAT_NOT_FOUND: "CHAT_NOT_FOUND",
   CHAT_MESSAGE_NOT_FOUND: "CHAT_MESSAGE_NOT_FOUND",
   NOT_FRIENDS: "NOT_FRIENDS",
+  ROUTE_NOT_FOUND: "ROUTE_NOT_FOUND",
+  ROUTE_FULL: "ROUTE_FULL",
+  ROUTE_STOP_NOT_FOUND: "ROUTE_STOP_NOT_FOUND",
+  ROUTE_STOPS_CHANGED: "ROUTE_STOPS_CHANGED",
   UNAUTHORIZED: "UNAUTHORIZED",
   INVALID_REFRESH_TOKEN: "INVALID_REFRESH_TOKEN",
   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
@@ -255,4 +259,69 @@ export interface ChatReadEvent {
 export interface CreateGroupChatRequest {
   name: string;
   memberIds: number[];
+}
+
+export type TravelMode = "WALKING" | "DRIVING";
+
+export type PathStatus =
+  "NONE" | "PENDING" | "READY" | "NO_ROUTE" | "UNAVAILABLE";
+
+export type RoutePathResponse =
+  | {
+      status: "READY";
+      distanceMeters: number;
+      durationSeconds: number;
+      polyline: string;
+    }
+  | {
+      status: Exclude<PathStatus, "READY">;
+      distanceMeters: null;
+      durationSeconds: null;
+      polyline: null;
+    };
+
+export interface RouteStopResponse {
+  id: number;
+  place: ChatPlace;
+  addedBy: UserSummaryResponse;
+  addedAt: string;
+}
+
+export interface RouteResponse {
+  id: number;
+  chatId: number;
+  name: string;
+  travelMode: TravelMode;
+  path: RoutePathResponse;
+  createdBy: UserSummaryResponse;
+  createdAt: string;
+  updatedAt: string;
+  canEdit: boolean;
+  stops: RouteStopResponse[];
+}
+
+export interface RouteSummaryResponse {
+  id: number;
+  name: string;
+  travelMode: TravelMode;
+  stopCount: number;
+  distanceMeters: number | null;
+  durationSeconds: number | null;
+  createdBy: UserSummaryResponse;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRouteRequest {
+  name: string;
+  travelMode?: TravelMode;
+}
+
+export type UpdateRouteRequest =
+  | { name: string; travelMode?: TravelMode }
+  | { name?: string; travelMode: TravelMode };
+
+export interface RouteEvent {
+  chatId: number;
+  routeId: number;
 }
