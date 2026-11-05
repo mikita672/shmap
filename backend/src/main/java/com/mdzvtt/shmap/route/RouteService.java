@@ -64,11 +64,16 @@ public class RouteService {
     }
 
     @Transactional
-    public RouteResponse rename(Integer userId, Long routeId, String name) {
+    public Optional<RoutingRequest> update(Integer userId, Long routeId, String name, TravelMode travelMode) {
         Route route = lockRoute(userId, routeId);
-        route.rename(name);
+        if (name != null) {
+            route.rename(name);
+        }
+        if (travelMode != null) {
+            route.changeTravelMode(travelMode);
+        }
         announceChanged(route);
-        return toResponse(route, userId);
+        return route.pathToBuild();
     }
 
     @Transactional

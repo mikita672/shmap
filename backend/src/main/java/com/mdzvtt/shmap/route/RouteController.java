@@ -42,9 +42,9 @@ public class RouteController {
     }
 
     @PatchMapping("/routes/{routeId}")
-    public RouteResponse rename(@AuthenticationPrincipal User user, @PathVariable Long routeId,
+    public RouteResponse update(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @Valid @RequestBody UpdateRouteRequest request) {
-        return routeService.rename(user.getId(), routeId, request.name());
+        return routeEditor.update(user.getId(), routeId, request.name(), request.travelMode());
     }
 
     @DeleteMapping("/routes/{routeId}")

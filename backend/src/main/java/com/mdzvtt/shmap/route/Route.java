@@ -106,6 +106,15 @@ public class Route {
         touch();
     }
 
+    public void changeTravelMode(TravelMode travelMode) {
+        if (this.travelMode == travelMode) {
+            return;
+        }
+        this.travelMode = travelMode;
+        markPathStale();
+        touch();
+    }
+
     public void addStop(RouteStop stop) {
         if (stops.size() >= MAX_STOPS) {
             throw new RouteFullException(MAX_STOPS);
