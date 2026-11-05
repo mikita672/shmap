@@ -110,10 +110,12 @@ function useOptimisticRouteEdit<TVariables>(
       if (result?.previous && isLastEdit(queryClient, mutationKey)) {
         queryClient.setQueryData(queryKey, result.previous);
       }
-      void queryClient.invalidateQueries({ queryKey, exact: true });
       toast.error(getErrorMessage(error, errorMessage));
     },
     onSettled: (route) => {
+      if (isLastEdit(queryClient, mutationKey)) {
+        void queryClient.invalidateQueries({ queryKey, exact: true });
+      }
       if (route) {
         void queryClient.invalidateQueries({
           queryKey: chatRoutesQueryOptions(route.chatId).queryKey,

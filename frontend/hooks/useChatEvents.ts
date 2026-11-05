@@ -7,6 +7,7 @@ import { chatRoutesQueryOptions } from "@/hooks/useChatRoutes";
 import { chatsQueryOptions } from "@/hooks/useChats";
 import { profileQueryOptions } from "@/hooks/useProfile";
 import { routeQueryOptions } from "@/hooks/useRoute";
+import { routeEditMutationKey } from "@/hooks/useRouteMutations";
 import { getAccessToken, refreshAccessToken } from "@/lib/api/client";
 import {
   addMessageToCache,
@@ -171,10 +172,16 @@ export function useChatEvents() {
                   queryKey: chatRoutesQueryOptions(chatId).queryKey,
                   exact: true,
                 });
-                void queryClient.invalidateQueries({
-                  queryKey: routeQueryOptions(routeId).queryKey,
-                  exact: true,
-                });
+                const hasQueuedEdits =
+                  queryClient.isMutating({
+                    mutationKey: routeEditMutationKey(routeId),
+                  }) > 0;
+                if (!hasQueuedEdits) {
+                  void queryClient.invalidateQueries({
+                    queryKey: routeQueryOptions(routeId).queryKey,
+                    exact: true,
+                  });
+                }
               } catch {}
               return;
             }
