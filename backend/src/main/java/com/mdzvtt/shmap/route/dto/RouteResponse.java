@@ -11,6 +11,7 @@ public record RouteResponse(
                 Long chatId,
                 String name,
                 TravelMode travelMode,
+                RoutePathResponse path,
                 UserSummaryResponse createdBy,
                 Instant createdAt,
                 Instant updatedAt,

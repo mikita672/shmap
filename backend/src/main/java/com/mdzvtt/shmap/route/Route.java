@@ -8,6 +8,7 @@ import com.mdzvtt.shmap.exception.RouteStopsChangedException;
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -25,6 +26,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.EmbeddedColumnNaming;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -59,6 +61,15 @@ public class Route {
     @ColumnDefault("'WALKING'")
     private TravelMode travelMode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'PENDING'")
+    private PathStatus pathStatus;
+
+    @Embedded
+    @EmbeddedColumnNaming("path_%s")
+    private RoutePath path;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by_id")
     private User createdBy;
@@ -80,6 +91,7 @@ public class Route {
         this.chat = chat;
         this.name = name;
         this.travelMode = travelMode;
+        this.pathStatus = PathStatus.NONE;
         this.createdBy = createdBy;
         this.updatedAt = Instant.now();
     }

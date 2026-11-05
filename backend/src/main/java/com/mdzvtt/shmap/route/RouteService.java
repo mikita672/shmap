@@ -10,6 +10,7 @@ import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
+import com.mdzvtt.shmap.route.dto.RoutePathResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
 import com.mdzvtt.shmap.route.dto.RouteSummaryResponse;
@@ -139,6 +140,7 @@ public class RouteService {
                 chat.getId(),
                 route.getName(),
                 route.getTravelMode(),
+                RoutePathResponse.from(route.getPathStatus(), route.getPath()),
                 toSummary(route.getCreatedBy()),
                 route.getCreatedAt(),
                 route.getUpdatedAt(),
@@ -150,11 +152,14 @@ public class RouteService {
 
     private RouteSummaryResponse toSummaryResponse(RouteListRow row) {
         Route route = row.route();
+        RoutePath path = route.getPath();
         return new RouteSummaryResponse(
                 route.getId(),
                 route.getName(),
                 route.getTravelMode(),
                 row.stopCount(),
+                path == null ? null : path.distanceMeters(),
+                path == null ? null : path.durationSeconds(),
                 toSummary(row.createdBy()),
                 route.getCreatedAt(),
                 route.getUpdatedAt());

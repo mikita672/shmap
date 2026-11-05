@@ -10,6 +10,8 @@ public record RouteSummaryResponse(
                 String name,
                 TravelMode travelMode,
                 int stopCount,
+                Integer distanceMeters,
+                Integer durationSeconds,
                 UserSummaryResponse createdBy,
                 Instant createdAt,
                 Instant updatedAt) {
