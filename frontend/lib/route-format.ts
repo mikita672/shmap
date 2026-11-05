@@ -1,5 +1,6 @@
+import { formatOsmCategory } from "@/lib/api/geocoding";
 import { formatChatListTime } from "@/lib/chat-time";
-import type { TravelMode } from "@/lib/types/api";
+import type { RouteStopResponse, TravelMode } from "@/lib/types/api";
 
 export const TRAVEL_MODE_LABELS: Record<TravelMode, string> = {
   WALKING: "Walking",
@@ -40,4 +41,13 @@ export function joinMeta(...parts: (string | false | null | undefined)[]) {
 export function formatRouteUpdated(isoDate: string, now: number) {
   const time = formatChatListTime(isoDate, now);
   return `updated ${time === "Yesterday" ? "yesterday" : time}`;
+}
+
+export function formatStopSubtitle(stop: RouteStopResponse, myId?: number) {
+  const addedBy = stop.addedBy.id === myId ? "you" : stop.addedBy.firstName;
+  const { osmKey, osmValue } = stop.place;
+  return joinMeta(
+    `Added by ${addedBy}`,
+    osmKey && osmValue && formatOsmCategory(osmKey, osmValue),
+  );
 }
