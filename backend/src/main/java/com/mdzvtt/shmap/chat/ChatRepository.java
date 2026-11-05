@@ -37,7 +37,8 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
           and last.id = (select max(m.id) from ChatMessage m where m.chat = c)
       left join last.sender sender
       where mine.user.id = :userId
-        and (c.type = GROUP or last.id is not null)
+        and (c.type = GROUP or last.id is not null
+            or exists (select r.id from Route r where r.chat = c))
       order by greatest(last.createdAt, mine.joinedAt) desc, c.id desc
       """)
   List<ChatListRow> findMyChats(Integer userId);

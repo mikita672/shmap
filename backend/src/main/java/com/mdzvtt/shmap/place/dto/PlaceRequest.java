@@ -1,13 +1,13 @@
-package com.mdzvtt.shmap.chat.dto;
+package com.mdzvtt.shmap.place.dto;
 
-import com.mdzvtt.shmap.chat.MessagePlace;
+import com.mdzvtt.shmap.place.PlaceSnapshot;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record ChatPlaceRequest(
+public record PlaceRequest(
         @Size(max = 32, message = "OSM id must be at most 32 characters") String osmId,
 
         @NotBlank(message = "Place name is required") @Size(max = 200, message = "Place name must be at most 200 characters") String name,
@@ -22,7 +22,7 @@ public record ChatPlaceRequest(
 
         @NotNull(message = "Longitude is required") @DecimalMin(value = "-180", message = "Longitude must be between -180 and 180") @DecimalMax(value = "180", message = "Longitude must be between -180 and 180") Double longitude) {
 
-    public ChatPlaceRequest {
+    public PlaceRequest {
         osmId = stripToNull(osmId);
         name = name == null ? null : name.strip();
         address = stripToNull(address);
@@ -30,8 +30,8 @@ public record ChatPlaceRequest(
         osmValue = stripToNull(osmValue);
     }
 
-    public MessagePlace toPlace() {
-        return new MessagePlace(osmId, name, address, osmKey, osmValue, latitude, longitude);
+    public PlaceSnapshot toSnapshot() {
+        return new PlaceSnapshot(osmId, name, address, osmKey, osmValue, latitude, longitude);
     }
 
     private static String stripToNull(String value) {

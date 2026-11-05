@@ -165,7 +165,7 @@ A profile link looks like `https://shmap.dev/u/<username>`, and the app's own sc
 
 With the backend running, Swagger UI is at [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) and the OpenAPI spec is at `/v3/api-docs`. Most endpoints need a bearer token. Get one from `POST /api/v1/auth/authenticate` and paste it into the Authorize dialog.
 
-All routes live under `/api/v1`:
+All endpoints live under `/api/v1`:
 
 | Path                          | What it covers                                                          |
 | ----------------------------- | ----------------------------------------------------------------------- |
@@ -180,13 +180,17 @@ All routes live under `/api/v1`:
 | `/friend-activity`            | Your recent friend activity, newest first                               |
 | `/blocks`                     | Blocking and unblocking users, and the list of users you blocked        |
 | `/chats`                      | 1:1 and group chats, members, text and place messages, unread counts    |
+| `/chats/{chatId}/routes`      | A chat's shared routes: list and create                                 |
+| `/routes`                     | Open, rename and delete a route, and add, remove and reorder its stops  |
 | `/events`                     | The live event stream. See Live updates                                 |
 
 Sending a message (`POST /chats/{chatId}/messages`) takes an optional `clientId`, a UUID the app makes for each new message. If the same sender sends the same `clientId` to the same chat again, for example after a lost response, the server returns the message it already saved instead of a new one. Messages carry their `clientId` (or `null`), so the app can match a pending bubble to the saved message.
 
+Shared routes belong to a chat. Any member can create, rename and delete them, and add, remove and reorder their stops, up to 25 per route. A stop holds a copy of a place in the same `place` shape as place messages. In a 1:1 chat that no longer takes messages, routes stay readable but changes get 403 `NOT_FRIENDS`, and routes carry `canEdit` for that. To reorder, send every stop id in the new order to `PUT /routes/{routeId}/stops/order`. If the stops changed in the meantime, the server answers 409 `ROUTE_STOPS_CHANGED`, and the app reloads the route.
+
 ## Live updates
 
-The app keeps one stream open to `GET /api/v1/events` and gets chat changes as they happen. Sending a message is still a normal REST call, and the stream only delivers. Send the access token as `Authorization: Bearer <token>`. The response is `text/event-stream` and stays open:
+The app keeps one stream open to `GET /api/v1/events` and gets chat and route changes as they happen. Sending a message or changing a route is still a normal REST call, and the stream only delivers. Send the access token as `Authorization: Bearer <token>`. The response is `text/event-stream` and stays open:
 
 ```
 event:ready
@@ -201,16 +205,24 @@ data:{"chatId":12}
 event:chat.read
 data:{"chatId":12,"lastReadMessageId":345,"unreadCount":0,"totalUnreadCount":4}
 
+event:route.changed
+data:{"chatId":12,"routeId":41}
+
+event:route.deleted
+data:{"chatId":12,"routeId":41}
+
 :
 ```
 
-| Event          | When                                                                                                             | What the app does                                                               |
-| -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `ready`        | The stream is registered                                                                                         | Reloads the chats list and the open chat's newest page over REST                |
-| `chat.message` | Someone sent a message, to every member including the sender                                                     | Appends the message, skipping ids it already has, and moves the chat to the top |
-| `chat.changed` | A group was created, people were added, someone left, or the two people in a 1:1 became or stopped being friends | Reloads the chats list and the open chat                                        |
-| `chat.read`    | You marked a chat read and your read position moved, to all of your own devices                                  | Sets that chat's unread badge and the total badge from the event                |
-| `:` (comment)  | Every 20 seconds                                                                                                 | Nothing. It keeps quiet connections open and detects dead clients               |
+| Event           | When                                                                                                                                                      | What the app does                                                                              |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `ready`         | The stream is registered                                                                                                                                  | Reloads the chats list and the open chat's newest page over REST                               |
+| `chat.message`  | Someone sent a message, to every member including the sender                                                                                              | Appends the message, skipping ids it already has, and moves the chat to the top                |
+| `chat.changed`  | A group was created, people were added, someone left, the two people in a 1:1 became or stopped being friends, or a route was created or deleted in a 1:1 | Reloads the chats list and the open chat, and the open route, whose `canEdit` may have changed |
+| `chat.read`     | You marked a chat read and your read position moved, to all of your own devices                                                                           | Sets that chat's unread badge and the total badge from the event                               |
+| `route.changed` | Someone created or renamed a route, or added, removed or reordered its stops, to every member of its chat including that person                           | Reloads that route and the chat's route list                                                   |
+| `route.deleted` | Someone deleted a route, to every member of its chat                                                                                                      | Drops the route from the chat's route list and closes it if it's open                          |
+| `:` (comment)   | Every 20 seconds                                                                                                                                          | Nothing. It keeps quiet connections open and detects dead clients                              |
 
 The stream ends when any of these happens, and the app reconnects with a backoff, refreshes its token on a 401 and reloads after `ready`:
 
