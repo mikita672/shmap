@@ -11,6 +11,10 @@ export function formatStopCount(count: number) {
   return count === 1 ? "1 stop" : `${count} stops`;
 }
 
+export function formatRouteCount(count: number) {
+  return count === 1 ? "1 route" : `${count} routes`;
+}
+
 export function formatDistance(meters: number) {
   const roundedMeters = Math.round(meters / 10) * 10;
   if (roundedMeters < 1000) return `${roundedMeters} m`;

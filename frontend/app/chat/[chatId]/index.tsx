@@ -135,6 +135,12 @@ export default function ChatScreen() {
                   params: { routeId: String(latestRoute.id) },
                 })
               }
+              onOpenList={() =>
+                router.push({
+                  pathname: "/chat/[chatId]/routes",
+                  params: { chatId: String(chat.id) },
+                })
+              }
             />
           )}
           <MessageList
