@@ -67,7 +67,9 @@ export function PathSummary({
             <Text className={TITLE_CLASS}>No path between these stops</Text>
           </View>
           <Text className={META_CLASS}>
-            Try driving, or move a stop closer to a road
+            {travelMode === "WALKING"
+              ? "Try driving, or move a stop closer to a road"
+              : "Move a stop closer to a road"}
           </Text>
         </View>
       );
