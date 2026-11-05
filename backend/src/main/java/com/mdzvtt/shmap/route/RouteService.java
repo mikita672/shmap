@@ -5,10 +5,14 @@ import com.mdzvtt.shmap.chat.ChatChanged;
 import com.mdzvtt.shmap.chat.ChatAccess;
 import com.mdzvtt.shmap.chat.ChatMemberRepository;
 import com.mdzvtt.shmap.chat.ChatType;
+import com.mdzvtt.shmap.directions.RoutingRequest;
+import com.mdzvtt.shmap.directions.RoutingResult;
+import com.mdzvtt.shmap.directions.TravelMode;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
+import com.mdzvtt.shmap.route.dto.RoutePathResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
 import com.mdzvtt.shmap.route.dto.RouteSummaryResponse;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -35,10 +40,11 @@ public class RouteService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public RouteResponse create(Integer userId, Long chatId, String name) {
+    public RouteResponse create(Integer userId, Long chatId, String name, TravelMode travelMode) {
         Chat chat = chatAccess.findForMember(userId, chatId);
         requireCanEdit(chat, userId);
-        Route route = routeRepository.save(new Route(chat, name, userRepository.getReferenceById(userId)));
+        Route route = routeRepository.save(
+                new Route(chat, name, userRepository.getReferenceById(userId), travelMode));
         announceChanged(route);
         announceDirectChat(chat);
         return toResponse(route, userId);
@@ -58,11 +64,16 @@ public class RouteService {
     }
 
     @Transactional
-    public RouteResponse rename(Integer userId, Long routeId, String name) {
+    public Optional<RoutingRequest> update(Integer userId, Long routeId, String name, TravelMode travelMode) {
         Route route = lockRoute(userId, routeId);
-        route.rename(name);
+        if (name != null) {
+            route.rename(name);
+        }
+        if (travelMode != null) {
+            route.changeTravelMode(travelMode);
+        }
         announceChanged(route);
-        return toResponse(route, userId);
+        return route.pathToBuild();
     }
 
     @Transactional
@@ -76,28 +87,46 @@ public class RouteService {
     }
 
     @Transactional
-    public RouteResponse addStop(Integer userId, Long routeId, PlaceSnapshot place) {
+    public Optional<RoutingRequest> addStop(Integer userId, Long routeId, PlaceSnapshot place) {
         Route route = lockRoute(userId, routeId);
         route.addStop(new RouteStop(place, userRepository.getReferenceById(userId)));
-        routeRepository.flush();
         announceChanged(route);
-        return toResponse(route, userId);
+        return route.pathToBuild();
     }
 
     @Transactional
-    public RouteResponse removeStop(Integer userId, Long routeId, Long stopId) {
+    public Optional<RoutingRequest> removeStop(Integer userId, Long routeId, Long stopId) {
         Route route = lockRoute(userId, routeId);
         route.removeStop(stopId);
         announceChanged(route);
-        return toResponse(route, userId);
+        return route.pathToBuild();
     }
 
     @Transactional
-    public RouteResponse reorderStops(Integer userId, Long routeId, List<Long> stopIds) {
+    public Optional<RoutingRequest> reorderStops(Integer userId, Long routeId, List<Long> stopIds) {
         Route route = lockRoute(userId, routeId);
         route.reorderStops(stopIds);
         announceChanged(route);
-        return toResponse(route, userId);
+        return route.pathToBuild();
+    }
+
+    @Transactional
+    public Optional<RoutingRequest> pathToRetry(Integer userId, Long routeId) {
+        routeRepository.findByIdForUpdate(routeId).orElseThrow(RouteNotFoundException::new);
+        Route route = findRoute(userId, routeId);
+        PathStatus statusBefore = route.getPathStatus();
+        Optional<RoutingRequest> request = route.pathToRetry();
+        if (route.getPathStatus() != statusBefore) {
+            announceChanged(route);
+        }
+        return request;
+    }
+
+    @Transactional
+    public void savePath(Long routeId, RoutingRequest builtFor, RoutingResult result) {
+        routeRepository.findByIdForUpdate(routeId)
+                .filter(route -> route.applyPath(builtFor, result))
+                .ifPresent(this::announceChanged);
     }
 
     private Route lockRoute(Integer userId, Long routeId) {
@@ -136,6 +165,8 @@ public class RouteService {
                 route.getId(),
                 chat.getId(),
                 route.getName(),
+                route.getTravelMode(),
+                RoutePathResponse.from(route.getPathStatus(), route.getPath()),
                 toSummary(route.getCreatedBy()),
                 route.getCreatedAt(),
                 route.getUpdatedAt(),
@@ -146,14 +177,16 @@ public class RouteService {
     }
 
     private RouteSummaryResponse toSummaryResponse(RouteListRow row) {
-        Route route = row.route();
         return new RouteSummaryResponse(
-                route.getId(),
-                route.getName(),
+                row.id(),
+                row.name(),
+                row.travelMode(),
                 row.stopCount(),
+                row.distanceMeters(),
+                row.durationSeconds(),
                 toSummary(row.createdBy()),
-                route.getCreatedAt(),
-                route.getUpdatedAt());
+                row.createdAt(),
+                row.updatedAt());
     }
 
     private RouteStopResponse toStopResponse(RouteStop stop) {

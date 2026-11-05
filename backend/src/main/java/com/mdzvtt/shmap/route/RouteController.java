@@ -29,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RouteController {
     private final RouteService routeService;
+    private final RouteEditor routeEditor;
 
     @GetMapping("/chats/{chatId}/routes")
     public List<RouteSummaryResponse> getRoutes(@AuthenticationPrincipal User user, @PathVariable Long chatId) {
@@ -41,9 +42,9 @@ public class RouteController {
     }
 
     @PatchMapping("/routes/{routeId}")
-    public RouteResponse rename(@AuthenticationPrincipal User user, @PathVariable Long routeId,
+    public RouteResponse update(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @Valid @RequestBody UpdateRouteRequest request) {
-        return routeService.rename(user.getId(), routeId, request.name());
+        return routeEditor.update(user.getId(), routeId, request.name(), request.travelMode());
     }
 
     @DeleteMapping("/routes/{routeId}")
@@ -56,25 +57,30 @@ public class RouteController {
     @ResponseStatus(HttpStatus.CREATED)
     public RouteResponse addStop(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @Valid @RequestBody AddRouteStopRequest request) {
-        return routeService.addStop(user.getId(), routeId, request.place().toSnapshot());
+        return routeEditor.addStop(user.getId(), routeId, request.place().toSnapshot());
     }
 
     @DeleteMapping("/routes/{routeId}/stops/{stopId}")
     public RouteResponse removeStop(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @PathVariable Long stopId) {
-        return routeService.removeStop(user.getId(), routeId, stopId);
+        return routeEditor.removeStop(user.getId(), routeId, stopId);
     }
 
     @PutMapping("/routes/{routeId}/stops/order")
     public RouteResponse reorderStops(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @Valid @RequestBody ReorderRouteStopsRequest request) {
-        return routeService.reorderStops(user.getId(), routeId, request.stopIds());
+        return routeEditor.reorderStops(user.getId(), routeId, request.stopIds());
+    }
+
+    @PutMapping("/routes/{routeId}/path")
+    public RouteResponse retryPath(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
+        return routeEditor.retryPath(user.getId(), routeId);
     }
 
     @PostMapping("/chats/{chatId}/routes")
     @ResponseStatus(HttpStatus.CREATED)
     public RouteResponse create(@AuthenticationPrincipal User user, @PathVariable Long chatId,
             @Valid @RequestBody CreateRouteRequest request) {
-        return routeService.create(user.getId(), chatId, request.name());
+        return routeService.create(user.getId(), chatId, request.name(), request.travelMode());
     }
 }
