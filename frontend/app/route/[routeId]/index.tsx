@@ -12,7 +12,8 @@ import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { useRoute } from "@/hooks/useRoute";
-import { useSetTravelMode } from "@/hooks/useRouteMutations";
+import { useRetryPath, useSetTravelMode } from "@/hooks/useRouteMutations";
+import { useStalePathRetry } from "@/hooks/useStalePathRetry";
 import { getChatTitle } from "@/lib/chat-preview";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -27,6 +28,8 @@ export default function RouteScreen() {
     enabled: route !== undefined,
   });
   const setTravelMode = useSetTravelMode(Number(routeId));
+  const retryPath = useRetryPath(Number(routeId));
+  useStalePathRetry(route, () => retryPath.mutate());
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
   if (route && !isDeleted) {
@@ -40,6 +43,7 @@ export default function RouteScreen() {
           onTravelModeChange={
             route.canEdit ? (mode) => setTravelMode.mutate(mode) : undefined
           }
+          onRetryPath={() => retryPath.mutate()}
         />
         <RouteHeader
           name={route.name}

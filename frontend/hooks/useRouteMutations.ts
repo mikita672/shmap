@@ -6,7 +6,7 @@ import {
 import { toast } from "sonner-native";
 import { chatRoutesQueryOptions } from "@/hooks/useChatRoutes";
 import { routeQueryOptions } from "@/hooks/useRoute";
-import { createRoute, updateRoute } from "@/lib/api/routes";
+import { createRoute, retryRoutePath, updateRoute } from "@/lib/api/routes";
 import type {
   CreateRouteRequest,
   RoutePathResponse,
@@ -61,6 +61,17 @@ export function useSetTravelMode(routeId: number) {
       path: PENDING_PATH,
     }),
     errorMessage: "Couldn't change the travel mode",
+  });
+}
+
+export function useRetryPath(routeId: number) {
+  return useOptimisticRouteEdit<void>(routeId, {
+    request: async () => {
+      const response = await retryRoutePath(routeId);
+      return response.data;
+    },
+    optimistic: (route) => ({ ...route, path: PENDING_PATH }),
+    errorMessage: "Couldn't load the path",
   });
 }
 

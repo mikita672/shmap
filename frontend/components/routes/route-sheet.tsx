@@ -23,6 +23,7 @@ export interface RouteSheetProps {
   animatedPosition: SharedValue<number>;
   onAddPlace?: () => void;
   onTravelModeChange?: (travelMode: TravelMode) => void;
+  onRetryPath?: () => void;
 }
 
 export function RouteSheet({
@@ -30,6 +31,7 @@ export function RouteSheet({
   animatedPosition,
   onAddPlace,
   onTravelModeChange,
+  onRetryPath,
 }: RouteSheetProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -59,6 +61,7 @@ export function RouteSheet({
               path={route.path}
               stopCount={route.stops.length}
               travelMode={route.travelMode}
+              onRetry={onRetryPath}
             />
           </View>
           <TravelModeSwitch
