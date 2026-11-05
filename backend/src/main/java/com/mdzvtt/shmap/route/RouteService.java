@@ -177,18 +177,16 @@ public class RouteService {
     }
 
     private RouteSummaryResponse toSummaryResponse(RouteListRow row) {
-        Route route = row.route();
-        RoutePath path = route.getPath();
         return new RouteSummaryResponse(
-                route.getId(),
-                route.getName(),
-                route.getTravelMode(),
+                row.id(),
+                row.name(),
+                row.travelMode(),
                 row.stopCount(),
-                path == null ? null : path.distanceMeters(),
-                path == null ? null : path.durationSeconds(),
+                row.distanceMeters(),
+                row.durationSeconds(),
                 toSummary(row.createdBy()),
-                route.getCreatedAt(),
-                route.getUpdatedAt());
+                row.createdAt(),
+                row.updatedAt());
     }
 
     private RouteStopResponse toStopResponse(RouteStop stop) {

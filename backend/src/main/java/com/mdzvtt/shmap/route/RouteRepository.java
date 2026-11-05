@@ -15,7 +15,10 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
     Optional<Route> findByIdForUpdate(Long id);
 
     @Query("""
-            select new com.mdzvtt.shmap.route.RouteListRow(r, u, size(r.stops))
+            select new com.mdzvtt.shmap.route.RouteListRow(
+                r.id, r.name, r.travelMode, size(r.stops),
+                r.path.distanceMeters, r.path.durationSeconds,
+                u, r.createdAt, r.updatedAt)
             from Route r
             join r.createdBy u
             where r.chat.id = :chatId
