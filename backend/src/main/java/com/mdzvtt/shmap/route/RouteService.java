@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.route;
 
 import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.chat.ChatAccess;
+import com.mdzvtt.shmap.chat.ChatMemberRepository;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
@@ -14,6 +15,7 @@ import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +27,16 @@ public class RouteService {
     private final RouteRepository routeRepository;
     private final UserRepository userRepository;
     private final ChatAccess chatAccess;
+    private final ChatMemberRepository chatMemberRepository;
     private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public RouteResponse create(Integer userId, Long chatId, String name) {
         Chat chat = chatAccess.findForMember(userId, chatId);
         requireCanEdit(chat, userId);
         Route route = routeRepository.save(new Route(chat, name, userRepository.getReferenceById(userId)));
+        announceChanged(route);
         return toResponse(route, userId);
     }
 
@@ -52,6 +57,7 @@ public class RouteService {
     public RouteResponse rename(Integer userId, Long routeId, String name) {
         Route route = lockRoute(userId, routeId);
         route.rename(name);
+        announceChanged(route);
         return toResponse(route, userId);
     }
 
@@ -65,6 +71,7 @@ public class RouteService {
         Route route = lockRoute(userId, routeId);
         route.addStop(new RouteStop(place, userRepository.getReferenceById(userId)));
         routeRepository.flush();
+        announceChanged(route);
         return toResponse(route, userId);
     }
 
@@ -72,6 +79,7 @@ public class RouteService {
     public RouteResponse removeStop(Integer userId, Long routeId, Long stopId) {
         Route route = lockRoute(userId, routeId);
         route.removeStop(stopId);
+        announceChanged(route);
         return toResponse(route, userId);
     }
 
@@ -79,6 +87,7 @@ public class RouteService {
     public RouteResponse reorderStops(Integer userId, Long routeId, List<Long> stopIds) {
         Route route = lockRoute(userId, routeId);
         route.reorderStops(stopIds);
+        announceChanged(route);
         return toResponse(route, userId);
     }
 
@@ -91,6 +100,12 @@ public class RouteService {
 
     private Route findRoute(Integer userId, Long routeId) {
         return routeRepository.findForMember(routeId, userId).orElseThrow(RouteNotFoundException::new);
+    }
+
+    private void announceChanged(Route route) {
+        Long chatId = route.getChat().getId();
+        eventPublisher.publishEvent(
+                new RouteChanged(chatId, route.getId(), chatMemberRepository.findUserIdsByChatId(chatId)));
     }
 
     private void requireCanEdit(Chat chat, Integer userId) {
