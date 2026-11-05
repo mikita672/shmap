@@ -13,6 +13,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5.2.14",
+    "@mapbox/polyline": "^1.2.1",
     "@maplibre/maplibre-react-native": "^11.4.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-google-signin/google-signin": "^16.1.4",
@@ -70,6 +71,7 @@
   "devDependencies": {
     "@babel/plugin-transform-class-properties": "^7.29.7",
     "@babel/plugin-transform-private-methods": "^7.29.7",
+    "@types/mapbox__polyline": "^1.0.5",
     "@types/react": "~19.2.4",
     "dotenv": "^17.4.2",
     "eslint": "^9.25.0",
