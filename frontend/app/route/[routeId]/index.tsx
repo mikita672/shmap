@@ -3,6 +3,7 @@ import { ActivityIndicator, View, useWindowDimensions } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useSharedValue } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { RouteActionsMenu } from "@/components/routes/route-actions-menu";
 import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
@@ -30,6 +31,7 @@ export default function RouteScreen() {
   const { height } = useWindowDimensions();
   const sheetPosition = useSharedValue(height);
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
     ...chatQueryOptions(route?.chatId ?? 0),
@@ -86,6 +88,12 @@ export default function RouteScreen() {
         <RouteHeader
           name={route.name}
           chatTitle={chat ? getChatTitle(chat) : undefined}
+          onMore={() => setIsMenuOpen(true)}
+        />
+        <RouteActionsMenu
+          route={route}
+          visible={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
         />
       </View>
     );
