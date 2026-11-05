@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.route;
 
 import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.chat.ChatAccess;
+import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
@@ -24,8 +25,15 @@ public class RouteService {
     @Transactional
     public RouteResponse create(Integer userId, Long chatId, String name) {
         Chat chat = chatAccess.findForMember(userId, chatId);
+        requireCanEdit(chat, userId);
         Route route = routeRepository.save(new Route(chat, name, userRepository.getReferenceById(userId)));
         return toResponse(route, userId);
+    }
+
+    private void requireCanEdit(Chat chat, Integer userId) {
+        if (!chatAccess.canSend(chat, userId)) {
+            throw new NotFriendsException("You can only plan routes with friends");
+        }
     }
 
     private RouteResponse toResponse(Route route, Integer userId) {
