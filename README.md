@@ -38,7 +38,7 @@ The project is in early development. Accounts, profiles, friends, chats and the 
 
 The backend is a Spring Boot 4 application on Java 25. It uses Spring Security with JWT, Spring Data JPA on PostgreSQL, Redis pub/sub for live updates, and springdoc-openapi for the API docs. Emails go out through [Resend](https://resend.com), and avatars are stored in an S3-compatible bucket (Cloudflare R2 in production). Production runs on Google Cloud Run with a [Neon](https://neon.tech) Postgres database and an [Upstash](https://upstash.com) Redis database.
 
-The mobile app is built with Expo and React Native in TypeScript, with Expo Router for navigation, TanStack Query for server state, NativeWind for styling, and `react-native-keyboard-controller` for smooth keyboard handling. Live updates stream using `eventsource-parser` over `expo/fetch`. The map uses MapLibre with [OpenFreeMap](https://openfreemap.org) tiles, place search uses the [Photon](https://photon.komoot.io) geocoder, and the QR scanner uses `expo-camera`.
+The mobile app is built with Expo and React Native in TypeScript, with Expo Router for navigation, TanStack Query for server state, NativeWind for styling, and `react-native-keyboard-controller` for smooth keyboard handling. Live updates stream using `eventsource-parser` over `expo/fetch`. The map uses MapLibre with [OpenFreeMap](https://openfreemap.org) tiles, place search uses the [Photon](https://photon.komoot.io) geocoder, and the QR scanner uses `expo-camera`. The backend builds route paths with [openrouteservice](https://openrouteservice.org), and its key never leaves the server.
 
 The website at [shmap.dev](https://shmap.dev) is a Cloudflare Worker with static assets. Plain HTML and CSS pages are served as files, and a small TypeScript Worker renders profile pages at `/u/<username>`.
 
@@ -111,6 +111,7 @@ The backend reads these environment variables:
 | `GOOGLE_CLIENT_ID`                                                                                                    | Google OAuth client ID that ID tokens are checked against    |
 | `STORAGE_ENDPOINT`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY_ID`, `STORAGE_SECRET_ACCESS_KEY`, `STORAGE_PUBLIC_BASE_URL` | S3-compatible bucket for avatars                             |
 | `STORAGE_REGION`                                                                                                      | Optional, defaults to `auto`                                 |
+| `ORS_API_KEY`                                                                                                         | openrouteservice key for route paths. The backend won't start without it. A free key comes from [account.heigit.org](https://account.heigit.org) |
 
 ### Mobile app
 
@@ -181,12 +182,35 @@ All endpoints live under `/api/v1`:
 | `/blocks`                     | Blocking and unblocking users, and the list of users you blocked        |
 | `/chats`                      | 1:1 and group chats, members, text and place messages, unread counts    |
 | `/chats/{chatId}/routes`      | A chat's shared routes: list and create                                 |
-| `/routes`                     | Open, rename and delete a route, and add, remove and reorder its stops  |
+| `/routes`                     | Open, rename and delete a route, change its travel mode, add, remove and reorder its stops, and retry its path |
 | `/events`                     | The live event stream. See Live updates                                 |
 
 Sending a message (`POST /chats/{chatId}/messages`) takes an optional `clientId`, a UUID the app makes for each new message. If the same sender sends the same `clientId` to the same chat again, for example after a lost response, the server returns the message it already saved instead of a new one. Messages carry their `clientId` (or `null`), so the app can match a pending bubble to the saved message.
 
 Shared routes belong to a chat. Any member can create, rename and delete them, and add, remove and reorder their stops, up to 25 per route. A stop holds a copy of a place in the same `place` shape as place messages. In a 1:1 chat that no longer takes messages, routes stay readable but changes get 403 `NOT_FRIENDS`, and routes carry `canEdit` for that. To reorder, send every stop id in the new order to `PUT /routes/{routeId}/stops/order`. If the stops changed in the meantime, the server answers 409 `ROUTE_STOPS_CHANGED`, and the app reloads the route.
+
+Each route has one travel mode for everyone in the chat: `WALKING` (the default) or `DRIVING`. Set it when creating the route, or change it with `PATCH /routes/{routeId}`, which takes `name`, `travelMode` or both. The server builds the path through the stops with [openrouteservice](https://openrouteservice.org) and returns it on the route:
+
+```json
+"travelMode": "WALKING",
+"path": { "status": "READY", "distanceMeters": 4213, "durationSeconds": 3034, "polyline": "o~uqHc}a{BfAnB..." }
+```
+
+| `path.status` | Meaning                                                                                                           |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `NONE`        | Fewer than two stops                                                                                              |
+| `PENDING`     | The stops or the mode just changed, and the path is being built                                                   |
+| `READY`       | `polyline`, `distanceMeters` and `durationSeconds` are set                                                        |
+| `NO_ROUTE`    | No path exists, for example a stop is more than 350 m from any road, or the route is over 6,000 km              |
+| `UNAVAILABLE` | openrouteservice didn't answer (timeout, outage or daily quota). `PUT /routes/{routeId}/path` tries again          |
+
+- The other values are null unless the status is `READY`.
+- `polyline` is an [encoded polyline](https://developers.google.com/maps/documentation/utilities/polylinealgorithm) with precision 5, the format openrouteservice returns.
+- The path is rebuilt in the same request as each stop or mode change, so the response usually has the new path already. If two members change a route at the same moment, one response can still say `PENDING`, and the path arrives through `route.changed`.
+- Any member, also in a read-only 1:1, can call `PUT /routes/{routeId}/path` for a route that is `PENDING` or `UNAVAILABLE`.
+- The app calls it from a "Try again" button, and when a route stays `PENDING` for 30 seconds after its `updatedAt`.
+- The chat's route list includes `travelMode`, `distanceMeters` and `durationSeconds`.
+- Screens that show a path credit "© openrouteservice.org | © OpenStreetMap contributors".
 
 ## Live updates
 
@@ -220,7 +244,7 @@ data:{"chatId":12,"routeId":41}
 | `chat.message`  | Someone sent a message, to every member including the sender                                                                                              | Appends the message, skipping ids it already has, and moves the chat to the top                |
 | `chat.changed`  | A group was created, people were added, someone left, the two people in a 1:1 became or stopped being friends, or a route was created or deleted in a 1:1 | Reloads the chats list and the open chat, and the open route, whose `canEdit` may have changed |
 | `chat.read`     | You marked a chat read and your read position moved, to all of your own devices                                                                           | Sets that chat's unread badge and the total badge from the event                               |
-| `route.changed` | Someone created or renamed a route, or added, removed or reordered its stops, to every member of its chat including that person                           | Reloads that route and the chat's route list                                                   |
+| `route.changed` | Someone created, renamed or changed the travel mode of a route, or added, removed or reordered its stops, or the server saved its path. Goes to every member of its chat including that person | Reloads that route and the chat's route list                                                   |
 | `route.deleted` | Someone deleted a route, to every member of its chat                                                                                                      | Drops the route from the chat's route list and closes it if it's open                          |
 | `:` (comment)   | Every 20 seconds                                                                                                                                          | Nothing. It keeps quiet connections open and detects dead clients                              |
 
