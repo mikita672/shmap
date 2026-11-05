@@ -32,6 +32,7 @@ export default function RouteScreen() {
   const sheetPosition = useSharedValue(height);
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuKey, setMenuKey] = useState(0);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
     ...chatQueryOptions(route?.chatId ?? 0),
@@ -88,10 +89,15 @@ export default function RouteScreen() {
         <RouteHeader
           name={route.name}
           chatTitle={chat ? getChatTitle(chat) : undefined}
-          onMore={() => setIsMenuOpen(true)}
+          onMore={() => {
+            setMenuKey((key) => key + 1);
+            setIsMenuOpen(true);
+          }}
         />
         <RouteActionsMenu
+          key={menuKey}
           route={route}
+          chat={chat}
           visible={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
         />

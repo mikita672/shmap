@@ -123,6 +123,30 @@ export function useReorderStops(routeId: number) {
   });
 }
 
+export function useRenameRoute(routeId: number) {
+  const queryClient = useQueryClient();
+  const { queryKey } = routeQueryOptions(routeId);
+
+  return useMutation({
+    mutationKey: routeEditMutationKey(routeId),
+    scope: { id: `route-${routeId}` },
+    mutationFn: async (name: string) => {
+      const response = await updateRoute(routeId, { name });
+      return response.data;
+    },
+    onSuccess: (route) => {
+      queryClient.setQueryData(queryKey, route);
+      void queryClient.invalidateQueries({
+        queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
+        exact: true,
+      });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't rename the route"));
+    },
+  });
+}
+
 export function useAddStop(routeId: number) {
   const queryClient = useQueryClient();
   const { queryKey } = routeQueryOptions(routeId);
