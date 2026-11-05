@@ -67,6 +67,7 @@ function RootNavigator() {
             <Stack.Screen name="add-to-group/[userId]" />
             <Stack.Screen name="send-place" />
             <Stack.Screen name="place" />
+            <Stack.Screen name="route/[routeId]/index" />
             <Stack.Screen
               name="scan"
               options={{ presentation: "fullScreenModal" }}
