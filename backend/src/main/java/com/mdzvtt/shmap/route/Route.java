@@ -106,6 +106,7 @@ public class Route {
             throw new RouteFullException(MAX_STOPS);
         }
         stops.add(stop);
+        markPathStale();
         touch();
     }
 
@@ -113,6 +114,7 @@ public class Route {
         if (!stops.removeIf(stop -> stop.getId().equals(stopId))) {
             throw new RouteStopNotFoundException();
         }
+        markPathStale();
         touch();
     }
 
@@ -128,10 +130,16 @@ public class Route {
             throw new RouteStopsChangedException();
         }
         stops.sort(Comparator.comparing(stop -> newIndex.get(stop.getId())));
+        markPathStale();
         touch();
     }
 
     private void touch() {
         updatedAt = Instant.now();
+    }
+
+    private void markPathStale() {
+        path = null;
+        pathStatus = stops.size() < 2 ? PathStatus.NONE : PathStatus.PENDING;
     }
 }
