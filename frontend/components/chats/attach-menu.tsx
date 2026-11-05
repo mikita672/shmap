@@ -4,22 +4,19 @@ import * as DropdownMenuPrimitive from "@rn-primitives/dropdown-menu";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons, type MaterialIconName } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 const MENU_GAP = 8;
 const SCREEN_EDGE = 12;
 
 export interface AttachMenuProps {
-  onSendPlace: () => void;
-  onStartRoute: () => void;
-  disabled?: boolean;
+  onSendPlace?: () => void;
+  onStartRoute?: () => void;
 }
 
-export function AttachMenu({
-  onSendPlace,
-  onStartRoute,
-  disabled,
-}: AttachMenuProps) {
+export function AttachMenu({ onSendPlace, onStartRoute }: AttachMenuProps) {
   const insets = useSafeAreaInsets();
+  const disabled = !onSendPlace && !onStartRoute;
 
   return (
     <DropdownMenuPrimitive.Root>
@@ -66,14 +63,18 @@ export function AttachMenu({
 interface AttachMenuItemProps {
   icon: MaterialIconName;
   label: string;
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 function AttachMenuItem({ icon, label, onPress }: AttachMenuItemProps) {
   return (
     <DropdownMenuPrimitive.Item
       onPress={onPress}
-      className="h-[52px] flex-row items-center gap-4 px-5 active:opacity-60"
+      disabled={!onPress}
+      className={cn(
+        "h-[52px] flex-row items-center gap-4 px-5 active:opacity-60",
+        !onPress && "opacity-50",
+      )}
     >
       <MaterialIcons name={icon} size={24} className="text-card-title" />
       <Text className="text-base leading-6 text-card-title">{label}</Text>

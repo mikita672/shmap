@@ -152,7 +152,7 @@ export default function ChatScreen() {
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
               <Composer
                 onSend={(text) => send({ text })}
-                onPickPlace={() =>
+                onSendPlace={() =>
                   router.push({
                     pathname: "/chat/[chatId]/pick-place",
                     params: { chatId: String(chat.id) },
