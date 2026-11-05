@@ -1,8 +1,10 @@
 package com.mdzvtt.shmap.route;
 
 import com.mdzvtt.shmap.chat.Chat;
+import com.mdzvtt.shmap.chat.ChatChanged;
 import com.mdzvtt.shmap.chat.ChatAccess;
 import com.mdzvtt.shmap.chat.ChatMemberRepository;
+import com.mdzvtt.shmap.chat.ChatType;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,7 @@ public class RouteService {
         requireCanEdit(chat, userId);
         Route route = routeRepository.save(new Route(chat, name, userRepository.getReferenceById(userId)));
         announceChanged(route);
+        announceDirectChat(chat);
         return toResponse(route, userId);
     }
 
@@ -63,7 +67,12 @@ public class RouteService {
 
     @Transactional
     public void delete(Integer userId, Long routeId) {
-        routeRepository.delete(lockRoute(userId, routeId));
+        Route route = lockRoute(userId, routeId);
+        Chat chat = route.getChat();
+        routeRepository.delete(route);
+        eventPublisher.publishEvent(
+                new RouteDeleted(chat.getId(), routeId, chatMemberRepository.findUserIdsByChatId(chat.getId())));
+        announceDirectChat(chat);
     }
 
     @Transactional
@@ -106,6 +115,13 @@ public class RouteService {
         Long chatId = route.getChat().getId();
         eventPublisher.publishEvent(
                 new RouteChanged(chatId, route.getId(), chatMemberRepository.findUserIdsByChatId(chatId)));
+    }
+
+    private void announceDirectChat(Chat chat) {
+        if (chat.getType() == ChatType.DIRECT) {
+            Set<Integer> memberIds = chatMemberRepository.findUserIdsByChatId(chat.getId());
+            eventPublisher.publishEvent(new ChatChanged(chat.getId(), memberIds));
+        }
     }
 
     private void requireCanEdit(Chat chat, Integer userId) {
