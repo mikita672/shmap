@@ -6,8 +6,14 @@ import {
 import { toast } from "sonner-native";
 import { chatRoutesQueryOptions } from "@/hooks/useChatRoutes";
 import { routeQueryOptions } from "@/hooks/useRoute";
-import { createRoute, retryRoutePath, updateRoute } from "@/lib/api/routes";
+import {
+  addRouteStop,
+  createRoute,
+  retryRoutePath,
+  updateRoute,
+} from "@/lib/api/routes";
 import type {
+  ChatPlace,
   CreateRouteRequest,
   RoutePathResponse,
   RouteResponse,
@@ -72,6 +78,31 @@ export function useRetryPath(routeId: number) {
     },
     optimistic: (route) => ({ ...route, path: PENDING_PATH }),
     errorMessage: "Couldn't load the path",
+  });
+}
+
+export function useAddStop(routeId: number) {
+  const queryClient = useQueryClient();
+  const { queryKey } = routeQueryOptions(routeId);
+
+  return useMutation({
+    mutationKey: routeEditMutationKey(routeId),
+    scope: { id: `route-${routeId}` },
+    mutationFn: async (place: ChatPlace) => {
+      const response = await addRouteStop(routeId, place);
+      return response.data;
+    },
+    onSuccess: (route) => {
+      queryClient.setQueryData(queryKey, route);
+      void queryClient.invalidateQueries({
+        queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
+        exact: true,
+      });
+    },
+    onError: (error) => {
+      void queryClient.invalidateQueries({ queryKey, exact: true });
+      toast.error(getErrorMessage(error, "Couldn't add the place"));
+    },
   });
 }
 

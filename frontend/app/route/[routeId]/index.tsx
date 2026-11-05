@@ -1,7 +1,7 @@
 import { ActivityIndicator, View, useWindowDimensions } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useSharedValue } from "react-native-reanimated";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
@@ -20,6 +20,7 @@ import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function RouteScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
+  const router = useRouter();
   const { height } = useWindowDimensions();
   const sheetPosition = useSharedValue(height);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
@@ -40,6 +41,15 @@ export default function RouteScreen() {
         <RouteSheet
           route={route}
           animatedPosition={sheetPosition}
+          onAddPlace={
+            route.canEdit
+              ? () =>
+                  router.push({
+                    pathname: "/route/[routeId]/add-stop",
+                    params: { routeId: String(route.id) },
+                  })
+              : undefined
+          }
           onTravelModeChange={
             route.canEdit ? (mode) => setTravelMode.mutate(mode) : undefined
           }

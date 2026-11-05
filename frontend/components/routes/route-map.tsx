@@ -1,21 +1,19 @@
-import { useMemo, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
 import {
   Camera,
-  GeoJSONSource,
-  Layer,
   Map,
-  ViewAnnotation,
+  type CameraRef,
   type InitialViewState,
-  type LineLayerSpecification,
   type LngLat,
 } from "@maplibre/maplibre-react-native";
 import "@/lib/maplibre-log-filter";
-import { RoutePin } from "@/components/routes/route-pin";
+import { RouteLayers } from "@/components/routes/route-layers";
 import { getBounds } from "@/lib/map-camera";
 import { MAP_STYLE } from "@/lib/map-style";
-import { decodePath } from "@/lib/polyline";
+import { takeRouteFocus } from "@/lib/route-focus";
 import type { RouteResponse } from "@/lib/types/api";
 
 const STOP_ZOOM = 14;
@@ -23,12 +21,7 @@ const WORLD_ZOOM = 1;
 const HEADER_SPACE = 88;
 const SHEET_SHARE = 0.5;
 const FIT_MARGIN = 40;
-const PATH_COLOR = "#C4661F";
-const PATH_CASING_COLOR = "#FEFAE0";
-const LINE_LAYOUT: LineLayerSpecification["layout"] = {
-  "line-cap": "round",
-  "line-join": "round",
-};
+const FOCUS_DURATION = 800;
 
 export interface RouteMapProps {
   route: RouteResponse;
@@ -37,6 +30,8 @@ export interface RouteMapProps {
 export function RouteMap({ route }: RouteMapProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
+  const cameraRef = useRef<CameraRef>(null);
+  const routeId = route.id;
   const [initialViewState] = useState<InitialViewState>(() => {
     const points = route.stops.map(({ place }): LngLat => [
       place.longitude,
@@ -57,11 +52,18 @@ export function RouteMap({ route }: RouteMapProps) {
       },
     };
   });
-  const encodedPath =
-    route.path.status === "READY" ? route.path.polyline : null;
-  const path = useMemo(
-    () => (encodedPath ? decodePath(encodedPath) : null),
-    [encodedPath],
+
+  useFocusEffect(
+    useCallback(() => {
+      const point = takeRouteFocus(routeId);
+      if (!point) return;
+      cameraRef.current?.flyTo({
+        center: point,
+        zoom: STOP_ZOOM,
+        padding: { bottom: height * SHEET_SHARE },
+        duration: FOCUS_DURATION,
+      });
+    }, [routeId, height]),
   );
 
   return (
@@ -71,39 +73,8 @@ export function RouteMap({ route }: RouteMapProps) {
       compass={false}
       attributionPosition={{ bottom: 8, left: 8 }}
     >
-      <Camera initialViewState={initialViewState} />
-
-      {path && (
-        <GeoJSONSource id="route-path" data={path}>
-          <Layer
-            id="route-path-casing"
-            type="line"
-            layout={LINE_LAYOUT}
-            paint={{
-              "line-color": PATH_CASING_COLOR,
-              "line-width": 9,
-              "line-opacity": 0.55,
-            }}
-          />
-          <Layer
-            id="route-path-line"
-            type="line"
-            layout={LINE_LAYOUT}
-            paint={{ "line-color": PATH_COLOR, "line-width": 5 }}
-          />
-        </GeoJSONSource>
-      )}
-
-      {route.stops.map((stop, index) => (
-        <ViewAnnotation
-          key={stop.id}
-          id={`stop-${stop.id}`}
-          lngLat={[stop.place.longitude, stop.place.latitude]}
-          anchor="center"
-        >
-          <RoutePin number={index + 1} />
-        </ViewAnnotation>
-      ))}
+      <Camera ref={cameraRef} initialViewState={initialViewState} />
+      <RouteLayers route={route} />
     </Map>
   );
 }

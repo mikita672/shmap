@@ -1,19 +1,17 @@
-import { Pressable, View, useWindowDimensions } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, {
   BottomSheetScrollView,
   type BottomSheetBackgroundProps,
 } from "@gorhom/bottom-sheet";
 import Animated, { type SharedValue } from "react-native-reanimated";
+import { AddPlaceButton } from "@/components/routes/add-place-button";
 import { PathSummary } from "@/components/routes/path-summary";
 import { StopDragHandle, StopRow } from "@/components/routes/stop-row";
 import { TravelModeSwitch } from "@/components/routes/travel-mode-switch";
-import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
-import { MaterialIcons } from "@/lib/icons";
 import { MAX_ROUTE_STOPS, formatStopSubtitle } from "@/lib/route-format";
 import type { RouteResponse, TravelMode } from "@/lib/types/api";
-import { cn } from "@/lib/utils";
 
 const COLLAPSED_HEIGHT = 108;
 const MAX_SHARE = 0.6;
@@ -89,28 +87,11 @@ export function RouteSheet({
         )}
 
         {route.canEdit && (
-          <Pressable
+          <AddPlaceButton
+            label="Add place"
+            isFull={isFull}
             onPress={onAddPlace}
-            disabled={!onAddPlace || isFull}
-            accessibilityRole="button"
-            className={cn(
-              "h-11 flex-row items-center justify-center gap-2 rounded-xl bg-primary px-4 active:opacity-80",
-              (!onAddPlace || isFull) && "opacity-50",
-            )}
-          >
-            {!isFull && (
-              <MaterialIcons
-                name="add"
-                size={20}
-                className="text-primary-foreground"
-              />
-            )}
-            <Text className="text-sm font-medium leading-4 text-primary-foreground">
-              {isFull
-                ? `Route is full · ${MAX_ROUTE_STOPS} stops`
-                : "Add place"}
-            </Text>
-          </Pressable>
+          />
         )}
       </BottomSheetScrollView>
     </BottomSheet>

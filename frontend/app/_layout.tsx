@@ -69,6 +69,7 @@ function RootNavigator() {
             <Stack.Screen name="send-place" />
             <Stack.Screen name="place" />
             <Stack.Screen name="route/[routeId]/index" />
+            <Stack.Screen name="route/[routeId]/add-stop" />
             <Stack.Screen
               name="scan"
               options={{ presentation: "fullScreenModal" }}
