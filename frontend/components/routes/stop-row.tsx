@@ -3,7 +3,6 @@ import { Pressable, View } from "react-native";
 import { RoutePin } from "@/components/routes/route-pin";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
-import { cn } from "@/lib/utils";
 
 export interface StopRowProps {
   number: number;
@@ -11,7 +10,6 @@ export interface StopRowProps {
   subtitle: string;
   lineAbove: boolean;
   lineBelow: boolean;
-  dragging?: boolean;
   trailing?: ReactNode;
   onPress?: () => void;
 }
@@ -22,7 +20,6 @@ export function StopRow({
   subtitle,
   lineAbove,
   lineBelow,
-  dragging = false,
   trailing,
   onPress,
 }: StopRowProps) {
@@ -32,11 +29,7 @@ export function StopRow({
       disabled={!onPress}
       accessibilityRole="button"
       accessibilityLabel={`Stop ${number}: ${name}`}
-      className={cn(
-        "h-16 flex-row items-center gap-3 active:opacity-80",
-        dragging &&
-          "rounded-2xl bg-surface px-2 shadow-lg shadow-black/25 elevation-6",
-      )}
+      className="h-16 flex-row items-center gap-3 active:opacity-80"
     >
       <View className="h-16 w-7 items-center justify-center">
         {lineAbove && (

@@ -4,17 +4,20 @@ import BottomSheet, {
   BottomSheetScrollView,
   type BottomSheetBackgroundProps,
 } from "@gorhom/bottom-sheet";
-import Animated, { type SharedValue } from "react-native-reanimated";
+import Animated, {
+  useAnimatedRef,
+  type SharedValue,
+} from "react-native-reanimated";
 import { AddPlaceButton } from "@/components/routes/add-place-button";
 import { PathSummary } from "@/components/routes/path-summary";
 import { StopDetails } from "@/components/routes/stop-details";
-import { StopDragHandle, StopRow } from "@/components/routes/stop-row";
+import { StopList } from "@/components/routes/stop-list";
 import { TravelModeSwitch } from "@/components/routes/travel-mode-switch";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
 import { MaterialIcons } from "@/lib/icons";
-import { MAX_ROUTE_STOPS, formatStopSubtitle } from "@/lib/route-format";
+import { MAX_ROUTE_STOPS } from "@/lib/route-format";
 import type { RouteResponse, TravelMode } from "@/lib/types/api";
 
 const COLLAPSED_HEIGHT = 108;
@@ -29,6 +32,7 @@ export interface RouteSheetProps {
   selectedStopId?: number | null;
   onSelectStop?: (stopId: number | null) => void;
   onRemoveStop?: (stopId: number) => void;
+  onReorderStops?: (stopIds: number[]) => void;
 }
 
 export function RouteSheet({
@@ -40,7 +44,9 @@ export function RouteSheet({
   selectedStopId,
   onSelectStop,
   onRemoveStop,
+  onReorderStops,
 }: RouteSheetProps) {
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const { data: profile } = useProfile();
@@ -61,6 +67,7 @@ export function RouteSheet({
       backgroundComponent={SheetBackground}
     >
       <BottomSheetScrollView
+        ref={scrollRef}
         contentContainerStyle={{
           gap: 12,
           paddingHorizontal: 20,
@@ -109,22 +116,14 @@ export function RouteSheet({
             <View className="h-px bg-on-surface-muted/25" />
 
             {route.stops.length > 0 && (
-              <View>
-                {route.stops.map((stop, index) => (
-                  <StopRow
-                    key={stop.id}
-                    number={index + 1}
-                    name={stop.place.name}
-                    subtitle={formatStopSubtitle(stop, profile?.id)}
-                    lineAbove={index > 0}
-                    lineBelow={index < route.stops.length - 1}
-                    trailing={route.canEdit ? <StopDragHandle /> : undefined}
-                    onPress={
-                      onSelectStop ? () => onSelectStop(stop.id) : undefined
-                    }
-                  />
-                ))}
-              </View>
+              <StopList
+                stops={route.stops}
+                myId={profile?.id}
+                canReorder={route.canEdit && onReorderStops !== undefined}
+                scrollableRef={scrollRef}
+                onSelectStop={onSelectStop}
+                onReorder={onReorderStops}
+              />
             )}
 
             {route.canEdit && (

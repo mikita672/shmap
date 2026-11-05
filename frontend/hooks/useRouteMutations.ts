@@ -10,6 +10,7 @@ import {
   addRouteStop,
   createRoute,
   removeRouteStop,
+  reorderRouteStops,
   retryRoutePath,
   updateRoute,
 } from "@/lib/api/routes";
@@ -104,6 +105,21 @@ export function useRemoveStop(routeId: number) {
       };
     },
     errorMessage: "Couldn't remove the place",
+  });
+}
+
+export function useReorderStops(routeId: number) {
+  return useOptimisticRouteEdit(routeId, {
+    request: async (stopIds: number[]) => {
+      const response = await reorderRouteStops(routeId, stopIds);
+      return response.data;
+    },
+    optimistic: (route, stopIds) => {
+      const byId = new Map(route.stops.map((stop) => [stop.id, stop]));
+      const stops = stopIds.flatMap((id) => byId.get(id) ?? []);
+      return { ...route, stops, path: PENDING_PATH };
+    },
+    errorMessage: "Couldn't reorder the stops",
   });
 }
 

@@ -15,6 +15,7 @@ import { chatQueryOptions } from "@/hooks/useChat";
 import { useRoute } from "@/hooks/useRoute";
 import {
   useRemoveStop,
+  useReorderStops,
   useRetryPath,
   useSetTravelMode,
 } from "@/hooks/useRouteMutations";
@@ -37,6 +38,7 @@ export default function RouteScreen() {
   const setTravelMode = useSetTravelMode(Number(routeId));
   const retryPath = useRetryPath(Number(routeId));
   const removeStop = useRemoveStop(Number(routeId));
+  const reorderStops = useReorderStops(Number(routeId));
   useStalePathRetry(route, () => retryPath.mutate());
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
@@ -60,6 +62,11 @@ export default function RouteScreen() {
                   setSelectedStopId(null);
                   removeStop.mutate(stopId);
                 }
+              : undefined
+          }
+          onReorderStops={
+            route.canEdit
+              ? (stopIds) => reorderStops.mutate(stopIds)
               : undefined
           }
           onAddPlace={
