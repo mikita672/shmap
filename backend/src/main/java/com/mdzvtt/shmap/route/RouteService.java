@@ -6,6 +6,7 @@ import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
+import com.mdzvtt.shmap.route.dto.RouteSummaryResponse;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -13,6 +14,8 @@ import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,14 @@ public class RouteService {
         requireCanEdit(chat, userId);
         Route route = routeRepository.save(new Route(chat, name, userRepository.getReferenceById(userId)));
         return toResponse(route, userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RouteSummaryResponse> getRoutes(Integer userId, Long chatId) {
+        chatAccess.findForMember(userId, chatId);
+        return routeRepository.findSummaries(chatId).stream()
+                .map(this::toSummaryResponse)
+                .toList();
     }
 
     private void requireCanEdit(Chat chat, Integer userId) {
@@ -49,6 +60,17 @@ public class RouteService {
                 route.getStops().stream()
                         .map(this::toStopResponse)
                         .toList());
+    }
+
+    private RouteSummaryResponse toSummaryResponse(RouteListRow row) {
+        Route route = row.route();
+        return new RouteSummaryResponse(
+                route.getId(),
+                route.getName(),
+                row.stopCount(),
+                toSummary(row.createdBy()),
+                route.getCreatedAt(),
+                route.getUpdatedAt());
     }
 
     private RouteStopResponse toStopResponse(RouteStop stop) {
