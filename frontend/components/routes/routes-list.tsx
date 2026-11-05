@@ -13,6 +13,7 @@ export interface RoutesListProps {
   now: number;
   onOpenRoute: (routeId: number) => void;
   onRefresh: () => Promise<unknown>;
+  onNewRoute?: () => void;
 }
 
 export function RoutesList({
@@ -21,6 +22,7 @@ export function RoutesList({
   now,
   onOpenRoute,
   onRefresh,
+  onNewRoute,
 }: RoutesListProps) {
   const { isRefetchingByUser, refetchByUser } = useRefreshByUser(onRefresh);
 
@@ -45,6 +47,7 @@ export function RoutesList({
           description="Plan one together: everyone in the chat can add places"
           actionLabel="Start shared route"
           actionIcon="route"
+          onAction={onNewRoute}
         />
       }
       ItemSeparatorComponent={RowGap}
