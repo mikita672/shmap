@@ -57,19 +57,19 @@ public class RouteController {
     @ResponseStatus(HttpStatus.CREATED)
     public RouteResponse addStop(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @Valid @RequestBody AddRouteStopRequest request) {
-        return routeService.addStop(user.getId(), routeId, request.place().toSnapshot());
+        return routeEditor.addStop(user.getId(), routeId, request.place().toSnapshot());
     }
 
     @DeleteMapping("/routes/{routeId}/stops/{stopId}")
     public RouteResponse removeStop(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @PathVariable Long stopId) {
-        return routeService.removeStop(user.getId(), routeId, stopId);
+        return routeEditor.removeStop(user.getId(), routeId, stopId);
     }
 
     @PutMapping("/routes/{routeId}/stops/order")
     public RouteResponse reorderStops(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @Valid @RequestBody ReorderRouteStopsRequest request) {
-        return routeService.reorderStops(user.getId(), routeId, request.stopIds());
+        return routeEditor.reorderStops(user.getId(), routeId, request.stopIds());
     }
 
     @PutMapping("/routes/{routeId}/path")

@@ -82,28 +82,27 @@ public class RouteService {
     }
 
     @Transactional
-    public RouteResponse addStop(Integer userId, Long routeId, PlaceSnapshot place) {
+    public Optional<RoutingRequest> addStop(Integer userId, Long routeId, PlaceSnapshot place) {
         Route route = lockRoute(userId, routeId);
         route.addStop(new RouteStop(place, userRepository.getReferenceById(userId)));
-        routeRepository.flush();
         announceChanged(route);
-        return toResponse(route, userId);
+        return route.pathToBuild();
     }
 
     @Transactional
-    public RouteResponse removeStop(Integer userId, Long routeId, Long stopId) {
+    public Optional<RoutingRequest> removeStop(Integer userId, Long routeId, Long stopId) {
         Route route = lockRoute(userId, routeId);
         route.removeStop(stopId);
         announceChanged(route);
-        return toResponse(route, userId);
+        return route.pathToBuild();
     }
 
     @Transactional
-    public RouteResponse reorderStops(Integer userId, Long routeId, List<Long> stopIds) {
+    public Optional<RoutingRequest> reorderStops(Integer userId, Long routeId, List<Long> stopIds) {
         Route route = lockRoute(userId, routeId);
         route.reorderStops(stopIds);
         announceChanged(route);
-        return toResponse(route, userId);
+        return route.pathToBuild();
     }
 
     @Transactional

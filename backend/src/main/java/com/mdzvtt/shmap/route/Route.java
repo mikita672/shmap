@@ -145,6 +145,10 @@ public class Route {
                 .toList());
     }
 
+    public Optional<RoutingRequest> pathToBuild() {
+        return pathStatus == PathStatus.PENDING ? Optional.of(routingRequest()) : Optional.empty();
+    }
+
     public Optional<RoutingRequest> pathToRetry() {
         if (!needsPath()) {
             return Optional.empty();
