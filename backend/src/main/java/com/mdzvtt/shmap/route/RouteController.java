@@ -29,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RouteController {
     private final RouteService routeService;
+    private final RouteEditor routeEditor;
 
     @GetMapping("/chats/{chatId}/routes")
     public List<RouteSummaryResponse> getRoutes(@AuthenticationPrincipal User user, @PathVariable Long chatId) {
@@ -69,6 +70,11 @@ public class RouteController {
     public RouteResponse reorderStops(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @Valid @RequestBody ReorderRouteStopsRequest request) {
         return routeService.reorderStops(user.getId(), routeId, request.stopIds());
+    }
+
+    @PutMapping("/routes/{routeId}/path")
+    public RouteResponse retryPath(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
+        return routeEditor.retryPath(user.getId(), routeId);
     }
 
     @PostMapping("/chats/{chatId}/routes")

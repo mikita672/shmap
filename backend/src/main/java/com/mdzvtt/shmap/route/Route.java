@@ -1,7 +1,10 @@
 package com.mdzvtt.shmap.route;
 
 import com.mdzvtt.shmap.chat.Chat;
+import com.mdzvtt.shmap.directions.RoutingRequest;
+import com.mdzvtt.shmap.directions.RoutingResult;
 import com.mdzvtt.shmap.directions.TravelMode;
+import com.mdzvtt.shmap.directions.Waypoint;
 import com.mdzvtt.shmap.exception.RouteFullException;
 import com.mdzvtt.shmap.exception.RouteStopNotFoundException;
 import com.mdzvtt.shmap.exception.RouteStopsChangedException;
@@ -36,6 +39,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 @Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"))
@@ -132,6 +137,51 @@ public class Route {
         stops.sort(Comparator.comparing(stop -> newIndex.get(stop.getId())));
         markPathStale();
         touch();
+    }
+
+    public RoutingRequest routingRequest() {
+        return new RoutingRequest(travelMode, stops.stream()
+                .map(stop -> new Waypoint(stop.getPlace().latitude(), stop.getPlace().longitude()))
+                .toList());
+    }
+
+    public Optional<RoutingRequest> pathToRetry() {
+        if (!needsPath()) {
+            return Optional.empty();
+        }
+        if (stops.size() < 2) {
+            path = null;
+            pathStatus = PathStatus.NONE;
+            return Optional.empty();
+        }
+        return Optional.of(routingRequest());
+    }
+
+    public boolean applyPath(RoutingRequest builtFor, RoutingResult result) {
+        if (!needsPath() || !routingRequest().equals(builtFor)) {
+            return false;
+        }
+        PathStatus oldStatus = pathStatus;
+        RoutePath oldPath = path;
+        switch (result) {
+            case RoutingResult.Found found -> {
+                pathStatus = PathStatus.READY;
+                path = new RoutePath(found.polyline(), found.distanceMeters(), found.durationSeconds());
+            }
+            case RoutingResult.NoRoute noRoute -> {
+                pathStatus = PathStatus.NO_ROUTE;
+                path = null;
+            }
+            case RoutingResult.Unavailable unavailable -> {
+                pathStatus = PathStatus.UNAVAILABLE;
+                path = null;
+            }
+        }
+        return pathStatus != oldStatus || !Objects.equals(path, oldPath);
+    }
+
+    private boolean needsPath() {
+        return pathStatus == PathStatus.PENDING || pathStatus == PathStatus.UNAVAILABLE;
     }
 
     private void touch() {

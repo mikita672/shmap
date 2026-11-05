@@ -5,6 +5,8 @@ import com.mdzvtt.shmap.chat.ChatChanged;
 import com.mdzvtt.shmap.chat.ChatAccess;
 import com.mdzvtt.shmap.chat.ChatMemberRepository;
 import com.mdzvtt.shmap.chat.ChatType;
+import com.mdzvtt.shmap.directions.RoutingRequest;
+import com.mdzvtt.shmap.directions.RoutingResult;
 import com.mdzvtt.shmap.directions.TravelMode;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -101,6 +104,18 @@ public class RouteService {
         route.reorderStops(stopIds);
         announceChanged(route);
         return toResponse(route, userId);
+    }
+
+    @Transactional
+    public Optional<RoutingRequest> pathToRetry(Integer userId, Long routeId) {
+        routeRepository.findByIdForUpdate(routeId).orElseThrow(RouteNotFoundException::new);
+        return findRoute(userId, routeId).pathToRetry();
+    }
+
+    @Transactional
+    public void savePath(Long routeId, RoutingRequest builtFor, RoutingResult result) {
+        routeRepository.findByIdForUpdate(routeId)
+                .ifPresent(route -> route.applyPath(builtFor, result));
     }
 
     private Route lockRoute(Integer userId, Long routeId) {
