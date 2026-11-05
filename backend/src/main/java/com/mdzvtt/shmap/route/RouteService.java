@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.chat.ChatChanged;
 import com.mdzvtt.shmap.chat.ChatAccess;
 import com.mdzvtt.shmap.chat.ChatMemberRepository;
 import com.mdzvtt.shmap.chat.ChatType;
+import com.mdzvtt.shmap.directions.TravelMode;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
@@ -35,10 +36,11 @@ public class RouteService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public RouteResponse create(Integer userId, Long chatId, String name) {
+    public RouteResponse create(Integer userId, Long chatId, String name, TravelMode travelMode) {
         Chat chat = chatAccess.findForMember(userId, chatId);
         requireCanEdit(chat, userId);
-        Route route = routeRepository.save(new Route(chat, name, userRepository.getReferenceById(userId)));
+        Route route = routeRepository.save(
+                new Route(chat, name, userRepository.getReferenceById(userId), travelMode));
         announceChanged(route);
         announceDirectChat(chat);
         return toResponse(route, userId);
@@ -136,6 +138,7 @@ public class RouteService {
                 route.getId(),
                 chat.getId(),
                 route.getName(),
+                route.getTravelMode(),
                 toSummary(route.getCreatedBy()),
                 route.getCreatedAt(),
                 route.getUpdatedAt(),
@@ -150,6 +153,7 @@ public class RouteService {
         return new RouteSummaryResponse(
                 route.getId(),
                 route.getName(),
+                route.getTravelMode(),
                 row.stopCount(),
                 toSummary(row.createdBy()),
                 route.getCreatedAt(),

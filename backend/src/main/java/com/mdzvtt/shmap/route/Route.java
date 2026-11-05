@@ -1,6 +1,7 @@
 package com.mdzvtt.shmap.route;
 
 import com.mdzvtt.shmap.chat.Chat;
+import com.mdzvtt.shmap.directions.TravelMode;
 import com.mdzvtt.shmap.exception.RouteFullException;
 import com.mdzvtt.shmap.exception.RouteStopNotFoundException;
 import com.mdzvtt.shmap.exception.RouteStopsChangedException;
@@ -8,6 +9,8 @@ import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -20,6 +23,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -50,6 +54,11 @@ public class Route {
     @Column(nullable = false, length = 50)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'WALKING'")
+    private TravelMode travelMode;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by_id")
     private User createdBy;
@@ -67,9 +76,10 @@ public class Route {
     @OrderColumn(name = "position")
     private List<RouteStop> stops = new ArrayList<>();
 
-    public Route(Chat chat, String name, User createdBy) {
+    public Route(Chat chat, String name, User createdBy, TravelMode travelMode) {
         this.chat = chat;
         this.name = name;
+        this.travelMode = travelMode;
         this.createdBy = createdBy;
         this.updatedAt = Instant.now();
     }

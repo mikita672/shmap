@@ -75,6 +75,6 @@ public class RouteController {
     @ResponseStatus(HttpStatus.CREATED)
     public RouteResponse create(@AuthenticationPrincipal User user, @PathVariable Long chatId,
             @Valid @RequestBody CreateRouteRequest request) {
-        return routeService.create(user.getId(), chatId, request.name());
+        return routeService.create(user.getId(), chatId, request.name(), request.travelMode());
     }
 }
