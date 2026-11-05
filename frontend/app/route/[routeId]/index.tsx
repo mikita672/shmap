@@ -3,6 +3,7 @@ import { ActivityIndicator, View, useWindowDimensions } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useSharedValue } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { ReadOnlyBar } from "@/components/chats/read-only-bar";
 import { RouteActionsMenu } from "@/components/routes/route-actions-menu";
 import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
@@ -66,6 +67,16 @@ export default function RouteScreen() {
                   removeStop.mutate(stopId);
                 }
               : undefined
+          }
+          notice={
+            !route.canEdit && chat?.type === "DIRECT" && chat.members[0] ? (
+              <ReadOnlyBar
+                firstName={chat.members[0].firstName}
+                username={chat.members[0].username}
+                description={`You can still see this route. Add ${chat.members[0].firstName} as a friend again to plan it together.`}
+                className="bg-transparent px-0 pb-0 pt-2"
+              />
+            ) : undefined
           }
           onReorderStops={
             route.canEdit

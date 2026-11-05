@@ -155,6 +155,9 @@ export function useChatEvents() {
                   queryKey: chatQueryOptions(chatId).queryKey,
                   exact: true,
                 });
+                void queryClient.invalidateQueries({
+                  queryKey: ["routes"],
+                });
                 void refetchUnreadTotal(queryClient);
               } catch {}
               return;

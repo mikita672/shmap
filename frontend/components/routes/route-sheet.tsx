@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, {
@@ -33,6 +34,7 @@ export interface RouteSheetProps {
   onSelectStop?: (stopId: number | null) => void;
   onRemoveStop?: (stopId: number) => void;
   onReorderStops?: (stopIds: number[]) => void;
+  notice?: ReactNode;
 }
 
 export function RouteSheet({
@@ -45,6 +47,7 @@ export function RouteSheet({
   onSelectStop,
   onRemoveStop,
   onReorderStops,
+  notice,
 }: RouteSheetProps) {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const insets = useSafeAreaInsets();
@@ -133,6 +136,7 @@ export function RouteSheet({
                 onPress={onAddPlace}
               />
             )}
+            {notice}
           </>
         )}
       </BottomSheetScrollView>
