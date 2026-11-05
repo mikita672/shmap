@@ -3,6 +3,7 @@ import { View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { router } from "expo-router";
 import { Button } from "@/components/ui/button";
+import { ConfirmCard } from "@/components/ui/confirm-card";
 import { Popup } from "@/components/ui/popup";
 import { RoundButton } from "@/components/ui/round-button";
 import { Separator } from "@/components/ui/separator";
@@ -10,7 +11,7 @@ import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { useProfile } from "@/hooks/useProfile";
-import { useRenameRoute } from "@/hooks/useRouteMutations";
+import { useDeleteRoute, useRenameRoute } from "@/hooks/useRouteMutations";
 import { MaterialIcons } from "@/lib/icons";
 import { formatStopCount, joinMeta } from "@/lib/route-format";
 import type { ChatResponse, RouteResponse } from "@/lib/types/api";
@@ -19,13 +20,14 @@ import { cn } from "@/lib/utils";
 const STEP_ENTERING = FadeIn.duration(200);
 const MAX_NAME_LENGTH = 50;
 
-type MenuStep = "menu" | "rename";
+type MenuStep = "menu" | "rename" | "delete";
 
 export interface RouteActionsMenuProps {
   route: RouteResponse;
   chat?: ChatResponse;
   visible: boolean;
   onClose: () => void;
+  onDeleted: () => void;
 }
 
 export function RouteActionsMenu({
@@ -33,9 +35,11 @@ export function RouteActionsMenu({
   chat,
   visible,
   onClose,
+  onDeleted,
 }: RouteActionsMenuProps) {
   const { data: profile } = useProfile();
   const rename = useRenameRoute(route.id);
+  const remove = useDeleteRoute(route.id);
   const [step, setStep] = useState<MenuStep>("menu");
   const [name, setName] = useState(route.name);
   const trimmedName = name.trim();
@@ -43,7 +47,7 @@ export function RouteActionsMenu({
     route.createdBy.id === profile?.id ? "you" : route.createdBy.firstName;
 
   const handleClose = () => {
-    if (!rename.isPending) onClose();
+    if (!rename.isPending && !remove.isPending) onClose();
   };
 
   const handleAllRoutes = () => {
@@ -62,6 +66,32 @@ export function RouteActionsMenu({
     }
     rename.mutate(trimmedName, { onSuccess: onClose });
   };
+
+  if (step === "delete") {
+    return (
+      <Popup visible={visible} onClose={handleClose}>
+        <Animated.View entering={STEP_ENTERING}>
+          <ConfirmCard
+            icon="delete"
+            title={`Delete ${route.name}?`}
+            message={getDeleteMessage(chat)}
+            confirmLabel="Delete route"
+            pendingLabel="Deleting…"
+            isPending={remove.isPending}
+            onConfirm={() =>
+              remove.mutate(route.chatId, {
+                onSuccess: () => {
+                  onClose();
+                  onDeleted();
+                },
+              })
+            }
+            onCancel={handleClose}
+          />
+        </Animated.View>
+      </Popup>
+    );
+  }
 
   if (step === "rename") {
     return (
@@ -143,6 +173,16 @@ export function RouteActionsMenu({
         <SheetItem label="Rename" onPress={() => setStep("rename")} />
       )}
       <SheetItem label="All routes in this chat" onPress={handleAllRoutes} />
+      {route.canEdit && (
+        <>
+          <MenuDivider />
+          <SheetItem
+            label="Delete route"
+            tone="danger"
+            onPress={() => setStep("delete")}
+          />
+        </>
+      )}
 
       <RoundButton
         icon="close"
@@ -188,4 +228,14 @@ function getRenameMessage(chat?: ChatResponse) {
   return other
     ? `The new name shows for you and ${other.firstName}.`
     : "The new name shows for everyone in this chat.";
+}
+
+function getDeleteMessage(chat?: ChatResponse) {
+  if (chat?.type === "GROUP") {
+    return `It's deleted for everyone in ${chat.name}.`;
+  }
+  const other = chat?.members[0];
+  return other
+    ? `It's deleted for you and ${other.firstName}.`
+    : "It's deleted for everyone in this chat.";
 }

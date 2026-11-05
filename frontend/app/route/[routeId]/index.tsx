@@ -100,6 +100,7 @@ export default function RouteScreen() {
           chat={chat}
           visible={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
+          onDeleted={() => router.back()}
         />
       </View>
     );

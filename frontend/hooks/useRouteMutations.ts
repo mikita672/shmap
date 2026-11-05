@@ -9,6 +9,7 @@ import { routeQueryOptions } from "@/hooks/useRoute";
 import {
   addRouteStop,
   createRoute,
+  deleteRoute,
   removeRouteStop,
   reorderRouteStops,
   retryRoutePath,
@@ -143,6 +144,30 @@ export function useRenameRoute(routeId: number) {
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't rename the route"));
+    },
+  });
+}
+
+export function useDeleteRoute(routeId: number) {
+  const queryClient = useQueryClient();
+  const { queryKey } = routeQueryOptions(routeId);
+
+  return useMutation({
+    mutationKey: routeEditMutationKey(routeId),
+    scope: { id: `route-${routeId}` },
+    mutationFn: async (chatId: number) => {
+      await deleteRoute(routeId);
+      return chatId;
+    },
+    onSuccess: (chatId) => {
+      void queryClient.invalidateQueries({ queryKey, refetchType: "none" });
+      void queryClient.invalidateQueries({
+        queryKey: chatRoutesQueryOptions(chatId).queryKey,
+        exact: true,
+      });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't delete the route"));
     },
   });
 }
