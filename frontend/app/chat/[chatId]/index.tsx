@@ -7,11 +7,13 @@ import { ChatHeader } from "@/components/chats/chat-header";
 import { Composer } from "@/components/chats/composer";
 import { MessageList } from "@/components/chats/message-list";
 import { ReadOnlyBar } from "@/components/chats/read-only-bar";
+import { RouteBar } from "@/components/chats/route-bar";
 import { FriendActionsMenu } from "@/components/friends/friend-actions-menu";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
+import { useChatRoutes } from "@/hooks/useChatRoutes";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
 import { useMarkReadWhileOpen } from "@/hooks/useMarkChatRead";
@@ -36,6 +38,9 @@ export default function ChatScreen() {
     }, [chatId]),
   );
   const { data: friends } = useFriends();
+  const { data: routes } = useChatRoutes(Number(chatId));
+  const latestRoute = routes?.[0];
+  const moreRouteCount = routes ? routes.length - 1 : 0;
   const { send } = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();
   const openProfile = useOpenProfile();
@@ -119,6 +124,19 @@ export default function ChatScreen() {
         </View>
       ) : (
         <>
+          {latestRoute && (
+            <RouteBar
+              className="mt-2.5"
+              route={latestRoute}
+              moreCount={moreRouteCount}
+              onPress={() =>
+                router.push({
+                  pathname: "/route/[routeId]",
+                  params: { routeId: String(latestRoute.id) },
+                })
+              }
+            />
+          )}
           <MessageList
             chatId={chat.id}
             isGroup={chat.type === "GROUP"}
