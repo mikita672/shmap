@@ -1,3 +1,4 @@
+import { formatChatListTime } from "@/lib/chat-time";
 import type { TravelMode } from "@/lib/types/api";
 
 export const TRAVEL_MODE_LABELS: Record<TravelMode, string> = {
@@ -30,4 +31,9 @@ export function formatDuration(seconds: number) {
 
 export function joinMeta(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" · ");
+}
+
+export function formatRouteUpdated(isoDate: string, now: number) {
+  const time = formatChatListTime(isoDate, now);
+  return `updated ${time === "Yesterday" ? "yesterday" : time}`;
 }

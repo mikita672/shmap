@@ -103,9 +103,9 @@ module.exports = {
           "tonal-foreground": "hsl(var(--action-tonal-foreground))",
         },
         "picker-ring": "hsl(var(--picker-ring))",
-        "route-bar": {
-          DEFAULT: "hsl(var(--route-bar))",
-          foreground: "hsl(var(--route-bar-foreground))",
+        route: {
+          DEFAULT: "hsl(var(--route))",
+          foreground: "hsl(var(--route-foreground))",
         },
         "route-chip": {
           DEFAULT: "hsl(var(--route-chip))",

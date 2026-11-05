@@ -37,7 +37,7 @@ export function RouteBar({
       accessibilityLabel={`Open route ${route.name}`}
       onPress={onPress}
       className={cn(
-        "flex-row items-center gap-3 bg-route-bar py-2 pl-4 pr-3 shadow-sm shadow-black/10 elevation-2 active:opacity-90",
+        "flex-row items-center gap-3 bg-route py-2 pl-4 pr-3 shadow-sm shadow-black/10 elevation-2 active:opacity-90",
         className,
       )}
     >
@@ -48,7 +48,7 @@ export function RouteBar({
       <View className="min-w-0 flex-1">
         <Text
           numberOfLines={1}
-          className="text-[15px] font-medium leading-5 text-route-bar-foreground"
+          className="text-[15px] font-medium leading-5 text-route-foreground"
         >
           {route.name}
         </Text>
