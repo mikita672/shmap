@@ -3,6 +3,7 @@ package com.mdzvtt.shmap.route;
 import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.exception.RouteFullException;
 import com.mdzvtt.shmap.exception.RouteStopNotFoundException;
+import com.mdzvtt.shmap.exception.RouteStopsChangedException;
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,7 +26,10 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"))
@@ -82,6 +86,21 @@ public class Route {
         if (!stops.removeIf(stop -> stop.getId().equals(stopId))) {
             throw new RouteStopNotFoundException();
         }
+        touch();
+    }
+
+    public void reorderStops(List<Long> stopIds) {
+        Map<Long, Integer> newIndex = new HashMap<>();
+        for (int i = 0; i < stopIds.size(); i++) {
+            newIndex.put(stopIds.get(i), i);
+        }
+        boolean sameStops = newIndex.size() == stopIds.size()
+                && stopIds.size() == stops.size()
+                && stops.stream().allMatch(stop -> newIndex.containsKey(stop.getId()));
+        if (!sameStops) {
+            throw new RouteStopsChangedException();
+        }
+        stops.sort(Comparator.comparing(stop -> newIndex.get(stop.getId())));
         touch();
     }
 

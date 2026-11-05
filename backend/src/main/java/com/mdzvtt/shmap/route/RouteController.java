@@ -2,6 +2,7 @@ package com.mdzvtt.shmap.route;
 
 import com.mdzvtt.shmap.route.dto.AddRouteStopRequest;
 import com.mdzvtt.shmap.route.dto.CreateRouteRequest;
+import com.mdzvtt.shmap.route.dto.ReorderRouteStopsRequest;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteSummaryResponse;
 import com.mdzvtt.shmap.user.User;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -47,6 +49,12 @@ public class RouteController {
     public RouteResponse removeStop(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @PathVariable Long stopId) {
         return routeService.removeStop(user.getId(), routeId, stopId);
+    }
+
+    @PutMapping("/routes/{routeId}/stops/order")
+    public RouteResponse reorderStops(@AuthenticationPrincipal User user, @PathVariable Long routeId,
+            @Valid @RequestBody ReorderRouteStopsRequest request) {
+        return routeService.reorderStops(user.getId(), routeId, request.stopIds());
     }
 
     @PostMapping("/chats/{chatId}/routes")
