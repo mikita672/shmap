@@ -103,6 +103,15 @@ module.exports = {
           "tonal-foreground": "hsl(var(--action-tonal-foreground))",
         },
         "picker-ring": "hsl(var(--picker-ring))",
+        "route-bar": {
+          DEFAULT: "hsl(var(--route-bar))",
+          foreground: "hsl(var(--route-bar-foreground))",
+        },
+        "route-chip": {
+          DEFAULT: "hsl(var(--route-chip))",
+          foreground: "hsl(var(--route-chip-foreground))",
+        },
+        "route-icon": "hsl(var(--route-icon))",
       },
       opacity: {
         55: "0.55",

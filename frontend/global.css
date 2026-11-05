@@ -110,6 +110,13 @@
     --bubble-sender: 25.82 72.69% 44.51%; /* Alloy Orange — sender name */
     --map-pin: 25.82 72.69% 44.51%; /* Alloy Orange #C4661F — pin on map previews */
     --picker-ring: 30 34% 58%; /* Camel #B99470 — picker checkbox ring */
+
+    /* Routes */
+    --route-bar: 43 81% 88%; /* Lemon Meringue — route bar under the chat header */
+    --route-bar-foreground: 22.74 65.52% 28.43%; /* Russet — route name */
+    --route-chip: 52 93% 93%; /* Cornsilk — circle behind route icons and buttons */
+    --route-chip-foreground: 22.74 65.52% 28.43%; /* Russet — icon on the circle */
+    --route-icon: 25.82 72.69% 44.51%; /* Alloy Orange #C4661F — route icon */
   }
 
   .dark:root {
@@ -220,5 +227,12 @@
     --bubble-sender: 74 22% 62%; /* Laurel Green — sender name */
     --map-pin: 25.82 72.69% 44.51%; /* Alloy Orange #C4661F — pin on map previews */
     --picker-ring: 74 22% 62%; /* Laurel Green #A9B388 — picker checkbox ring */
+
+    /* Routes */
+    --route-bar: 22.74 65.52% 28.43%; /* Russet — route bar under the chat header */
+    --route-bar-foreground: 43 81% 88%; /* Lemon Meringue — route name */
+    --route-chip: 30 34% 58%; /* Camel — circle behind route icons and buttons */
+    --route-chip-foreground: 22.74 65.52% 28.43%; /* Russet — icon on the circle */
+    --route-icon: 22.74 65.52% 28.43%; /* Russet — route icon */
   }
 }
