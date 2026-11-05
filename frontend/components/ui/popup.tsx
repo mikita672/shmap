@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Modal, Pressable, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
+import { KeyboardAvoidingView } from "@/lib/keyboard";
 import { cn } from "@/lib/utils";
 
 const CARD_LAYOUT = LinearTransition.duration(200);
@@ -22,7 +23,7 @@ export function Popup({ visible, onClose, className, children }: PopupProps) {
       navigationBarTranslucent
       onRequestClose={onClose}
     >
-      <View className="flex-1 items-center justify-center px-6">
+      <View className="flex-1">
         <Pressable
           className="absolute inset-0 bg-black/60"
           onPress={onClose}
@@ -30,16 +31,22 @@ export function Popup({ visible, onClose, className, children }: PopupProps) {
           importantForAccessibility="no"
         />
 
-        <Animated.View
-          accessibilityViewIsModal
-          layout={CARD_LAYOUT}
-          className={cn(
-            "w-full max-w-[344px] overflow-hidden rounded-[32px] bg-card",
-            className,
-          )}
+        <KeyboardAvoidingView
+          behavior="padding"
+          pointerEvents="box-none"
+          className="flex-1 items-center justify-center px-6"
         >
-          {children}
-        </Animated.View>
+          <Animated.View
+            accessibilityViewIsModal
+            layout={CARD_LAYOUT}
+            className={cn(
+              "w-full max-w-[344px] overflow-hidden rounded-[32px] bg-card",
+              className,
+            )}
+          >
+            {children}
+          </Animated.View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

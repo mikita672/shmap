@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,6 +9,7 @@ import { MessageList } from "@/components/chats/message-list";
 import { ReadOnlyBar } from "@/components/chats/read-only-bar";
 import { RouteBar } from "@/components/chats/route-bar";
 import { FriendActionsMenu } from "@/components/friends/friend-actions-menu";
+import { NewRoutePopup } from "@/components/routes/new-route-popup";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
@@ -44,6 +45,7 @@ export default function ChatScreen() {
   const { send } = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();
   const openProfile = useOpenProfile();
+  const [isNewRouteOpen, setIsNewRouteOpen] = useState(false);
 
   const handleMore = () => {
     if (chat?.type !== "DIRECT") {
@@ -158,6 +160,7 @@ export default function ChatScreen() {
                     params: { chatId: String(chat.id) },
                   })
                 }
+                onStartRoute={() => setIsNewRouteOpen(true)}
               />
             </KeyboardStickyView>
           ) : (
@@ -167,6 +170,21 @@ export default function ChatScreen() {
             />
           )}
         </>
+      )}
+
+      {chat && (
+        <NewRoutePopup
+          chat={chat}
+          visible={isNewRouteOpen}
+          onClose={() => setIsNewRouteOpen(false)}
+          onCreated={(route) => {
+            setIsNewRouteOpen(false);
+            router.push({
+              pathname: "/route/[routeId]",
+              params: { routeId: String(route.id) },
+            });
+          }}
+        />
       )}
 
       {menu.person && (
