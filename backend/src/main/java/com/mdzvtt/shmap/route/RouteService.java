@@ -3,6 +3,7 @@ package com.mdzvtt.shmap.route;
 import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.chat.ChatAccess;
 import com.mdzvtt.shmap.exception.NotFriendsException;
+import com.mdzvtt.shmap.exception.RouteNotFoundException;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
@@ -39,6 +40,15 @@ public class RouteService {
         return routeRepository.findSummaries(chatId).stream()
                 .map(this::toSummaryResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RouteResponse getRoute(Integer userId, Long routeId) {
+        return toResponse(findRoute(userId, routeId), userId);
+    }
+
+    private Route findRoute(Integer userId, Long routeId) {
+        return routeRepository.findForMember(routeId, userId).orElseThrow(RouteNotFoundException::new);
     }
 
     private void requireCanEdit(Chat chat, Integer userId) {

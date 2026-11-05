@@ -29,6 +29,11 @@ public class RouteController {
         return routeService.getRoutes(user.getId(), chatId);
     }
 
+    @GetMapping("/routes/{routeId}")
+    public RouteResponse getRoute(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
+        return routeService.getRoute(user.getId(), routeId);
+    }
+
     @PostMapping("/chats/{chatId}/routes")
     @ResponseStatus(HttpStatus.CREATED)
     public RouteResponse create(@AuthenticationPrincipal User user, @PathVariable Long chatId,
