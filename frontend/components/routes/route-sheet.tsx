@@ -12,7 +12,7 @@ import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
 import { MaterialIcons } from "@/lib/icons";
 import { MAX_ROUTE_STOPS, formatStopSubtitle } from "@/lib/route-format";
-import type { RouteResponse } from "@/lib/types/api";
+import type { RouteResponse, TravelMode } from "@/lib/types/api";
 import { cn } from "@/lib/utils";
 
 const COLLAPSED_HEIGHT = 108;
@@ -22,12 +22,14 @@ export interface RouteSheetProps {
   route: RouteResponse;
   animatedPosition: SharedValue<number>;
   onAddPlace?: () => void;
+  onTravelModeChange?: (travelMode: TravelMode) => void;
 }
 
 export function RouteSheet({
   route,
   animatedPosition,
   onAddPlace,
+  onTravelModeChange,
 }: RouteSheetProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -59,7 +61,10 @@ export function RouteSheet({
               travelMode={route.travelMode}
             />
           </View>
-          <TravelModeSwitch value={route.travelMode} />
+          <TravelModeSwitch
+            value={route.travelMode}
+            onValueChange={onTravelModeChange}
+          />
         </View>
 
         <View className="h-px bg-on-surface-muted/25" />

@@ -12,6 +12,7 @@ import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { useRoute } from "@/hooks/useRoute";
+import { useSetTravelMode } from "@/hooks/useRouteMutations";
 import { getChatTitle } from "@/lib/chat-preview";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -25,6 +26,7 @@ export default function RouteScreen() {
     ...chatQueryOptions(route?.chatId ?? 0),
     enabled: route !== undefined,
   });
+  const setTravelMode = useSetTravelMode(Number(routeId));
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
   if (route && !isDeleted) {
@@ -32,7 +34,13 @@ export default function RouteScreen() {
       <View className="flex-1 bg-background">
         <RouteMap route={route} />
         <RouteCredit sheetPosition={sheetPosition} />
-        <RouteSheet route={route} animatedPosition={sheetPosition} />
+        <RouteSheet
+          route={route}
+          animatedPosition={sheetPosition}
+          onTravelModeChange={
+            route.canEdit ? (mode) => setTravelMode.mutate(mode) : undefined
+          }
+        />
         <RouteHeader
           name={route.name}
           chatTitle={chat ? getChatTitle(chat) : undefined}
