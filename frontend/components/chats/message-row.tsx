@@ -1,4 +1,5 @@
 import { Pressable, View } from "react-native";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { MessageBubble } from "@/components/chats/message-bubble";
 import { PlaceMessageCard } from "@/components/chats/place-message-card";
@@ -13,29 +14,33 @@ import { cn } from "@/lib/utils";
 
 const AVATAR_SIZE = 32;
 
-function openPlace(place: ChatPlace) {
+function openPlace(chatId: number, place: ChatPlace) {
   router.push({
-    pathname: "/place",
-    params: { place: JSON.stringify(place) },
+    pathname: "/chat/[chatId]/place",
+    params: { chatId: String(chatId), place: JSON.stringify(place) },
   });
 }
 
 export interface MessageRowProps {
+  chatId: number;
   message: ChatMessageResponse;
   isMine: boolean;
   isGroup: boolean;
   isFirstInRun: boolean;
   isLastInRun: boolean;
   onSenderPress?: (sender: UserSummaryResponse) => void;
+  onPlaceLongPress?: (place: ChatPlace) => void;
 }
 
 export function MessageRow({
+  chatId,
   message,
   isMine,
   isGroup,
   isFirstInRun,
   isLastInRun,
   onSenderPress,
+  onPlaceLongPress,
 }: MessageRowProps) {
   const showAuthor = isGroup && !isMine;
   const { sender } = message;
@@ -47,6 +52,15 @@ export function MessageRow({
   const handleSenderPress = onSenderPress
     ? () => onSenderPress(sender)
     : undefined;
+  const handlePlaceLongPress =
+    message.type === "PLACE" && onPlaceLongPress
+      ? () => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(
+            () => {},
+          );
+          onPlaceLongPress(message.place);
+        }
+      : undefined;
 
   return (
     <View
@@ -73,9 +87,25 @@ export function MessageRow({
         ))}
       {message.type === "PLACE" ? (
         <Pressable
-          onPress={() => openPlace(message.place)}
+          onPress={() => openPlace(chatId, message.place)}
+          onLongPress={handlePlaceLongPress}
           accessibilityRole="button"
           accessibilityHint="Opens the place on the map"
+          accessibilityActions={
+            handlePlaceLongPress
+              ? [
+                  { name: "activate" },
+                  { name: "addToRoute", label: "Add to route" },
+                ]
+              : undefined
+          }
+          onAccessibilityAction={(event) => {
+            if (event.nativeEvent.actionName === "addToRoute") {
+              handlePlaceLongPress?.();
+            } else if (event.nativeEvent.actionName === "activate") {
+              openPlace(chatId, message.place);
+            }
+          }}
           className="active:opacity-80"
         >
           <PlaceMessageCard

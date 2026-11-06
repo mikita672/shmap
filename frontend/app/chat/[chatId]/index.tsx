@@ -9,6 +9,7 @@ import { MessageList } from "@/components/chats/message-list";
 import { ReadOnlyBar } from "@/components/chats/read-only-bar";
 import { RouteBar } from "@/components/chats/route-bar";
 import { FriendActionsMenu } from "@/components/friends/friend-actions-menu";
+import { AddToRoutePopup } from "@/components/routes/add-to-route-popup";
 import { NewRoutePopup } from "@/components/routes/new-route-popup";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
@@ -22,7 +23,7 @@ import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useReadPositionOnOpen } from "@/hooks/useReadPositionOnOpen";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { setOpenChatId } from "@/lib/open-chat";
-import { AuthErrorCode } from "@/lib/types/api";
+import { AuthErrorCode, type ChatPlace } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function ChatScreen() {
@@ -46,6 +47,8 @@ export default function ChatScreen() {
   const menu = useFriendActionsMenu();
   const openProfile = useOpenProfile();
   const [isNewRouteOpen, setIsNewRouteOpen] = useState(false);
+  const [placeToAdd, setPlaceToAdd] = useState<ChatPlace | null>(null);
+  const [isAddToRouteOpen, setIsAddToRouteOpen] = useState(false);
 
   const handleMore = () => {
     if (chat?.type !== "DIRECT") {
@@ -149,6 +152,14 @@ export default function ChatScreen() {
             chatId={chat.id}
             isGroup={chat.type === "GROUP"}
             readUpTo={readUpTo}
+            onPlaceLongPress={
+              chat.canSend
+                ? (place) => {
+                    setPlaceToAdd(place);
+                    setIsAddToRouteOpen(true);
+                  }
+                : undefined
+            }
           />
           {chat.canSend ? (
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
@@ -184,6 +195,15 @@ export default function ChatScreen() {
               params: { routeId: String(route.id) },
             });
           }}
+        />
+      )}
+
+      {chat && (
+        <AddToRoutePopup
+          chat={chat}
+          place={placeToAdd}
+          visible={isAddToRouteOpen}
+          onClose={() => setIsAddToRouteOpen(false)}
         />
       )}
 

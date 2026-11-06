@@ -48,6 +48,7 @@ export interface PlaceMapProps {
   initialPlace?: PlaceDetails;
   leading?: MapSearchBarProps["leading"];
   renderActions?: PlaceDetailsSheetProps["renderActions"];
+  renderPrimaryAction?: PlaceDetailsSheetProps["renderPrimaryAction"];
   sheetOpensExpanded?: boolean;
   children?: ReactNode;
 }
@@ -56,6 +57,7 @@ export function PlaceMap({
   initialPlace,
   leading,
   renderActions,
+  renderPrimaryAction,
   sheetOpensExpanded,
   children,
 }: PlaceMapProps = {}) {
@@ -314,6 +316,7 @@ export function PlaceMap({
         onClose={handleSheetClose}
         onRetry={handleSheetRetry}
         renderActions={renderActions}
+        renderPrimaryAction={renderPrimaryAction}
         opensExpanded={sheetOpensExpanded}
         animatedBottomOffset={animatedBottomOffset}
       />

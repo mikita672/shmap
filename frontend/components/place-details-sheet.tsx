@@ -100,10 +100,12 @@ function PlaceContent({
   place,
   onClose,
   renderActions,
+  renderPrimaryAction,
 }: {
   place: PlaceDetails;
   onClose: () => void;
   renderActions: (place: PlaceDetails) => ReactNode;
+  renderPrimaryAction?: (place: PlaceDetails) => ReactNode;
 }) {
   return (
     <View className="px-5 pb-4 pt-1 gap-3">
@@ -118,6 +120,8 @@ function PlaceContent({
       <PlaceAddress place={place} />
 
       <Separator />
+
+      {renderPrimaryAction?.(place)}
 
       <View className="flex-row gap-3">{renderActions(place)}</View>
     </View>
@@ -141,6 +145,7 @@ export interface PlaceDetailsSheetProps {
   onClose: () => void;
   onRetry: () => void;
   renderActions?: (place: PlaceDetails) => ReactNode;
+  renderPrimaryAction?: (place: PlaceDetails) => ReactNode;
   opensExpanded?: boolean;
   animatedBottomOffset?: import("react-native-reanimated").SharedValue<number>;
 }
@@ -161,6 +166,7 @@ export function PlaceDetailsSheet({
   onClose,
   onRetry,
   renderActions = defaultActions,
+  renderPrimaryAction,
   opensExpanded = false,
   animatedBottomOffset,
 }: PlaceDetailsSheetProps) {
@@ -295,6 +301,7 @@ export function PlaceDetailsSheet({
               place={place}
               onClose={onClose}
               renderActions={renderActions}
+              renderPrimaryAction={renderPrimaryAction}
             />
           ) : null}
         </View>

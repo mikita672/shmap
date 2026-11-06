@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import {
   useMutation,
   useQueryClient,
@@ -54,6 +55,53 @@ export function useCreateRoute(chatId: number) {
     },
     onSuccess: (route) => {
       queryClient.setQueryData(routeQueryOptions(route.id).queryKey, route);
+      void queryClient.invalidateQueries({
+        queryKey: chatRoutesQueryOptions(chatId).queryKey,
+        exact: true,
+      });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't create the route"));
+    },
+  });
+}
+
+export type AddPlaceOutcome =
+  | { status: "added" }
+  | { status: "rejected"; error: unknown }
+  | { status: "unknown" };
+
+export function useCreateRouteWithPlace(chatId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      route,
+      place,
+    }: {
+      route: CreateRouteRequest;
+      place: ChatPlace;
+    }) => {
+      const { data: created } = await createRoute(chatId, route);
+      try {
+        const { data: withPlace } = await addRouteStop(created.id, place);
+        const outcome: AddPlaceOutcome = { status: "added" };
+        return { route: withPlace, outcome };
+      } catch (error) {
+        const outcome: AddPlaceOutcome =
+          error instanceof AxiosError && error.response
+            ? { status: "rejected", error }
+            : { status: "unknown" };
+        return { route: created, outcome };
+      }
+    },
+    onSuccess: ({ route, outcome }) => {
+      const { queryKey } = routeQueryOptions(route.id);
+      if (outcome.status === "added") {
+        queryClient.setQueryData(queryKey, route);
+      } else {
+        void queryClient.invalidateQueries({ queryKey, exact: true });
+      }
       void queryClient.invalidateQueries({
         queryKey: chatRoutesQueryOptions(chatId).queryKey,
         exact: true,
