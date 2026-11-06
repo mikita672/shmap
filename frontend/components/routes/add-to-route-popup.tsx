@@ -12,7 +12,11 @@ import { Popup } from "@/components/ui/popup";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { chatRoutesQueryOptions, useChatRoutes } from "@/hooks/useChatRoutes";
-import { useAddStop, useCreateRouteWithPlace } from "@/hooks/useRouteMutations";
+import {
+  useAddStop,
+  useCreateRouteWithPlace,
+  type AddPlaceOutcome,
+} from "@/hooks/useRouteMutations";
 import { MaterialIcons } from "@/lib/icons";
 import { setRouteFocus } from "@/lib/route-focus";
 import type {
@@ -58,15 +62,32 @@ export function AddToRoutePopup({
     if (!isBusy) close();
   };
 
-  const handleAdded = (route: RouteResponse, placeAdded = true) => {
+  const handleAdded = (
+    route: RouteResponse,
+    outcome: AddPlaceOutcome = { status: "added" },
+  ) => {
     close();
-    const added = placeAdded ? route.stops.at(-1)?.place : undefined;
-    const showToast = placeAdded ? toast.success : toast.error;
+    const added =
+      outcome.status === "added" ? route.stops.at(-1)?.place : undefined;
+    const showToast =
+      outcome.status === "added"
+        ? toast.success
+        : outcome.status === "rejected"
+          ? toast.error
+          : toast.warning;
     const toastId = showToast(
-      placeAdded
+      outcome.status === "added"
         ? `Added to ${route.name}`
-        : `Created ${route.name}, but couldn't add the place`,
+        : outcome.status === "rejected"
+          ? `Created ${route.name}, but couldn't add the place`
+          : `Created ${route.name}`,
       {
+        description:
+          outcome.status === "rejected"
+            ? getErrorMessage(outcome.error, "The place wasn't added")
+            : outcome.status === "unknown"
+              ? "Couldn't confirm the place was added. Open the route to check."
+              : undefined,
         action: {
           label: "Open",
           onClick: () => {
@@ -101,8 +122,8 @@ export function AddToRoutePopup({
               createWithPlace.mutate(
                 { route: data, place },
                 {
-                  onSuccess: ({ route, placeAdded }) =>
-                    handleAdded(route, placeAdded),
+                  onSuccess: ({ route, outcome }) =>
+                    handleAdded(route, outcome),
                 },
               );
             }}
