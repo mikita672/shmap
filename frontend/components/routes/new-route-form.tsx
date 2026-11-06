@@ -12,6 +12,8 @@ const MAX_NAME_LENGTH = 50;
 export interface NewRouteFormProps {
   description: string;
   isPending: boolean;
+  submitLabel?: string;
+  cancelLabel?: string;
   onSubmit: (data: CreateRouteRequest) => void;
   onCancel: () => void;
 }
@@ -19,6 +21,8 @@ export interface NewRouteFormProps {
 export function NewRouteForm({
   description,
   isPending,
+  submitLabel = "Create",
+  cancelLabel = "Cancel",
   onSubmit,
   onCancel,
 }: NewRouteFormProps) {
@@ -79,7 +83,9 @@ export function NewRouteForm({
           disabled={!trimmedName || isPending}
           onPress={handleSubmit}
         >
-          <Text className="text-2xl">{isPending ? "Creating…" : "Create"}</Text>
+          <Text className="text-2xl">
+            {isPending ? "Creating…" : submitLabel}
+          </Text>
         </Button>
         <Button
           variant="secondary"
@@ -88,7 +94,7 @@ export function NewRouteForm({
           disabled={isPending}
           onPress={onCancel}
         >
-          <Text className="text-xl">Cancel</Text>
+          <Text className="text-xl">{cancelLabel}</Text>
         </Button>
       </View>
     </View>

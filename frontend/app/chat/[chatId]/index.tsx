@@ -200,7 +200,7 @@ export default function ChatScreen() {
 
       {chat && (
         <AddToRoutePopup
-          chatId={chat.id}
+          chat={chat}
           place={placeToAdd}
           visible={isAddToRouteOpen}
           onClose={() => setIsAddToRouteOpen(false)}

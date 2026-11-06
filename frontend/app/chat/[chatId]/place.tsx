@@ -63,12 +63,14 @@ export default function PlaceScreen() {
         )}
       />
 
-      <AddToRoutePopup
-        chatId={chatId}
-        place={placeToAdd}
-        visible={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-      />
+      {chat && (
+        <AddToRoutePopup
+          chat={chat}
+          place={placeToAdd}
+          visible={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+        />
+      )}
     </>
   );
 }

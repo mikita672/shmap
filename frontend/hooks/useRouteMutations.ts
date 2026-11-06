@@ -65,6 +65,38 @@ export function useCreateRoute(chatId: number) {
   });
 }
 
+export function useCreateRouteWithPlace(chatId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      route,
+      place,
+    }: {
+      route: CreateRouteRequest;
+      place: ChatPlace;
+    }) => {
+      const { data: created } = await createRoute(chatId, route);
+      try {
+        const { data: withPlace } = await addRouteStop(created.id, place);
+        return { route: withPlace, placeAdded: true };
+      } catch {
+        return { route: created, placeAdded: false };
+      }
+    },
+    onSuccess: ({ route }) => {
+      queryClient.setQueryData(routeQueryOptions(route.id).queryKey, route);
+      void queryClient.invalidateQueries({
+        queryKey: chatRoutesQueryOptions(chatId).queryKey,
+        exact: true,
+      });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Couldn't create the route"));
+    },
+  });
+}
+
 export function useSetTravelMode(routeId: number) {
   return useOptimisticRouteEdit(routeId, {
     request: async (travelMode: TravelMode) => {
