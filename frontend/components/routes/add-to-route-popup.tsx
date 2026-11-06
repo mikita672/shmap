@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { RoutePickerRow } from "@/components/routes/route-picker-row";
 import { Button } from "@/components/ui/button";
 import { Popup } from "@/components/ui/popup";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
-import { useChatRoutes } from "@/hooks/useChatRoutes";
+import { chatRoutesQueryOptions, useChatRoutes } from "@/hooks/useChatRoutes";
+import { useAddStop } from "@/hooks/useRouteMutations";
 import { MaterialIcons } from "@/lib/icons";
-import type { ChatPlace } from "@/lib/types/api";
+import type { ChatPlace, RouteSummaryResponse } from "@/lib/types/api";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export interface AddToRoutePopupProps {
@@ -23,9 +26,17 @@ export function AddToRoutePopup({
   onClose,
 }: AddToRoutePopupProps) {
   const { data: routes, isPending, error, refetch } = useChatRoutes(chatId);
+  const [addingRouteId, setAddingRouteId] = useState<number | null>(null);
+  const isAdding =
+    addingRouteId !== null &&
+    Boolean(routes?.some((route) => route.id === addingRouteId));
+
+  const handleClose = () => {
+    if (!isAdding) onClose();
+  };
 
   return (
-    <Popup visible={visible} onClose={onClose} className="pb-5 pt-6">
+    <Popup visible={visible} onClose={handleClose} className="pb-5 pt-6">
       <View className="items-center gap-1 px-6 pb-4">
         <View className="mb-1 h-14 w-14 items-center justify-center rounded-full bg-action">
           <MaterialIcons
@@ -64,7 +75,17 @@ export function AddToRoutePopup({
           contentContainerClassName="gap-2 px-5"
         >
           {routes.map((route) => (
-            <RoutePickerRow key={route.id} variant="route" route={route} />
+            <AddToRouteRow
+              key={route.id}
+              chatId={chatId}
+              route={route}
+              place={place}
+              isAdding={isAdding && route.id === addingRouteId}
+              disabled={isAdding}
+              onStart={() => setAddingRouteId(route.id)}
+              onSettled={() => setAddingRouteId(null)}
+              onAdded={onClose}
+            />
           ))}
         </ScrollView>
       )}
@@ -73,9 +94,60 @@ export function AddToRoutePopup({
         icon="close"
         accessibilityLabel="Close"
         hitSlop={8}
-        onPress={onClose}
+        onPress={handleClose}
+        disabled={isAdding}
         className="absolute right-4 top-4"
       />
     </Popup>
+  );
+}
+
+interface AddToRouteRowProps {
+  chatId: number;
+  route: RouteSummaryResponse;
+  place: ChatPlace | null;
+  isAdding: boolean;
+  disabled: boolean;
+  onStart: () => void;
+  onSettled: () => void;
+  onAdded: () => void;
+}
+
+function AddToRouteRow({
+  chatId,
+  route,
+  place,
+  isAdding,
+  disabled,
+  onStart,
+  onSettled,
+  onAdded,
+}: AddToRouteRowProps) {
+  const queryClient = useQueryClient();
+  const addStop = useAddStop(route.id);
+
+  const handlePress = () => {
+    if (!place) return;
+    onStart();
+    addStop.mutate(place, {
+      onSuccess: onAdded,
+      onError: () => {
+        void queryClient.invalidateQueries({
+          queryKey: chatRoutesQueryOptions(chatId).queryKey,
+          exact: true,
+        });
+      },
+      onSettled,
+    });
+  };
+
+  return (
+    <RoutePickerRow
+      variant="route"
+      route={route}
+      isAdding={isAdding}
+      disabled={disabled}
+      onPress={place ? handlePress : undefined}
+    />
   );
 }
