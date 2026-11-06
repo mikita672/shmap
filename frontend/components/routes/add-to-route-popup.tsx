@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { toast } from "sonner-native";
 import { RoutePickerRow } from "@/components/routes/route-picker-row";
 import { Button } from "@/components/ui/button";
 import { Popup } from "@/components/ui/popup";
@@ -9,7 +11,12 @@ import { Text } from "@/components/ui/text";
 import { chatRoutesQueryOptions, useChatRoutes } from "@/hooks/useChatRoutes";
 import { useAddStop } from "@/hooks/useRouteMutations";
 import { MaterialIcons } from "@/lib/icons";
-import type { ChatPlace, RouteSummaryResponse } from "@/lib/types/api";
+import { setRouteFocus } from "@/lib/route-focus";
+import type {
+  ChatPlace,
+  RouteResponse,
+  RouteSummaryResponse,
+} from "@/lib/types/api";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export interface AddToRoutePopupProps {
@@ -33,6 +40,26 @@ export function AddToRoutePopup({
 
   const handleClose = () => {
     if (!isAdding) onClose();
+  };
+
+  const handleAdded = (route: RouteResponse) => {
+    onClose();
+    const added = route.stops.at(-1)?.place;
+    const toastId = toast.success(`Added to ${route.name}`, {
+      action: {
+        label: "Open",
+        onClick: () => {
+          toast.dismiss(toastId);
+          if (added) {
+            setRouteFocus(route.id, [added.longitude, added.latitude]);
+          }
+          router.push({
+            pathname: "/route/[routeId]",
+            params: { routeId: String(route.id) },
+          });
+        },
+      },
+    });
   };
 
   return (
@@ -84,7 +111,7 @@ export function AddToRoutePopup({
               disabled={isAdding}
               onStart={() => setAddingRouteId(route.id)}
               onSettled={() => setAddingRouteId(null)}
-              onAdded={onClose}
+              onAdded={handleAdded}
             />
           ))}
         </ScrollView>
@@ -110,7 +137,7 @@ interface AddToRouteRowProps {
   disabled: boolean;
   onStart: () => void;
   onSettled: () => void;
-  onAdded: () => void;
+  onAdded: (route: RouteResponse) => void;
 }
 
 function AddToRouteRow({
