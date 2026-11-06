@@ -1,4 +1,5 @@
 import { Pressable, View } from "react-native";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { MessageBubble } from "@/components/chats/message-bubble";
 import { PlaceMessageCard } from "@/components/chats/place-message-card";
@@ -28,6 +29,7 @@ export interface MessageRowProps {
   isFirstInRun: boolean;
   isLastInRun: boolean;
   onSenderPress?: (sender: UserSummaryResponse) => void;
+  onPlaceLongPress?: (place: ChatPlace) => void;
 }
 
 export function MessageRow({
@@ -38,6 +40,7 @@ export function MessageRow({
   isFirstInRun,
   isLastInRun,
   onSenderPress,
+  onPlaceLongPress,
 }: MessageRowProps) {
   const showAuthor = isGroup && !isMine;
   const { sender } = message;
@@ -49,6 +52,15 @@ export function MessageRow({
   const handleSenderPress = onSenderPress
     ? () => onSenderPress(sender)
     : undefined;
+  const handlePlaceLongPress =
+    message.type === "PLACE" && onPlaceLongPress
+      ? () => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(
+            () => {},
+          );
+          onPlaceLongPress(message.place);
+        }
+      : undefined;
 
   return (
     <View
@@ -76,8 +88,24 @@ export function MessageRow({
       {message.type === "PLACE" ? (
         <Pressable
           onPress={() => openPlace(chatId, message.place)}
+          onLongPress={handlePlaceLongPress}
           accessibilityRole="button"
           accessibilityHint="Opens the place on the map"
+          accessibilityActions={
+            handlePlaceLongPress
+              ? [
+                  { name: "activate" },
+                  { name: "addToRoute", label: "Add to route" },
+                ]
+              : undefined
+          }
+          onAccessibilityAction={(event) => {
+            if (event.nativeEvent.actionName === "addToRoute") {
+              handlePlaceLongPress?.();
+            } else if (event.nativeEvent.actionName === "activate") {
+              openPlace(chatId, message.place);
+            }
+          }}
           className="active:opacity-80"
         >
           <PlaceMessageCard

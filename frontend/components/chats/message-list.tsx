@@ -25,6 +25,7 @@ import { useChatMessages } from "@/hooks/useChatMessages";
 import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { useOutgoingMessages } from "@/hooks/useSendMessage";
+import type { ChatPlace } from "@/lib/types/api";
 import { useStickToBottom } from "@/hooks/useStickToBottom";
 import {
   buildChatItems,
@@ -40,9 +41,15 @@ export interface MessageListProps {
   chatId: number;
   isGroup: boolean;
   readUpTo?: number | null;
+  onPlaceLongPress?: (place: ChatPlace) => void;
 }
 
-export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
+export function MessageList({
+  chatId,
+  isGroup,
+  readUpTo,
+  onPlaceLongPress,
+}: MessageListProps) {
   const {
     data,
     isPending,
@@ -243,6 +250,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
               isFirstInRun={item.isFirstInRun}
               isLastInRun={item.isLastInRun}
               onSenderPress={openProfile}
+              onPlaceLongPress={onPlaceLongPress}
             />
           )
         }
