@@ -236,6 +236,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
             </Pressable>
           ) : (
             <MessageRow
+              chatId={chatId}
               message={item.message}
               isMine={item.message.sender.id === me?.id}
               isGroup={isGroup}

@@ -62,12 +62,12 @@ function RootNavigator() {
             <Stack.Screen name="chat/[chatId]/info" />
             <Stack.Screen name="chat/[chatId]/add-members" />
             <Stack.Screen name="chat/[chatId]/pick-place" />
+            <Stack.Screen name="chat/[chatId]/place" />
             <Stack.Screen name="chat/[chatId]/routes" />
             <Stack.Screen name="new-group/index" />
             <Stack.Screen name="new-group/details" />
             <Stack.Screen name="add-to-group/[userId]" />
             <Stack.Screen name="send-place" />
-            <Stack.Screen name="place" />
             <Stack.Screen name="route/[routeId]/index" />
             <Stack.Screen name="route/[routeId]/add-stop" />
             <Stack.Screen

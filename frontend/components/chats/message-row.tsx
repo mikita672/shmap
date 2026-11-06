@@ -13,14 +13,15 @@ import { cn } from "@/lib/utils";
 
 const AVATAR_SIZE = 32;
 
-function openPlace(place: ChatPlace) {
+function openPlace(chatId: number, place: ChatPlace) {
   router.push({
-    pathname: "/place",
-    params: { place: JSON.stringify(place) },
+    pathname: "/chat/[chatId]/place",
+    params: { chatId: String(chatId), place: JSON.stringify(place) },
   });
 }
 
 export interface MessageRowProps {
+  chatId: number;
   message: ChatMessageResponse;
   isMine: boolean;
   isGroup: boolean;
@@ -30,6 +31,7 @@ export interface MessageRowProps {
 }
 
 export function MessageRow({
+  chatId,
   message,
   isMine,
   isGroup,
@@ -73,7 +75,7 @@ export function MessageRow({
         ))}
       {message.type === "PLACE" ? (
         <Pressable
-          onPress={() => openPlace(message.place)}
+          onPress={() => openPlace(chatId, message.place)}
           accessibilityRole="button"
           accessibilityHint="Opens the place on the map"
           className="active:opacity-80"
