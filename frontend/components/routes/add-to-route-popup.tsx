@@ -97,24 +97,35 @@ export function AddToRoutePopup({
           </Button>
         </View>
       ) : (
-        <ScrollView
-          className="max-h-[296px]"
-          contentContainerClassName="gap-2 px-5"
-        >
-          {routes.map((route) => (
-            <AddToRouteRow
-              key={route.id}
-              chatId={chatId}
-              route={route}
-              place={place}
-              isAdding={isAdding && route.id === addingRouteId}
-              disabled={isAdding}
-              onStart={() => setAddingRouteId(route.id)}
-              onSettled={() => setAddingRouteId(null)}
-              onAdded={handleAdded}
-            />
-          ))}
-        </ScrollView>
+        <>
+          {routes.length > 0 ? (
+            <ScrollView
+              className="max-h-[296px]"
+              contentContainerClassName="gap-2 px-5"
+            >
+              {routes.map((route) => (
+                <AddToRouteRow
+                  key={route.id}
+                  chatId={chatId}
+                  route={route}
+                  place={place}
+                  isAdding={isAdding && route.id === addingRouteId}
+                  disabled={isAdding}
+                  onStart={() => setAddingRouteId(route.id)}
+                  onSettled={() => setAddingRouteId(null)}
+                  onAdded={handleAdded}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <Text className="px-6 pb-2 text-center text-sm leading-5 text-card-muted">
+              This chat has no routes yet.
+            </Text>
+          )}
+          <View className="px-5 pt-2">
+            <RoutePickerRow variant="new" disabled={isAdding} />
+          </View>
+        </>
       )}
 
       <RoundButton
