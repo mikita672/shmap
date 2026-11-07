@@ -2,7 +2,7 @@ import { formatOsmCategory } from "@/lib/api/geocoding";
 import { formatChatListTime } from "@/lib/chat-time";
 import type { RouteStopResponse, TravelMode } from "@/lib/types/api";
 
-export const MAX_ROUTE_STOPS = 25;
+export const MAX_ROUTE_STOPS = 10;
 
 export const TRAVEL_MODE_LABELS: Record<TravelMode, string> = {
   WALKING: "Walking",
