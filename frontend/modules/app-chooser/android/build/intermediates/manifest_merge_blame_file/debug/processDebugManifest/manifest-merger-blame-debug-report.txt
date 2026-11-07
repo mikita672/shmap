@@ -1,0 +1,42 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="expo.modules.appchooser" >
+4
+5    <uses-sdk android:minSdkVersion="24" />
+6
+7    <queries>
+7-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:2:3-13:13
+8        <intent>
+8-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:3:5-7:14
+9            <action android:name="android.intent.action.VIEW" />
+9-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:4:7-59
+9-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:4:15-56
+10
+11            <category android:name="android.intent.category.BROWSABLE" />
+11-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:5:7-68
+11-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:5:17-65
+12
+13            <data android:scheme="https" />
+13-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:6:7-38
+13-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:6:13-35
+14        </intent>
+15        <intent>
+15-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:8:5-12:14
+16            <action android:name="android.intent.action.VIEW" />
+16-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:4:7-59
+16-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:4:15-56
+17
+18            <category android:name="android.intent.category.BROWSABLE" />
+18-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:5:7-68
+18-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:5:17-65
+19
+20            <data
+20-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:6:7-38
+21                android:host="www.google.com"
+21-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:11:36-65
+22                android:scheme="https" />
+22-->/mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:6:13-35
+23        </intent>
+24    </queries>
+25
+26</manifest>

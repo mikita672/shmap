@@ -10,6 +10,7 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 import { AddPlaceButton } from "@/components/routes/add-place-button";
+import { OpenInMapsButton } from "@/components/routes/open-in-maps-button";
 import { PathSummary } from "@/components/routes/path-summary";
 import { StopDetails } from "@/components/routes/stop-details";
 import { StopList } from "@/components/routes/stop-list";
@@ -28,6 +29,7 @@ export interface RouteSheetProps {
   route: RouteResponse;
   animatedPosition: SharedValue<number>;
   onAddPlace?: () => void;
+  onOpenInMaps?: () => void;
   onTravelModeChange?: (travelMode: TravelMode) => void;
   onRetryPath?: () => void;
   selectedStopId?: number | null;
@@ -41,6 +43,7 @@ export function RouteSheet({
   route,
   animatedPosition,
   onAddPlace,
+  onOpenInMaps,
   onTravelModeChange,
   onRetryPath,
   selectedStopId,
@@ -134,6 +137,12 @@ export function RouteSheet({
                 label="Add place"
                 isFull={isFull}
                 onPress={onAddPlace}
+              />
+            )}
+            {route.stops.length > 0 && (
+              <OpenInMapsButton
+                stopCount={route.stops.length}
+                onPress={onOpenInMaps}
               />
             )}
             {notice}

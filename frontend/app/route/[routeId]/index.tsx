@@ -23,6 +23,7 @@ import {
 } from "@/hooks/useRouteMutations";
 import { useStalePathRetry } from "@/hooks/useStalePathRetry";
 import { getChatTitle } from "@/lib/chat-preview";
+import { openRouteInMaps } from "@/lib/open-route-in-maps";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
@@ -96,6 +97,7 @@ export default function RouteScreen() {
             route.canEdit ? (mode) => setTravelMode.mutate(mode) : undefined
           }
           onRetryPath={() => retryPath.mutate()}
+          onOpenInMaps={() => openRouteInMaps(route)}
         />
         <RouteHeader
           name={route.name}
