@@ -47,7 +47,7 @@ import java.util.Optional;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Route {
-    public static final int MAX_STOPS = 25;
+    public static final int MAX_STOPS = 10;
 
     @Id
     @GeneratedValue
