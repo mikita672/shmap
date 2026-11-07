@@ -1,9 +1,31 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:1:1-2:12
-INJECTED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:1:1-2:12
+ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:1:1-14:12
+INJECTED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:1:1-14:12
 	package
 		INJECTED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:1:11-69
+queries
+ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:2:3-13:13
+intent#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+data:scheme:https
+ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:3:5-7:14
+action#android.intent.action.VIEW
+ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:4:7-59
+	android:name
+		ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:4:15-56
+category#android.intent.category.BROWSABLE
+ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:5:7-68
+	android:name
+		ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:5:17-65
+data
+ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:6:7-38
+	android:host
+		ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:11:36-65
+	android:scheme
+		ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:6:13-35
+intent#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+data:host:www.google.com+data:scheme:https
+ADDED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml:8:5-12:14
 uses-sdk
 INJECTED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /mnt/data/dev/shmap/frontend/modules/app-chooser/android/src/main/AndroidManifest.xml
