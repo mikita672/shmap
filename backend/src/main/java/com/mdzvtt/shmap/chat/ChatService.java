@@ -15,6 +15,7 @@ import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.FriendshipRepository;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
+import com.mdzvtt.shmap.route.Route;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -177,6 +178,11 @@ public class ChatService {
     @Transactional
     public ChatMessageResponse sendPlace(Integer userId, Long chatId, PlaceSnapshot place, UUID clientId) {
         return post(userId, chatId, clientId, (chat, sender) -> ChatMessage.place(chat, sender, place, clientId));
+    }
+
+    @Transactional
+    public ChatMessageResponse sendRoute(Integer userId, Long chatId, Route route, String text) {
+        return post(userId, chatId, null, (chat, sender) -> ChatMessage.route(chat, sender, route, text));
     }
 
     private ChatMessageResponse post(Integer userId, Long chatId, UUID clientId,

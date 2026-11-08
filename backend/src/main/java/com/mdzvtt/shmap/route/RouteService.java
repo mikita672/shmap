@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.chat.ChatChanged;
 import com.mdzvtt.shmap.chat.ChatAccess;
 import com.mdzvtt.shmap.chat.ChatMemberRepository;
+import com.mdzvtt.shmap.chat.ChatService;
 import com.mdzvtt.shmap.chat.ChatType;
 import com.mdzvtt.shmap.directions.RoutingRequest;
 import com.mdzvtt.shmap.directions.RoutingResult;
@@ -36,6 +37,7 @@ public class RouteService {
     private final UserRepository userRepository;
     private final ChatAccess chatAccess;
     private final ChatMemberRepository chatMemberRepository;
+    private final ChatService chatService;
     private final StorageService storageService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -46,7 +48,7 @@ public class RouteService {
         Route route = routeRepository.save(
                 new Route(chat, name, userRepository.getReferenceById(userId), travelMode));
         announceChanged(route);
-        announceDirectChat(chat);
+        chatService.sendRoute(userId, chatId, route, message);
         return toResponse(route, userId);
     }
 
