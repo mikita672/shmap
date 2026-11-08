@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { MessageBubble } from "@/components/chats/message-bubble";
 import { PlaceMessageCard } from "@/components/chats/place-message-card";
+import { RouteMessage } from "@/components/chats/route-message";
 import { Avatar } from "@/components/ui/avatar";
 import { formatMessageTime } from "@/lib/chat-time";
 import type {
@@ -85,7 +86,16 @@ export function MessageRow({
         ) : (
           <View style={{ width: AVATAR_SIZE }} />
         ))}
-      {message.type === "ROUTE" ? null : message.type === "PLACE" ? (
+      {message.type === "ROUTE" ? (
+        <RouteMessage
+          route={message.route}
+          text={message.text}
+          time={time}
+          isMine={isMine}
+          senderName={senderName}
+          onSenderPress={handleSenderPress}
+        />
+      ) : message.type === "PLACE" ? (
         <Pressable
           onPress={() => openPlace(chatId, message.place)}
           onLongPress={handlePlaceLongPress}
