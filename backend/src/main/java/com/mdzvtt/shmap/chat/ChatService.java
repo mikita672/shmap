@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
+import com.mdzvtt.shmap.chat.dto.MessageRouteResponse;
 import com.mdzvtt.shmap.exception.ChatMessageNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
@@ -294,6 +295,7 @@ public class ChatService {
                 message.getType(),
                 message.getText(),
                 PlaceResponse.from(message.getPlace()),
+                MessageRouteResponse.from(message),
                 message.getCreatedAt(),
                 message.getClientId());
     }
