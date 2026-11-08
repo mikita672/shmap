@@ -3,6 +3,7 @@ package com.mdzvtt.shmap.chat;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -34,4 +35,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
         and m.sender.id <> :userId
       """)
   long countUnread(Integer userId);
+
+  @Modifying
+  @Query("update ChatMessage m set m.routeName = :name where m.route.id = :routeId")
+  int renameRoute(Long routeId, String name);
 }
