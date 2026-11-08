@@ -8,6 +8,7 @@ import { MaterialIcons } from "@/lib/icons";
 import type { CreateRouteRequest, TravelMode } from "@/lib/types/api";
 
 const MAX_NAME_LENGTH = 50;
+const MAX_MESSAGE_LENGTH = 2000;
 
 export interface NewRouteFormProps {
   description: string;
@@ -27,12 +28,17 @@ export function NewRouteForm({
   onCancel,
 }: NewRouteFormProps) {
   const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
   const [travelMode, setTravelMode] = useState<TravelMode>("WALKING");
   const trimmedName = name.trim();
 
   const handleSubmit = () => {
     if (!trimmedName || isPending) return;
-    onSubmit({ name: trimmedName, travelMode });
+    onSubmit({
+      name: trimmedName,
+      travelMode,
+      message: message.trim() || undefined,
+    });
   };
 
   return (
@@ -63,6 +69,16 @@ export function NewRouteForm({
           placeholder="e.g. Old Town food walk"
           returnKeyType="done"
           onSubmitEditing={handleSubmit}
+          editable={!isPending}
+        />
+        <TextField
+          label="Message (optional)"
+          value={message}
+          onChangeText={setMessage}
+          maxLength={MAX_MESSAGE_LENGTH}
+          placeholder="Add a note for the chat"
+          multiline
+          className="h-24 sm:h-24"
           editable={!isPending}
         />
         <View className="flex-row items-center pl-7">
