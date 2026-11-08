@@ -40,7 +40,7 @@ public class RouteService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public RouteResponse create(Integer userId, Long chatId, String name, TravelMode travelMode) {
+    public RouteResponse create(Integer userId, Long chatId, String name, TravelMode travelMode, String message) {
         Chat chat = chatAccess.findForMember(userId, chatId);
         requireCanEdit(chat, userId);
         Route route = routeRepository.save(
