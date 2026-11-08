@@ -85,7 +85,7 @@ export function MessageRow({
         ) : (
           <View style={{ width: AVATAR_SIZE }} />
         ))}
-      {message.type === "PLACE" ? (
+      {message.type === "ROUTE" ? null : message.type === "PLACE" ? (
         <Pressable
           onPress={() => openPlace(chatId, message.place)}
           onLongPress={handlePlaceLongPress}
