@@ -1,4 +1,8 @@
-import type { LngLat, ViewState } from "@maplibre/maplibre-react-native";
+import type {
+  LngLat,
+  LngLatBounds,
+  ViewState,
+} from "@maplibre/maplibre-react-native";
 
 const MS_PER_ZOOM_LEVEL = 250;
 const MIN_FLY_DURATION = 800;
@@ -41,4 +45,16 @@ export function waitForAnimation(
       resolve();
     });
   });
+}
+
+export function getBounds(points: LngLat[]): LngLatBounds | null {
+  if (points.length === 0) return null;
+  const longitudes = points.map(([lng]) => lng);
+  const latitudes = points.map(([, lat]) => lat);
+  return [
+    Math.min(...longitudes),
+    Math.min(...latitudes),
+    Math.max(...longitudes),
+    Math.max(...latitudes),
+  ];
 }

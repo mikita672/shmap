@@ -22,8 +22,10 @@ import { UnreadDivider } from "@/components/chats/unread-divider";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useChatMessages } from "@/hooks/useChatMessages";
+import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { useOutgoingMessages } from "@/hooks/useSendMessage";
+import type { ChatPlace } from "@/lib/types/api";
 import { useStickToBottom } from "@/hooks/useStickToBottom";
 import {
   buildChatItems,
@@ -39,9 +41,15 @@ export interface MessageListProps {
   chatId: number;
   isGroup: boolean;
   readUpTo?: number | null;
+  onPlaceLongPress?: (place: ChatPlace) => void;
 }
 
-export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
+export function MessageList({
+  chatId,
+  isGroup,
+  readUpTo,
+  onPlaceLongPress,
+}: MessageListProps) {
   const {
     data,
     isPending,
@@ -54,6 +62,7 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
     fetchStatus,
   } = useChatMessages(chatId);
   const { data: me } = useProfile();
+  const openProfile = useOpenProfile();
   const { outgoing, retry } = useOutgoingMessages(chatId);
   const listRef = useRef<FlatList<ChatItem>>(null);
   const hasDecidedScrollRef = useRef(false);
@@ -234,11 +243,14 @@ export function MessageList({ chatId, isGroup, readUpTo }: MessageListProps) {
             </Pressable>
           ) : (
             <MessageRow
+              chatId={chatId}
               message={item.message}
               isMine={item.message.sender.id === me?.id}
               isGroup={isGroup}
               isFirstInRun={item.isFirstInRun}
               isLastInRun={item.isLastInRun}
+              onSenderPress={openProfile}
+              onPlaceLongPress={onPlaceLongPress}
             />
           )
         }

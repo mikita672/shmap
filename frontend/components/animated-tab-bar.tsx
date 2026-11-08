@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Pressable,
@@ -6,18 +6,12 @@ import {
   StyleSheet,
   LayoutChangeEvent,
 } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import type { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Badge } from "@/components/ui/badge";
+import { useSlidingPill } from "@/hooks/useSlidingPill";
 import { useTabColors } from "@/hooks/useTabColors";
 
 type TabBarProps = Parameters<
@@ -42,13 +36,6 @@ export function AnimatedTabBar({
   const insets = useSafeAreaInsets();
 
   const [containerWidth, setContainerWidth] = useState(0);
-  const prevIndexRef = useRef(state.index);
-  const prevTabWidthRef = useRef(0);
-  const isInitializedRef = useRef(false);
-
-  const translateX = useSharedValue(0);
-  const scaleX = useSharedValue(1);
-  const scaleY = useSharedValue(1);
 
   const tabCount = state.routes.length;
   const tabWidth = containerWidth > 0 ? containerWidth / tabCount : 0;
@@ -60,69 +47,10 @@ export function AnimatedTabBar({
     }
   };
 
-  useEffect(() => {
-    if (tabWidth <= 0) return;
-
-    const targetX = (state.index + 0.5) * tabWidth - BUBBLE_WIDTH / 2;
-
-    if (!isInitializedRef.current) {
-      translateX.value = targetX;
-      isInitializedRef.current = true;
-      prevIndexRef.current = state.index;
-      prevTabWidthRef.current = tabWidth;
-      return;
-    }
-
-    const prevIndex = prevIndexRef.current;
-    const tabWidthChanged = prevTabWidthRef.current !== tabWidth;
-    prevTabWidthRef.current = tabWidth;
-
-    if (tabWidthChanged && prevIndex === state.index) {
-      translateX.value = targetX;
-      return;
-    }
-
-    if (prevIndex !== state.index) {
-      const distance = Math.abs(state.index - prevIndex);
-
-      const stretchFactor = 1 + Math.min(distance * 0.18, 0.35);
-      const squashFactor = 1 - Math.min(distance * 0.1, 0.2);
-
-      scaleX.value = withSequence(
-        withTiming(stretchFactor, {
-          duration: 65,
-          easing: Easing.out(Easing.quad),
-        }),
-        withTiming(1, { duration: 75, easing: Easing.inOut(Easing.quad) }),
-      );
-
-      scaleY.value = withSequence(
-        withTiming(squashFactor, {
-          duration: 65,
-          easing: Easing.out(Easing.quad),
-        }),
-        withTiming(1, { duration: 75, easing: Easing.inOut(Easing.quad) }),
-      );
-
-      translateX.value = withSpring(targetX, {
-        stiffness: 280,
-        damping: 24,
-        mass: 0.45,
-      });
-
-      prevIndexRef.current = state.index;
-    }
-  }, [state.index, tabWidth, translateX, scaleX, scaleY]);
-
-  const bubbleAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { scaleX: scaleX.value },
-        { scaleY: scaleY.value },
-      ],
-    };
-  });
+  const bubbleStyle = useSlidingPill(
+    state.index,
+    (state.index + 0.5) * tabWidth - BUBBLE_WIDTH / 2,
+  );
 
   const bottomPadding = Math.max(insets.bottom, 8);
 
@@ -143,7 +71,7 @@ export function AnimatedTabBar({
           style={[
             styles.bubble,
             { backgroundColor: colors.bubble },
-            bubbleAnimatedStyle,
+            bubbleStyle,
           ]}
         />
       )}

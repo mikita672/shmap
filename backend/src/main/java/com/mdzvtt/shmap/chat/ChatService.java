@@ -2,18 +2,20 @@ package com.mdzvtt.shmap.chat;
 
 import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
-import com.mdzvtt.shmap.chat.dto.ChatPlaceResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
+import com.mdzvtt.shmap.chat.dto.MessageRouteResponse;
 import com.mdzvtt.shmap.exception.ChatMessageNotFoundException;
-import com.mdzvtt.shmap.exception.ChatNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.NotGroupChatException;
 import com.mdzvtt.shmap.exception.SelfChatException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.FriendshipRepository;
+import com.mdzvtt.shmap.place.PlaceSnapshot;
+import com.mdzvtt.shmap.place.dto.PlaceResponse;
+import com.mdzvtt.shmap.route.Route;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -45,6 +47,7 @@ public class ChatService {
     private final FriendshipRepository friendshipRepository;
     private final UserBlockRepository userBlockRepository;
     private final StorageService storageService;
+    private final ChatAccess chatAccess;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -96,7 +99,7 @@ public class ChatService {
 
     @Transactional
     public ChatResponse addMembers(Integer userId, Long chatId, Set<Integer> userIds) {
-        lockChat(chatId);
+        chatAccess.lock(chatId);
         Chat chat = findGroupChat(userId, chatId);
 
         Set<Integer> newIds = new LinkedHashSet<>(userIds);
@@ -117,7 +120,7 @@ public class ChatService {
 
     @Transactional
     public void leave(Integer userId, Long chatId) {
-        lockChat(chatId);
+        chatAccess.lock(chatId);
         Chat chat = findGroupChat(userId, chatId);
         chatMemberRepository.deleteByChatIdAndUserId(chatId, userId);
 
@@ -153,12 +156,12 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public ChatResponse getChat(Integer userId, Long chatId) {
-        return toResponse(findChat(userId, chatId), userId);
+        return toResponse(chatAccess.findForMember(userId, chatId), userId);
     }
 
     @Transactional(readOnly = true)
     public List<ChatMessageResponse> getMessages(Integer userId, Long chatId, Long before) {
-        findChat(userId, chatId);
+        chatAccess.findForMember(userId, chatId);
         List<ChatMessage> messages = before == null
                 ? chatMessageRepository.findByChatIdOrderByIdDesc(chatId, PAGE_SIZE)
                 : chatMessageRepository.findByChatIdAndIdLessThanOrderByIdDesc(chatId, before, PAGE_SIZE);
@@ -173,21 +176,26 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatMessageResponse sendPlace(Integer userId, Long chatId, MessagePlace place, UUID clientId) {
+    public ChatMessageResponse sendPlace(Integer userId, Long chatId, PlaceSnapshot place, UUID clientId) {
         return post(userId, chatId, clientId, (chat, sender) -> ChatMessage.place(chat, sender, place, clientId));
+    }
+
+    @Transactional
+    public ChatMessageResponse sendRoute(Integer userId, Long chatId, Route route, String text) {
+        return post(userId, chatId, null, (chat, sender) -> ChatMessage.route(chat, sender, route, text));
     }
 
     private ChatMessageResponse post(Integer userId, Long chatId, UUID clientId,
             BiFunction<Chat, User, ChatMessage> create) {
-        lockChat(chatId);
-        Chat chat = findChat(userId, chatId);
+        chatAccess.lock(chatId);
+        Chat chat = chatAccess.findForMember(userId, chatId);
         if (clientId != null) {
             var sent = chatMessageRepository.findByChatIdAndSenderIdAndClientId(chatId, userId, clientId);
             if (sent.isPresent()) {
                 return toMessageResponse(sent.get());
             }
         }
-        if (!canSend(chat, userId)) {
+        if (!chatAccess.canSend(chat, userId)) {
             throw new NotFriendsException("You can only message friends");
         }
         User sender = userRepository.getReferenceById(userId);
@@ -201,7 +209,7 @@ public class ChatService {
 
     @Transactional
     public void markRead(Integer userId, Long chatId, Long messageId) {
-        findChat(userId, chatId);
+        chatAccess.findForMember(userId, chatId);
         if (!chatMessageRepository.existsByIdAndChatId(messageId, chatId)) {
             throw new ChatMessageNotFoundException();
         }
@@ -218,21 +226,8 @@ public class ChatService {
         eventPublisher.publishEvent(new ChatRead(chatId, userId, messageId, unreadCount, totalUnreadCount));
     }
 
-    private Chat findChat(Integer userId, Long chatId) {
-        return chatRepository.findForMember(chatId, userId).orElseThrow(ChatNotFoundException::new);
-    }
-
-    private boolean canSend(Chat chat, Integer userId) {
-        return chat.getType() == ChatType.GROUP
-                || friendshipRepository.existsByUserIdAndFriendId(userId, chat.otherUserId(userId));
-    }
-
-    private void lockChat(Long chatId) {
-        chatRepository.findByIdForUpdate(chatId).orElseThrow(ChatNotFoundException::new);
-    }
-
     private Chat findGroupChat(Integer userId, Long chatId) {
-        Chat chat = findChat(userId, chatId);
+        Chat chat = chatAccess.findForMember(userId, chatId);
         if (chat.getType() != ChatType.GROUP) {
             throw new NotGroupChatException();
         }
@@ -272,8 +267,8 @@ public class ChatService {
         List<UserSummaryResponse> members = chatMemberRepository.findOtherMembers(chat.getId(), userId).stream()
                 .map(this::toSummary)
                 .toList();
-        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members, canSend(chat, userId),
-                chatMemberRepository.findLastReadMessageId(chat.getId(), userId));
+        return new ChatResponse(chat.getId(), chat.getType(), chat.getName(), members,
+                chatAccess.canSend(chat, userId), chatMemberRepository.findLastReadMessageId(chat.getId(), userId));
     }
 
     private ChatSummaryResponse toSummaryResponse(ChatListRow row, Integer userId, List<Integer> memberIds) {
@@ -305,7 +300,8 @@ public class ChatService {
                 toSummary(sender),
                 message.getType(),
                 message.getText(),
-                ChatPlaceResponse.from(message.getPlace()),
+                PlaceResponse.from(message.getPlace()),
+                MessageRouteResponse.from(message),
                 message.getCreatedAt(),
                 message.getClientId());
     }

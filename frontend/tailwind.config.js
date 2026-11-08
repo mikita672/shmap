@@ -83,7 +83,10 @@ module.exports = {
           "out-muted": "hsl(var(--bubble-out-muted))",
           sender: "hsl(var(--bubble-sender))",
         },
-        "map-pin": "hsl(var(--map-pin))",
+        "map-pin": {
+          DEFAULT: "hsl(var(--map-pin))",
+          foreground: "hsl(var(--map-pin-foreground))",
+        },
         searchbar: "hsl(var(--searchbar))",
         "searchbar-placeholder": "hsl(var(--searchbar-placeholder))",
         avatar: {
@@ -103,6 +106,15 @@ module.exports = {
           "tonal-foreground": "hsl(var(--action-tonal-foreground))",
         },
         "picker-ring": "hsl(var(--picker-ring))",
+        route: {
+          DEFAULT: "hsl(var(--route))",
+          foreground: "hsl(var(--route-foreground))",
+        },
+        "route-chip": {
+          DEFAULT: "hsl(var(--route-chip))",
+          foreground: "hsl(var(--route-chip-foreground))",
+        },
+        "route-icon": "hsl(var(--route-icon))",
       },
       opacity: {
         55: "0.55",

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,18 +7,23 @@ import { ChatHeader } from "@/components/chats/chat-header";
 import { Composer } from "@/components/chats/composer";
 import { MessageList } from "@/components/chats/message-list";
 import { ReadOnlyBar } from "@/components/chats/read-only-bar";
+import { RouteBar } from "@/components/chats/route-bar";
 import { FriendActionsMenu } from "@/components/friends/friend-actions-menu";
+import { AddToRoutePopup } from "@/components/routes/add-to-route-popup";
+import { NewRoutePopup } from "@/components/routes/new-route-popup";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
+import { useChatRoutes } from "@/hooks/useChatRoutes";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useFriends } from "@/hooks/useFriends";
 import { useMarkReadWhileOpen } from "@/hooks/useMarkChatRead";
+import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useReadPositionOnOpen } from "@/hooks/useReadPositionOnOpen";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { setOpenChatId } from "@/lib/open-chat";
-import { AuthErrorCode } from "@/lib/types/api";
+import { AuthErrorCode, type ChatPlace } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function ChatScreen() {
@@ -35,8 +40,15 @@ export default function ChatScreen() {
     }, [chatId]),
   );
   const { data: friends } = useFriends();
+  const { data: routes } = useChatRoutes(Number(chatId));
+  const latestRoute = routes?.[0];
+  const moreRouteCount = routes ? routes.length - 1 : 0;
   const { send } = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();
+  const openProfile = useOpenProfile();
+  const [isNewRouteOpen, setIsNewRouteOpen] = useState(false);
+  const [placeToAdd, setPlaceToAdd] = useState<ChatPlace | null>(null);
+  const [isAddToRouteOpen, setIsAddToRouteOpen] = useState(false);
 
   const handleMore = () => {
     if (chat?.type !== "DIRECT") {
@@ -62,6 +74,13 @@ export default function ChatScreen() {
     });
   };
 
+  const handleOpenProfile = () => {
+    const otherUser = chat?.members[0];
+    if (otherUser) {
+      openProfile(otherUser);
+    }
+  };
+
   return (
     <View
       className="flex-1 bg-background"
@@ -76,7 +95,13 @@ export default function ChatScreen() {
               ? handleOpenInfo
               : undefined
         }
-        onPress={chat?.type === "GROUP" ? handleOpenInfo : undefined}
+        onPress={
+          chat?.type === "GROUP"
+            ? handleOpenInfo
+            : chat?.type === "DIRECT"
+              ? handleOpenProfile
+              : undefined
+        }
       />
 
       {isPending ? (
@@ -104,21 +129,49 @@ export default function ChatScreen() {
         </View>
       ) : (
         <>
+          {latestRoute && (
+            <RouteBar
+              className="mt-2.5"
+              route={latestRoute}
+              moreCount={moreRouteCount}
+              onPress={() =>
+                router.push({
+                  pathname: "/route/[routeId]",
+                  params: { routeId: String(latestRoute.id) },
+                })
+              }
+              onOpenList={() =>
+                router.push({
+                  pathname: "/chat/[chatId]/routes",
+                  params: { chatId: String(chat.id) },
+                })
+              }
+            />
+          )}
           <MessageList
             chatId={chat.id}
             isGroup={chat.type === "GROUP"}
             readUpTo={readUpTo}
+            onPlaceLongPress={
+              chat.canSend
+                ? (place) => {
+                    setPlaceToAdd(place);
+                    setIsAddToRouteOpen(true);
+                  }
+                : undefined
+            }
           />
           {chat.canSend ? (
             <KeyboardStickyView offset={{ opened: insets.bottom }}>
               <Composer
                 onSend={(text) => send({ text })}
-                onPickPlace={() =>
+                onSendPlace={() =>
                   router.push({
                     pathname: "/chat/[chatId]/pick-place",
                     params: { chatId: String(chat.id) },
                   })
                 }
+                onStartRoute={() => setIsNewRouteOpen(true)}
               />
             </KeyboardStickyView>
           ) : (
@@ -128,6 +181,30 @@ export default function ChatScreen() {
             />
           )}
         </>
+      )}
+
+      {chat && (
+        <NewRoutePopup
+          chat={chat}
+          visible={isNewRouteOpen}
+          onClose={() => setIsNewRouteOpen(false)}
+          onCreated={(route) => {
+            setIsNewRouteOpen(false);
+            router.push({
+              pathname: "/route/[routeId]",
+              params: { routeId: String(route.id) },
+            });
+          }}
+        />
+      )}
+
+      {chat && (
+        <AddToRoutePopup
+          chat={chat}
+          place={placeToAdd}
+          visible={isAddToRouteOpen}
+          onClose={() => setIsAddToRouteOpen(false)}
+        />
       )}
 
       {menu.person && (

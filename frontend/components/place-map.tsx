@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { View, ActivityIndicator, Animated, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -42,14 +48,18 @@ export interface PlaceMapProps {
   initialPlace?: PlaceDetails;
   leading?: MapSearchBarProps["leading"];
   renderActions?: PlaceDetailsSheetProps["renderActions"];
+  renderPrimaryAction?: PlaceDetailsSheetProps["renderPrimaryAction"];
   sheetOpensExpanded?: boolean;
+  children?: ReactNode;
 }
 
 export function PlaceMap({
   initialPlace,
   leading,
   renderActions,
+  renderPrimaryAction,
   sheetOpensExpanded,
+  children,
 }: PlaceMapProps = {}) {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(
     null,
@@ -259,6 +269,8 @@ export function PlaceMap({
         )}
         {locationPermission && <UserLocation animated accuracy />}
 
+        {children}
+
         {selectedCoord && (
           <ViewAnnotation
             id="selected-place"
@@ -304,6 +316,7 @@ export function PlaceMap({
         onClose={handleSheetClose}
         onRetry={handleSheetRetry}
         renderActions={renderActions}
+        renderPrimaryAction={renderPrimaryAction}
         opensExpanded={sheetOpensExpanded}
         animatedBottomOffset={animatedBottomOffset}
       />

@@ -7,13 +7,21 @@ import {
   useSendFriendRequest,
 } from "@/hooks/useFriendRequestMutations";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
+import { cn } from "@/lib/utils";
 
 export interface ReadOnlyBarProps {
   firstName: string;
   username?: string;
+  description?: string;
+  className?: string;
 }
 
-export function ReadOnlyBar({ firstName, username }: ReadOnlyBarProps) {
+export function ReadOnlyBar({
+  firstName,
+  username,
+  description = `You can still read this chat. Add ${firstName} as a friend again to send messages.`,
+  className,
+}: ReadOnlyBarProps) {
   const { data: profile } = usePublicProfile(username ?? "");
   const send = useSendFriendRequest();
   const accept = useAcceptFriendRequest();
@@ -61,15 +69,14 @@ export function ReadOnlyBar({ firstName, username }: ReadOnlyBarProps) {
   }
 
   return (
-    <View className="bg-background px-[26px] pb-3 pt-2">
+    <View className={cn("bg-background px-[26px] pb-3 pt-2", className)}>
       <View className="items-center gap-3 rounded-[28px] bg-action px-6 py-4">
         <View className="items-center gap-1">
           <Text className="text-center text-base font-medium leading-6 text-action-foreground">
             You&apos;re no longer friends
           </Text>
           <Text className="text-center text-sm leading-5 text-secondary">
-            You can still read this chat. Add {firstName} as a friend again to
-            send messages.
+            {description}
           </Text>
         </View>
         {renderPill()}

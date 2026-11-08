@@ -1,5 +1,7 @@
 package com.mdzvtt.shmap.chat;
 
+import com.mdzvtt.shmap.place.PlaceSnapshot;
+import com.mdzvtt.shmap.route.Route;
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
@@ -32,9 +34,14 @@ import java.util.UUID;
         @Index(name = "idx_chat_message_chat_id", columnList = "chat_id, id desc"),
         @Index(name = "uk_chat_message_client_id", columnList = "chat_id, sender_id, client_id", unique = true) }, check = @CheckConstraint(name = "ck_chat_message_content", constraint = """
                 (type = 'TEXT' and text is not null
-                    and place_name is null and place_latitude is null and place_longitude is null)
+                    and place_name is null and place_latitude is null and place_longitude is null
+                    and route_id is null and route_name is null)
                 or (type = 'PLACE' and text is null
-                    and place_name is not null and place_latitude is not null and place_longitude is not null)
+                    and place_name is not null and place_latitude is not null and place_longitude is not null
+                    and route_id is null and route_name is null)
+                or (type = 'ROUTE'
+                    and place_name is null and place_latitude is null and place_longitude is null
+                    and route_name is not null)
                 """))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -62,7 +69,15 @@ public class ChatMessage {
 
     @Embedded
     @EmbeddedColumnNaming("place_%s")
-    private MessagePlace place;
+    private PlaceSnapshot place;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "route_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private Route route;
+
+    @Column(length = 50)
+    private String routeName;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -71,21 +86,27 @@ public class ChatMessage {
     @Column(updatable = false)
     private UUID clientId;
 
-    private ChatMessage(Chat chat, User sender, ChatMessageType type, String text, MessagePlace place,
-            UUID clientId) {
+    private ChatMessage(Chat chat, User sender, ChatMessageType type, String text, PlaceSnapshot place,
+            Route route, String routeName, UUID clientId) {
         this.chat = chat;
         this.sender = sender;
         this.type = type;
         this.text = text;
         this.place = place;
+        this.route = route;
+        this.routeName = routeName;
         this.clientId = clientId;
     }
 
     public static ChatMessage text(Chat chat, User sender, String text, UUID clientId) {
-        return new ChatMessage(chat, sender, ChatMessageType.TEXT, text, null, clientId);
+        return new ChatMessage(chat, sender, ChatMessageType.TEXT, text, null, null, null, clientId);
     }
 
-    public static ChatMessage place(Chat chat, User sender, MessagePlace place, UUID clientId) {
-        return new ChatMessage(chat, sender, ChatMessageType.PLACE, null, place, clientId);
+    public static ChatMessage place(Chat chat, User sender, PlaceSnapshot place, UUID clientId) {
+        return new ChatMessage(chat, sender, ChatMessageType.PLACE, null, place, null, null, clientId);
+    }
+
+    public static ChatMessage route(Chat chat, User sender, Route route, String text) {
+        return new ChatMessage(chat, sender, ChatMessageType.ROUTE, text, null, route, route.getName(), null);
     }
 }
