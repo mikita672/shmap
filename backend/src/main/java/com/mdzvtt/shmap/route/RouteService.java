@@ -4,6 +4,8 @@ import com.mdzvtt.shmap.chat.Chat;
 import com.mdzvtt.shmap.chat.ChatChanged;
 import com.mdzvtt.shmap.chat.ChatAccess;
 import com.mdzvtt.shmap.chat.ChatMemberRepository;
+import com.mdzvtt.shmap.chat.ChatMessageRepository;
+import com.mdzvtt.shmap.chat.ChatService;
 import com.mdzvtt.shmap.chat.ChatType;
 import com.mdzvtt.shmap.directions.RoutingRequest;
 import com.mdzvtt.shmap.directions.RoutingResult;
@@ -36,17 +38,19 @@ public class RouteService {
     private final UserRepository userRepository;
     private final ChatAccess chatAccess;
     private final ChatMemberRepository chatMemberRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final ChatService chatService;
     private final StorageService storageService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public RouteResponse create(Integer userId, Long chatId, String name, TravelMode travelMode) {
+    public RouteResponse create(Integer userId, Long chatId, String name, TravelMode travelMode, String message) {
         Chat chat = chatAccess.findForMember(userId, chatId);
         requireCanEdit(chat, userId);
         Route route = routeRepository.save(
                 new Route(chat, name, userRepository.getReferenceById(userId), travelMode));
         announceChanged(route);
-        announceDirectChat(chat);
+        chatService.sendRoute(userId, chatId, route, message);
         return toResponse(route, userId);
     }
 
@@ -68,6 +72,7 @@ public class RouteService {
         Route route = lockRoute(userId, routeId);
         if (name != null) {
             route.rename(name);
+            chatMessageRepository.renameRoute(routeId, name);
         }
         if (travelMode != null) {
             route.changeTravelMode(travelMode);

@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.chat.dto.ChatMessageResponse;
 import com.mdzvtt.shmap.chat.dto.ChatResponse;
 import com.mdzvtt.shmap.chat.dto.ChatSummaryResponse;
 import com.mdzvtt.shmap.chat.dto.ChatUnreadCountResponse;
+import com.mdzvtt.shmap.chat.dto.MessageRouteResponse;
 import com.mdzvtt.shmap.exception.ChatMessageNotFoundException;
 import com.mdzvtt.shmap.exception.GroupWithoutMembersException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
@@ -14,6 +15,7 @@ import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.FriendshipRepository;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
+import com.mdzvtt.shmap.route.Route;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -178,6 +180,11 @@ public class ChatService {
         return post(userId, chatId, clientId, (chat, sender) -> ChatMessage.place(chat, sender, place, clientId));
     }
 
+    @Transactional
+    public ChatMessageResponse sendRoute(Integer userId, Long chatId, Route route, String text) {
+        return post(userId, chatId, null, (chat, sender) -> ChatMessage.route(chat, sender, route, text));
+    }
+
     private ChatMessageResponse post(Integer userId, Long chatId, UUID clientId,
             BiFunction<Chat, User, ChatMessage> create) {
         chatAccess.lock(chatId);
@@ -294,6 +301,7 @@ public class ChatService {
                 message.getType(),
                 message.getText(),
                 PlaceResponse.from(message.getPlace()),
+                MessageRouteResponse.from(message),
                 message.getCreatedAt(),
                 message.getClientId());
     }

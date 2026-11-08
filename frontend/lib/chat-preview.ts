@@ -17,6 +17,7 @@ export function getChatTitle(chat: ChatResponse) {
 
 export function getMessagePreview(message: ChatMessageResponse) {
   if (message.type === "PLACE") return `📍 ${message.place.name}`;
+  if (message.type === "ROUTE") return `🗺️ ${message.route.name}`;
   return message.text;
 }
 

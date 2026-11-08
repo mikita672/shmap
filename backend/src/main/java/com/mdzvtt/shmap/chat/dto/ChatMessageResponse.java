@@ -8,5 +8,5 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ChatMessageResponse(Long id, UserSummaryResponse sender, ChatMessageType type, String text,
-        PlaceResponse place, Instant createdAt, UUID clientId) {
+                PlaceResponse place, MessageRouteResponse route, Instant createdAt, UUID clientId) {
 }

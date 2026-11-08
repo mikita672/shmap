@@ -218,14 +218,20 @@ export type SendChatMessageRequest = (
   clientId?: string;
 };
 
+export interface ChatRoute {
+  id: number | null;
+  name: string;
+}
+
 export type ChatMessageResponse = {
   id: number;
   sender: UserSummaryResponse;
   createdAt: string;
   clientId: string | null;
 } & (
-  | { type: "TEXT"; text: string; place: null }
-  | { type: "PLACE"; text: null; place: ChatPlace }
+  | { type: "TEXT"; text: string; place: null; route: null }
+  | { type: "PLACE"; text: null; place: ChatPlace; route: null }
+  | { type: "ROUTE"; text: string | null; place: null; route: ChatRoute }
 );
 
 export type ChatSummaryResponse = {
@@ -315,6 +321,7 @@ export interface RouteSummaryResponse {
 export interface CreateRouteRequest {
   name: string;
   travelMode?: TravelMode;
+  message?: string;
 }
 
 export type UpdateRouteRequest =

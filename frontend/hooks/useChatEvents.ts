@@ -13,6 +13,7 @@ import {
   addMessageToCache,
   addMessageToChatList,
   applyChatRead,
+  markRouteDeleted,
   refetchUnreadTotal,
 } from "@/lib/chat-cache";
 import { EventStreamError, readEventStream } from "@/lib/api/events";
@@ -175,6 +176,9 @@ export function useChatEvents() {
                   queryKey: chatRoutesQueryOptions(chatId).queryKey,
                   exact: true,
                 });
+                if (event.event === "route.deleted") {
+                  markRouteDeleted(queryClient, chatId, routeId);
+                }
                 const hasQueuedEdits =
                   queryClient.isMutating({
                     mutationKey: routeEditMutationKey(routeId),

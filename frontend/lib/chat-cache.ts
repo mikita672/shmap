@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { chatQueryOptions } from "@/hooks/useChat";
 import { chatMessagesQueryOptions } from "@/hooks/useChatMessages";
 import { chatsQueryOptions } from "@/hooks/useChats";
+import { routeQueryOptions } from "@/hooks/useRoute";
 import { unreadChatCountQueryOptions } from "@/hooks/useUnreadChatCount";
 import type {
   ChatMessageResponse,
@@ -117,6 +118,43 @@ export function addMessageToCache(
 
       const [newest = [], ...older] = data.pages;
       return { ...data, pages: [[message, ...newest], ...older] };
+    },
+  );
+}
+
+export function markRouteDeleted(
+  queryClient: QueryClient,
+  chatId: number,
+  routeId: number,
+) {
+  const name = queryClient.getQueryData(
+    routeQueryOptions(routeId).queryKey,
+  )?.name;
+  queryClient.setQueryData(
+    chatMessagesQueryOptions(chatId).queryKey,
+    (data) => {
+      if (!data) return data;
+      let changed = false;
+      const pages = data.pages.map((page) => {
+        if (
+          !page.some(
+            (message) =>
+              message.type === "ROUTE" && message.route.id === routeId,
+          )
+        ) {
+          return page;
+        }
+        changed = true;
+        return page.map((message) =>
+          message.type === "ROUTE" && message.route.id === routeId
+            ? {
+                ...message,
+                route: { id: null, name: name ?? message.route.name },
+              }
+            : message,
+        );
+      });
+      return changed ? { ...data, pages } : data;
     },
   );
 }
