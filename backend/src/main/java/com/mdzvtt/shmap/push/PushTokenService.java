@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+
 @Service
 @RequiredArgsConstructor
 public class PushTokenService {
@@ -18,5 +20,10 @@ public class PushTokenService {
     @Transactional
     public void removeAll(Integer userId) {
         pushTokenRepository.deleteAllByUserId(userId);
+    }
+
+    @Transactional
+    public void removeTokens(Collection<String> tokens) {
+        pushTokenRepository.deleteByTokenIn(tokens);
     }
 }
