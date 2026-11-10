@@ -26,6 +26,15 @@ final class ChatPushContentFactory {
                 "chat-" + chat.getId());
     }
 
+    static PushContent forAddedToGroup(Chat chat, String adderFirstName, String adderUsername) {
+        return new PushContent(
+                chat.getName(),
+                PushNames.firstName(adderFirstName, adderUsername) + " added you to the group",
+                Map.of("type", "chat.added", "chatId", chat.getId()),
+                CHANNEL,
+                "chat-" + chat.getId());
+    }
+
     private static String describe(ChatMessageResponse message) {
         return switch (message.type()) {
             case TEXT -> message.text();
