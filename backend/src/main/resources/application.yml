@@ -31,6 +31,10 @@ spring:
         base-url: https://api.heigit.org/openrouteservice
         connect-timeout: 2s
         read-timeout: 5s
+      expo:
+        base-url: https://exp.host
+        connect-timeout: 2s
+        read-timeout: 5s
 application:
   security:
     jwt:
@@ -43,6 +47,9 @@ resend:
 directions:
   openrouteservice:
     api-key: ${ORS_API_KEY:}
+push:
+  expo:
+    access-token: ${EXPO_ACCESS_TOKEN:}
 app:
   realtime:
     stream-timeout: 55m
