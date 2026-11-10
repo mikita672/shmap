@@ -16,10 +16,11 @@ final class ChatPushContentFactory {
 
     static PushContent forMessage(Chat chat, ChatMessageResponse message) {
         boolean group = chat.getType() == ChatType.GROUP;
+        UserSummaryResponse sender = message.sender();
         String content = describe(message);
         return new PushContent(
-                group ? chat.getName() : fullName(message.sender()),
-                truncate(group ? firstName(message.sender()) + ": " + content : content),
+                group ? chat.getName() : PushNames.fullName(sender.firstName(), sender.lastName(), sender.username()),
+                truncate(group ? PushNames.firstName(sender.firstName(), sender.username()) + ": " + content : content),
                 Map.of("type", "chat.message", "chatId", chat.getId(), "messageId", message.id()),
                 CHANNEL,
                 "chat-" + chat.getId());
@@ -31,16 +32,6 @@ final class ChatPushContentFactory {
             case PLACE -> "📍 " + message.place().name();
             case ROUTE -> message.text() != null ? message.text() : "🗺️ " + message.route().name();
         };
-    }
-
-    private static String fullName(UserSummaryResponse user) {
-        String name = ((user.firstName() == null ? "" : user.firstName()) + " "
-                + (user.lastName() == null ? "" : user.lastName())).strip();
-        return name.isEmpty() ? "@" + user.username() : name;
-    }
-
-    private static String firstName(UserSummaryResponse user) {
-        return user.firstName() == null || user.firstName().isBlank() ? "@" + user.username() : user.firstName();
     }
 
     private static String truncate(String text) {
