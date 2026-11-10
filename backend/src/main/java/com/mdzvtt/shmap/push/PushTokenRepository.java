@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
+
 public interface PushTokenRepository extends JpaRepository<PushToken, Long> {
     @Modifying
     @NativeQuery("""
@@ -23,4 +26,7 @@ public interface PushTokenRepository extends JpaRepository<PushToken, Long> {
     @Modifying
     @Query("delete from PushToken t where t.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Integer userId);
+
+    @Query("select t.token from PushToken t where t.user.id in :userIds")
+    List<String> findTokensByUserIdIn(@Param("userIds") Collection<Integer> userIds);
 }

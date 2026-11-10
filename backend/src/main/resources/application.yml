@@ -25,6 +25,12 @@ spring:
     redis:
       url: ${REDIS_URL}
       timeout: 2s
+  task:
+    execution:
+      thread-name-prefix: async-
+      shutdown:
+        await-termination: true
+        await-termination-period: 10s
   http:
     serviceclient:
       openrouteservice:
