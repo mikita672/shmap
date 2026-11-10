@@ -25,10 +25,20 @@ spring:
     redis:
       url: ${REDIS_URL}
       timeout: 2s
+  task:
+    execution:
+      thread-name-prefix: async-
+      shutdown:
+        await-termination: true
+        await-termination-period: 10s
   http:
     serviceclient:
       openrouteservice:
         base-url: https://api.heigit.org/openrouteservice
+        connect-timeout: 2s
+        read-timeout: 5s
+      expo:
+        base-url: https://exp.host
         connect-timeout: 2s
         read-timeout: 5s
 application:
@@ -43,6 +53,9 @@ resend:
 directions:
   openrouteservice:
     api-key: ${ORS_API_KEY:}
+push:
+  expo:
+    access-token: ${EXPO_ACCESS_TOKEN:}
 app:
   realtime:
     stream-timeout: 55m
