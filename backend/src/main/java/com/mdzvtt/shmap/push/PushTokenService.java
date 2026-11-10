@@ -12,5 +12,6 @@ public class PushTokenService {
     @Transactional
     public void register(Integer userId, String token) {
         pushTokenRepository.upsert(token, userId);
+        pushTokenRepository.deleteOtherTokens(userId, token);
     }
 }

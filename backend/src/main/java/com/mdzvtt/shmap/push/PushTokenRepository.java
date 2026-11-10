@@ -3,6 +3,7 @@ package com.mdzvtt.shmap.push;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.NativeQuery;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PushTokenRepository extends JpaRepository<PushToken, Long> {
@@ -14,4 +15,8 @@ public interface PushTokenRepository extends JpaRepository<PushToken, Long> {
             set user_id = excluded.user_id, updated_at = now()
             """)
     void upsert(@Param("token") String token, @Param("userId") Integer userId);
+
+    @Modifying
+    @Query("delete from PushToken t where t.user.id = :userId and t.token <> :token")
+    void deleteOtherTokens(@Param("userId") Integer userId, @Param("token") String token);
 }
