@@ -1,6 +1,8 @@
 package com.mdzvtt.shmap.push;
 
 import com.mdzvtt.shmap.friend.FriendRequestSent;
+import com.mdzvtt.shmap.friend.FriendshipStarted;
+import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -25,11 +27,28 @@ public class FriendPushListener {
                                 Set.of(event.receiverId()),
                                 new PushContent(
                                                 "New friend request",
-                                                PushNames.fullName(sender.getFirstName(), sender.getLastName(),
-                                                                sender.getPublicUsername())
-                                                                + " wants to be friends",
+                                                displayName(sender) + " wants to be friends",
                                                 Map.of("type", "friend.request", "requestId", event.requestId()),
                                                 CHANNEL,
                                                 CHANNEL)));
+        }
+
+        @Async
+        @TransactionalEventListener
+        public void onFriendshipStarted(FriendshipStarted event) {
+                userRepository.findById(event.otherUserId()).ifPresent(accepter -> pushNotifier.notify(
+                                Set.of(event.userId()),
+                                new PushContent(
+                                                "Friend request accepted",
+                                                displayName(accepter) + " accepted your friend request",
+                                                Map.of("type", "friend.accepted", "userId", accepter.getId(),
+                                                                "username",
+                                                                accepter.getPublicUsername()),
+                                                CHANNEL,
+                                                CHANNEL)));
+        }
+
+        private static String displayName(User user) {
+                return PushNames.fullName(user.getFirstName(), user.getLastName(), user.getPublicUsername());
         }
 }
