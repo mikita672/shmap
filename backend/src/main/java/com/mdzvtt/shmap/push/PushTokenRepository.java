@@ -19,4 +19,8 @@ public interface PushTokenRepository extends JpaRepository<PushToken, Long> {
     @Modifying
     @Query("delete from PushToken t where t.user.id = :userId and t.token <> :token")
     void deleteOtherTokens(@Param("userId") Integer userId, @Param("token") String token);
+
+    @Modifying
+    @Query("delete from PushToken t where t.user.id = :userId")
+    void deleteAllByUserId(@Param("userId") Integer userId);
 }

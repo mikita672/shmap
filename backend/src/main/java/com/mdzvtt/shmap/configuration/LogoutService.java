@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.configuration;
 
+import com.mdzvtt.shmap.push.PushTokenService;
 import com.mdzvtt.shmap.token.TokenRepository;
 import com.mdzvtt.shmap.token.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ public class LogoutService implements LogoutHandler {
 
     private final TokenRepository tokenRepository;
     private final TokenService tokenService;
+    private final PushTokenService pushTokenService;
 
     @Override
     public void logout(
@@ -30,7 +32,9 @@ public class LogoutService implements LogoutHandler {
         var storedToken = tokenRepository.findByToken(jwt).orElse(null);
 
         if (storedToken != null) {
-            tokenService.revokeAllUserTokens(storedToken.getUser().getId());
+            Integer userId = storedToken.getUser().getId();
+            tokenService.revokeAllUserTokens(userId);
+            pushTokenService.removeAll(userId);
         }
     }
 }

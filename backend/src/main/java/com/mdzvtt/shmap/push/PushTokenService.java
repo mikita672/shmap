@@ -14,4 +14,9 @@ public class PushTokenService {
         pushTokenRepository.upsert(token, userId);
         pushTokenRepository.deleteOtherTokens(userId, token);
     }
+
+    @Transactional
+    public void removeAll(Integer userId) {
+        pushTokenRepository.deleteAllByUserId(userId);
+    }
 }
