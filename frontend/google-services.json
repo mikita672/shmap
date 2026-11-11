@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "761707913997",
+    "project_id": "shmap-505120",
+    "storage_bucket": "shmap-505120.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761707913997:android:d1180c6b2860053ed34644",
+        "android_client_info": {
+          "package_name": "com.mdzvtt.shmap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "761707913997-vnqsvcfranhri32css64rdqbc399qrel.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeWeAeLx9UvOXNvlSyKMRf5w0d6a6Bbsc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "761707913997-vnqsvcfranhri32css64rdqbc399qrel.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "761707913997-ghjs0vukbd0brlgjsbuf6uq3tf4o01h6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mdzvtt.shmap"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
