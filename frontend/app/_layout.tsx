@@ -17,6 +17,7 @@ import { Toaster } from "sonner-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatEvents } from "@/hooks/useChatEvents";
+import { useNotificationTap } from "@/hooks/useNotificationTap";
 import { usePushRegistration } from "@/hooks/usePushRegistration";
 import { setUpNotificationHandler } from "@/lib/notifications";
 import { AuthProvider } from "@/providers/AuthProvider";
@@ -43,6 +44,7 @@ function RootNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
   useChatEvents();
   usePushRegistration();
+  useNotificationTap();
 
   if (isLoading) {
     return null;
