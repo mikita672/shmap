@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { registerPushToken } from "@/lib/api/push-tokens";
 import { getExpoPushToken } from "@/lib/notifications";
 
 export function usePushRegistration() {
@@ -10,8 +11,22 @@ export function usePushRegistration() {
       return;
     }
 
-    getExpoPushToken().catch((error) =>
-      console.warn("Failed to get push token", error),
+    let cancelled = false;
+
+    async function register() {
+      const token = await getExpoPushToken();
+      if (!token || cancelled) {
+        return;
+      }
+      await registerPushToken(token);
+    }
+
+    register().catch((error) =>
+      console.warn("Failed to register push token", error),
     );
+
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthenticated]);
 }
