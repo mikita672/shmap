@@ -37,7 +37,9 @@ async function ensurePermission() {
   return requested.granted;
 }
 
-export async function getExpoPushToken() {
+export async function getExpoPushToken(
+  devicePushToken?: Notifications.DevicePushToken,
+) {
   await ensureMessagesChannel();
   if (!(await ensurePermission())) {
     return null;
@@ -50,6 +52,9 @@ export async function getExpoPushToken() {
     throw new Error("EAS project ID is missing");
   }
 
-  const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
+  const { data } = await Notifications.getExpoPushTokenAsync({
+    projectId,
+    devicePushToken,
+  });
   return data;
 }
