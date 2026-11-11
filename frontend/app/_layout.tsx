@@ -17,6 +17,7 @@ import { Toaster } from "sonner-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatEvents } from "@/hooks/useChatEvents";
+import { usePushRegistration } from "@/hooks/usePushRegistration";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ThemeProvider as AppThemeProvider } from "@/providers/ThemeProvider";
 import { LogManager } from "@maplibre/maplibre-react-native";
@@ -39,6 +40,7 @@ function RootNavigator() {
   const { isDark } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
   useChatEvents();
+  usePushRegistration();
 
   if (isLoading) {
     return null;

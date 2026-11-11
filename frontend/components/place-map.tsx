@@ -34,6 +34,7 @@ import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
 import { getFlyDuration, waitForAnimation } from "@/lib/map-camera";
 import { MAP_STYLE } from "@/lib/map-style";
+import { enqueuePermissionRequest } from "@/lib/permission-queue";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 const DEFAULT_ZOOM = 15;
@@ -191,7 +192,7 @@ export function PlaceMap({
   useEffect(() => {
     let cancelled = false;
 
-    LocationManager.requestPermissions()
+    enqueuePermissionRequest(() => LocationManager.requestPermissions())
       .then(async (granted) => {
         if (granted) {
           await LocationManager.getCurrentPosition();
