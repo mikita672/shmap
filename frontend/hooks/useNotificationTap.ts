@@ -1,23 +1,31 @@
 import { useEffect } from "react";
 import * as Notifications from "expo-notifications";
-import { router } from "expo-router";
+import { router, useSegments } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
 import { getOpenChatId } from "@/lib/open-chat";
 import { parsePushData } from "@/lib/notifications";
 
 export function useNotificationTap() {
   const { isAuthenticated, isLoading } = useAuth();
+  const hasLeftIndex = useSegments().length > 0;
   const response = Notifications.useLastNotificationResponse();
 
   useEffect(() => {
-    if (!response || isLoading || !isAuthenticated) {
+    if (!response || isLoading) {
       return;
     }
     if (response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) {
       return;
     }
+    if (isAuthenticated && !hasLeftIndex) {
+      return;
+    }
 
-    void Notifications.clearLastNotificationResponseAsync();
+    Notifications.clearLastNotificationResponse();
+
+    if (!isAuthenticated) {
+      return;
+    }
 
     const data = parsePushData(response.notification.request.content.data);
     if (!data || data.chatId === getOpenChatId()) {
@@ -32,5 +40,5 @@ export function useNotificationTap() {
       pathname: "/chat/[chatId]",
       params: { chatId: String(data.chatId) },
     });
-  }, [response, isLoading, isAuthenticated]);
+  }, [response, isLoading, isAuthenticated, hasLeftIndex]);
 }
