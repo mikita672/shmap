@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { getOpenChatId } from "@/lib/open-chat";
 import { enqueuePermissionRequest } from "@/lib/permission-queue";
 
 export const MESSAGES_CHANNEL_ID = "messages";
@@ -57,4 +58,39 @@ export async function getExpoPushToken(
     devicePushToken,
   });
   return data;
+}
+
+export type PushData = {
+  type: "chat.message" | "chat.added";
+  chatId: number;
+};
+
+export function parsePushData(data: unknown): PushData | null {
+  if (typeof data !== "object" || data === null) {
+    return null;
+  }
+  const { type, chatId } = data as Record<string, unknown>;
+  if (type !== "chat.message" && type !== "chat.added") {
+    return null;
+  }
+  const id = Number(chatId);
+  if (!Number.isInteger(id) || id <= 0) {
+    return null;
+  }
+  return { type, chatId: id };
+}
+
+export function setUpNotificationHandler() {
+  Notifications.setNotificationHandler({
+    handleNotification: async (notification) => {
+      const data = parsePushData(notification.request.content.data);
+      const isOpenChat = data !== null && data.chatId === getOpenChatId();
+      return {
+        shouldShowBanner: false,
+        shouldShowList: !isOpenChat,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      };
+    },
+  });
 }
