@@ -7,6 +7,7 @@ import {
 } from "react";
 import { AppState, Platform } from "react-native";
 import type { AppStateStatus } from "react-native";
+import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import type { Href } from "expo-router";
 import {
@@ -89,6 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
     queryClient.clear();
+    Notifications.clearLastNotificationResponse();
+    Notifications.dismissAllNotificationsAsync().catch(console.warn);
     setIsAuthenticated(false);
   }, []);
 

@@ -17,6 +17,9 @@ import { Toaster } from "sonner-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatEvents } from "@/hooks/useChatEvents";
+import { useNotificationTap } from "@/hooks/useNotificationTap";
+import { usePushRegistration } from "@/hooks/usePushRegistration";
+import { setUpNotificationHandler } from "@/lib/notifications";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ThemeProvider as AppThemeProvider } from "@/providers/ThemeProvider";
 import { LogManager } from "@maplibre/maplibre-react-native";
@@ -34,11 +37,14 @@ LogManager.onLog((log) => {
 });
 
 enableFreeze(true);
+setUpNotificationHandler();
 
 function RootNavigator() {
   const { isDark } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
   useChatEvents();
+  usePushRegistration();
+  useNotificationTap();
 
   if (isLoading) {
     return null;

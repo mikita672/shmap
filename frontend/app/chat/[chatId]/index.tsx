@@ -22,6 +22,7 @@ import { useMarkReadWhileOpen } from "@/hooks/useMarkChatRead";
 import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useReadPositionOnOpen } from "@/hooks/useReadPositionOnOpen";
 import { useSendMessage } from "@/hooks/useSendMessage";
+import { dismissChatNotifications } from "@/lib/notifications";
 import { setOpenChatId } from "@/lib/open-chat";
 import { AuthErrorCode, type ChatPlace } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -36,6 +37,7 @@ export default function ChatScreen() {
   useFocusEffect(
     useCallback(() => {
       setOpenChatId(Number(chatId));
+      dismissChatNotifications(Number(chatId)).catch(console.warn);
       return () => setOpenChatId(null);
     }, [chatId]),
   );
