@@ -31,11 +31,15 @@ async function ensurePermission() {
     return false;
   }
 
-  await AsyncStorage.setItem(PERMISSION_ASKED_KEY, "true");
-  const requested = await enqueuePermissionRequest(() =>
-    Notifications.requestPermissionsAsync(),
-  );
-  return requested.granted;
+  const result = await enqueuePermissionRequest(async () => {
+    if (await AsyncStorage.getItem(PERMISSION_ASKED_KEY)) {
+      return Notifications.getPermissionsAsync();
+    }
+    const requested = await Notifications.requestPermissionsAsync();
+    await AsyncStorage.setItem(PERMISSION_ASKED_KEY, "true");
+    return requested;
+  });
+  return result.granted;
 }
 
 export async function getExpoPushToken(
