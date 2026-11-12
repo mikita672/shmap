@@ -3,6 +3,7 @@ package com.mdzvtt.shmap.route;
 import com.mdzvtt.shmap.route.dto.AddRouteStopRequest;
 import com.mdzvtt.shmap.route.dto.CreateRouteRequest;
 import com.mdzvtt.shmap.route.dto.ReorderRouteStopsRequest;
+import com.mdzvtt.shmap.route.dto.RouteCompletionRequest;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteSummaryResponse;
 import com.mdzvtt.shmap.route.dto.UpdateRouteRequest;
@@ -75,6 +76,13 @@ public class RouteController {
     @PutMapping("/routes/{routeId}/path")
     public RouteResponse retryPath(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
         return routeEditor.retryPath(user.getId(), routeId);
+    }
+
+    @PutMapping("/routes/{routeId}/completion")
+    public RouteResponse complete(@AuthenticationPrincipal User user, @PathVariable Long routeId,
+            @Valid @RequestBody RouteCompletionRequest request) {
+        return routeService.complete(user.getId(), routeId, request.finishedOn(), request.participantIds(),
+                request.visibility());
     }
 
     @PostMapping("/chats/{chatId}/routes")

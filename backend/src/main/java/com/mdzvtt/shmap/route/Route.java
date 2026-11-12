@@ -9,6 +9,7 @@ import com.mdzvtt.shmap.exception.RouteFinishedException;
 import com.mdzvtt.shmap.exception.RouteFullException;
 import com.mdzvtt.shmap.exception.RouteStopNotFoundException;
 import com.mdzvtt.shmap.exception.RouteStopsChangedException;
+import com.mdzvtt.shmap.exception.RouteTooFewStopsException;
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CheckConstraint;
@@ -38,7 +39,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -54,6 +57,7 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Route {
     public static final int MAX_STOPS = 10;
+    public static final int MIN_STOPS_TO_FINISH = 2;
 
     @Id
     @GeneratedValue
@@ -163,6 +167,16 @@ public class Route {
         }
         stops.sort(Comparator.comparing(stop -> newIndex.get(stop.getId())));
         markPathStale();
+        touch();
+    }
+
+    public void complete(LocalDate finishedOn, RouteVisibility visibility, Collection<User> participants) {
+        if (stops.size() < MIN_STOPS_TO_FINISH) {
+            throw new RouteTooFewStopsException(MIN_STOPS_TO_FINISH);
+        }
+        this.completion = new RouteCompletion(finishedOn, visibility);
+        this.participants.clear();
+        this.participants.addAll(participants);
         touch();
     }
 
