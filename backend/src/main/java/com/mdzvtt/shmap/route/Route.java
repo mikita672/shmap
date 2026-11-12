@@ -5,6 +5,7 @@ import com.mdzvtt.shmap.directions.RoutingRequest;
 import com.mdzvtt.shmap.directions.RoutingResult;
 import com.mdzvtt.shmap.directions.TravelMode;
 import com.mdzvtt.shmap.directions.Waypoint;
+import com.mdzvtt.shmap.exception.RouteFinishedException;
 import com.mdzvtt.shmap.exception.RouteFullException;
 import com.mdzvtt.shmap.exception.RouteStopNotFoundException;
 import com.mdzvtt.shmap.exception.RouteStopsChangedException;
@@ -120,6 +121,7 @@ public class Route {
     }
 
     public void changeTravelMode(TravelMode travelMode) {
+        requirePlanned();
         if (this.travelMode == travelMode) {
             return;
         }
@@ -129,6 +131,7 @@ public class Route {
     }
 
     public void addStop(RouteStop stop) {
+        requirePlanned();
         if (stops.size() >= MAX_STOPS) {
             throw new RouteFullException(MAX_STOPS);
         }
@@ -138,6 +141,7 @@ public class Route {
     }
 
     public void removeStop(Long stopId) {
+        requirePlanned();
         if (!stops.removeIf(stop -> stop.getId().equals(stopId))) {
             throw new RouteStopNotFoundException();
         }
@@ -146,6 +150,7 @@ public class Route {
     }
 
     public void reorderStops(List<Long> stopIds) {
+        requirePlanned();
         Map<Long, Integer> newIndex = new HashMap<>();
         for (int i = 0; i < stopIds.size(); i++) {
             newIndex.put(stopIds.get(i), i);
@@ -204,6 +209,12 @@ public class Route {
             }
         }
         return pathStatus != oldStatus || !Objects.equals(path, oldPath);
+    }
+
+    private void requirePlanned() {
+        if (completion != null) {
+            throw new RouteFinishedException();
+        }
     }
 
     private boolean needsPath() {
