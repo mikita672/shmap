@@ -21,6 +21,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
@@ -38,10 +40,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"), check = @CheckConstraint(name = "ck_route_completion", constraint = "(finished_on is null) = (visibility is null)"))
@@ -95,6 +99,11 @@ public class Route {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OrderColumn(name = "position")
     private List<RouteStop> stops = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(name = "route_participant", joinColumns = @JoinColumn(name = "route_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Set<User> participants = new LinkedHashSet<>();
 
     public Route(Chat chat, String name, User createdBy, TravelMode travelMode) {
         this.chat = chat;
