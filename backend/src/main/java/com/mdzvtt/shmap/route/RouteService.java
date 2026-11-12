@@ -14,6 +14,7 @@ import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
+import com.mdzvtt.shmap.route.dto.RouteCompletionResponse;
 import com.mdzvtt.shmap.route.dto.RoutePathResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
@@ -27,6 +28,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -176,8 +178,24 @@ public class RouteService {
                 route.getCreatedAt(),
                 route.getUpdatedAt(),
                 chatAccess.canSend(chat, userId),
+                toCompletionResponse(route),
                 route.getStops().stream()
                         .map(this::toStopResponse)
+                        .toList());
+    }
+
+    private RouteCompletionResponse toCompletionResponse(Route route) {
+        RouteCompletion completion = route.getCompletion();
+        if (completion == null) {
+            return null;
+        }
+        return new RouteCompletionResponse(
+                completion.finishedOn(),
+                completion.visibility(),
+                route.effectiveVisibility(),
+                route.getParticipants().stream()
+                        .sorted(Comparator.comparing(User::getId))
+                        .map(this::toSummary)
                         .toList());
     }
 
@@ -189,6 +207,7 @@ public class RouteService {
                 row.stopCount(),
                 row.distanceMeters(),
                 row.durationSeconds(),
+                row.finishedOn(),
                 toSummary(row.createdBy()),
                 row.createdAt(),
                 row.updatedAt());

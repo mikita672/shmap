@@ -166,6 +166,12 @@ public class Route {
         touch();
     }
 
+    public RouteVisibility effectiveVisibility() {
+        RouteVisibility visibility = completion.visibility();
+        boolean hasPrivateParticipant = participants.stream().anyMatch(User::isPrivateAccount);
+        return visibility == RouteVisibility.EVERYONE && hasPrivateParticipant ? RouteVisibility.FRIENDS : visibility;
+    }
+
     public RoutingRequest routingRequest() {
         return new RoutingRequest(travelMode, stops.stream()
                 .map(stop -> new Waypoint(stop.getPlace().latitude(), stop.getPlace().longitude()))
