@@ -10,6 +10,7 @@ import com.mdzvtt.shmap.exception.RouteStopNotFoundException;
 import com.mdzvtt.shmap.exception.RouteStopsChangedException;
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -43,7 +44,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Entity
-@Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"))
+@Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"), check = @CheckConstraint(name = "ck_route_completion", constraint = "(finished_on is null) = (visibility is null)"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Route {
@@ -74,6 +75,9 @@ public class Route {
     @Embedded
     @EmbeddedColumnNaming("path_%s")
     private RoutePath path;
+
+    @Embedded
+    private RouteCompletion completion;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by_id")
