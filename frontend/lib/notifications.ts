@@ -94,3 +94,17 @@ export function setUpNotificationHandler() {
     },
   });
 }
+
+export async function dismissChatNotifications(chatId: number) {
+  const presented = await Notifications.getPresentedNotificationsAsync();
+  await Promise.all(
+    presented
+      .filter(
+        (notification) =>
+          parsePushData(notification.request.content.data)?.chatId === chatId,
+      )
+      .map((notification) =>
+        Notifications.dismissNotificationAsync(notification.request.identifier),
+      ),
+  );
+}
