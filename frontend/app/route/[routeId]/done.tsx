@@ -3,6 +3,7 @@ import { ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PickerRow } from "@/components/chats/picker-row";
 import { DateRow } from "@/components/routes/date-row";
 import { VisibilityOption } from "@/components/routes/visibility-option";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useRoute } from "@/hooks/useRoute";
 import { useCompleteRoute } from "@/hooks/useRouteMutations";
 import { toLocalDateString } from "@/lib/local-date";
+import { getParticipantCandidates } from "@/lib/route-participants";
 import { VISIBILITY_OPTIONS } from "@/lib/route-format";
 import type { RouteVisibility } from "@/lib/types/api";
 
@@ -29,19 +31,37 @@ export default function DoneRouteScreen() {
   const { data: me } = useProfile();
   const complete = useCompleteRoute(numericRouteId);
   const [date, setDate] = useState(() => toLocalDateString(new Date()));
+  const [excludedIds, setExcludedIds] = useState<Set<number>>(() => new Set());
   const [visibility, setVisibility] = useState<RouteVisibility>("FRIENDS");
 
-  const participantIds =
-    me && chat ? [me.id, ...chat.members.map((member) => member.id)] : null;
+  const candidates =
+    me && chat
+      ? getParticipantCandidates(
+          me,
+          chat.members,
+          route?.completion?.participants ?? [],
+        )
+      : [];
+  const participantIds = candidates
+    .filter((candidate) => !excludedIds.has(candidate.id))
+    .map((candidate) => candidate.id);
+
+  const handleToggle = (userId: number) => {
+    setExcludedIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  };
 
   const handleSubmit = () => {
-    if (!participantIds || complete.isPending) return;
+    if (participantIds.length === 0 || complete.isPending) return;
     complete.mutate(
-      {
-        finishedOn: date,
-        participantIds,
-        visibility,
-      },
+      { finishedOn: date, participantIds, visibility },
       { onSuccess: () => router.back() },
     );
   };
@@ -50,33 +70,54 @@ export default function DoneRouteScreen() {
     <View className="flex-1 bg-background">
       <TitleHeader title="Mark as done" />
 
-      <ScrollView contentContainerClassName="gap-2 px-6 pt-4">
+      <ScrollView contentContainerClassName="gap-4 px-6 pt-4">
         <DateRow
           value={date}
           onChange={setDate}
           disabled={complete.isPending}
         />
-        <View className="h-2" />
-        <SectionLabel title="Who can see it" />
-        {VISIBILITY_OPTIONS.map((option) => (
-          <VisibilityOption
-            key={option.value}
-            title={option.title}
-            description={option.description}
-            selected={visibility === option.value}
-            disabled={complete.isPending}
-            onPress={() => setVisibility(option.value)}
-          />
-        ))}
-        <Text className="px-5 text-[13px] leading-4 text-secondary">
-          Private accounts still show it only to their friends
-        </Text>
+
+        {candidates.length > 0 && (
+          <View className="gap-2">
+            <SectionLabel
+              title={`Who took part · ${candidates.length}`}
+              detail={`${participantIds.length} selected`}
+            />
+            {candidates.map((candidate) => (
+              <PickerRow
+                key={candidate.id}
+                name={candidate.name}
+                subtitle={candidate.subtitle}
+                avatarUrl={candidate.avatarUrl}
+                selected={excludedIds.has(candidate.id) ? "off" : "on"}
+                onPress={() => handleToggle(candidate.id)}
+              />
+            ))}
+          </View>
+        )}
+
+        <View className="gap-2">
+          <SectionLabel title="Who can see it" />
+          {VISIBILITY_OPTIONS.map((option) => (
+            <VisibilityOption
+              key={option.value}
+              title={option.title}
+              description={option.description}
+              selected={visibility === option.value}
+              disabled={complete.isPending}
+              onPress={() => setVisibility(option.value)}
+            />
+          ))}
+          <Text className="px-5 text-[13px] leading-4 text-secondary">
+            Private accounts still show it only to their friends
+          </Text>
+        </View>
       </ScrollView>
 
       <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom + 24 }}>
         <Button
           size="xl"
-          disabled={!participantIds || complete.isPending}
+          disabled={participantIds.length === 0 || complete.isPending}
           onPress={handleSubmit}
         >
           <Text className="text-2xl">
