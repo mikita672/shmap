@@ -10,10 +10,12 @@ import { GroupAvatar } from "@/components/ui/group-avatar";
 import { Popup } from "@/components/ui/popup";
 import { Text } from "@/components/ui/text";
 import { useChat } from "@/hooks/useChat";
+import { useChatRoutes } from "@/hooks/useChatRoutes";
 import { useLeaveChat } from "@/hooks/useChatMutations";
 import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { MaterialIcons } from "@/lib/icons";
+import { formatRoutesSummary } from "@/lib/route-format";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export default function GroupInfoScreen() {
@@ -21,6 +23,7 @@ export default function GroupInfoScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
   const { data: chat, isPending, error, refetch } = useChat(Number(chatId));
   const { data: me } = useProfile();
+  const { data: routes } = useChatRoutes(Number(chatId));
   const [leaveConfirmVisible, setLeaveConfirmVisible] = useState(false);
   const leaveChat = useLeaveChat();
   const openProfile = useOpenProfile();
@@ -66,6 +69,10 @@ export default function GroupInfoScreen() {
     })),
   ];
 
+  const doneRouteCount =
+    routes?.filter((route) => route.finishedOn !== null).length ?? 0;
+  const plannedRouteCount = (routes?.length ?? 0) - doneRouteCount;
+
   const handleLeaveConfirm = () => {
     leaveChat.mutate(chat.id, {
       onSuccess: () => {
@@ -105,6 +112,41 @@ export default function GroupInfoScreen() {
                 {totalMembers} {totalMembers === 1 ? "member" : "members"}
               </Text>
             </View>
+
+            {routes && routes.length > 0 && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Routes in this chat"
+                className="mb-4 h-16 flex-row items-center gap-3 rounded-full bg-action pl-2 pr-5 active:opacity-80"
+                onPress={() =>
+                  router.push({
+                    pathname: "/chat/[chatId]/routes",
+                    params: { chatId: String(chatId) },
+                  })
+                }
+              >
+                <View className="h-12 w-12 items-center justify-center rounded-full bg-avatar-surface">
+                  <MaterialIcons
+                    name="route"
+                    size={24}
+                    className="text-route-icon"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-medium leading-6 text-action-foreground">
+                    Routes · {routes.length}
+                  </Text>
+                  <Text className="text-sm leading-5 text-secondary">
+                    {formatRoutesSummary(plannedRouteCount, doneRouteCount)}
+                  </Text>
+                </View>
+                <MaterialIcons
+                  name="chevron-right"
+                  size={24}
+                  className="text-secondary"
+                />
+              </Pressable>
+            )}
 
             <Text
               role="heading"

@@ -48,6 +48,8 @@ export default function RouteScreen() {
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
   if (route && !isDeleted) {
+    const canEditPlan = route.canEdit && route.completion === null;
+
     return (
       <View className="flex-1 bg-background">
         <RouteMap
@@ -62,7 +64,7 @@ export default function RouteScreen() {
           selectedStopId={selectedStopId}
           onSelectStop={setSelectedStopId}
           onRemoveStop={
-            route.canEdit
+            canEditPlan
               ? (stopId) => {
                   setSelectedStopId(null);
                   removeStop.mutate(stopId);
@@ -80,12 +82,10 @@ export default function RouteScreen() {
             ) : undefined
           }
           onReorderStops={
-            route.canEdit
-              ? (stopIds) => reorderStops.mutate(stopIds)
-              : undefined
+            canEditPlan ? (stopIds) => reorderStops.mutate(stopIds) : undefined
           }
           onAddPlace={
-            route.canEdit
+            canEditPlan
               ? () =>
                   router.push({
                     pathname: "/route/[routeId]/add-stop",
@@ -94,9 +94,15 @@ export default function RouteScreen() {
               : undefined
           }
           onTravelModeChange={
-            route.canEdit ? (mode) => setTravelMode.mutate(mode) : undefined
+            canEditPlan ? (mode) => setTravelMode.mutate(mode) : undefined
           }
           onRetryPath={() => retryPath.mutate()}
+          onEditCompletion={() =>
+            router.push({
+              pathname: "/route/[routeId]/done",
+              params: { routeId: String(route.id) },
+            })
+          }
           onOpenInMaps={() => openRouteInMaps(route)}
         />
         <RouteHeader

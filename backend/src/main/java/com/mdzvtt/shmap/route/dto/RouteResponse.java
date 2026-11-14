@@ -15,6 +15,8 @@ public record RouteResponse(
                 UserSummaryResponse createdBy,
                 Instant createdAt,
                 Instant updatedAt,
+                boolean member,
                 boolean canEdit,
+                RouteCompletionResponse completion,
                 List<RouteStopResponse> stops) {
 }

@@ -5,11 +5,14 @@ import com.mdzvtt.shmap.directions.RoutingRequest;
 import com.mdzvtt.shmap.directions.RoutingResult;
 import com.mdzvtt.shmap.directions.TravelMode;
 import com.mdzvtt.shmap.directions.Waypoint;
+import com.mdzvtt.shmap.exception.RouteFinishedException;
 import com.mdzvtt.shmap.exception.RouteFullException;
 import com.mdzvtt.shmap.exception.RouteStopNotFoundException;
 import com.mdzvtt.shmap.exception.RouteStopsChangedException;
+import com.mdzvtt.shmap.exception.RouteTooFewStopsException;
 import com.mdzvtt.shmap.user.User;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -20,6 +23,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
@@ -34,20 +39,25 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Entity
-@Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"))
+@Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"), check = @CheckConstraint(name = "ck_route_completion", constraint = "(finished_on is null) = (visibility is null)"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Route {
     public static final int MAX_STOPS = 10;
+    public static final int MIN_STOPS_TO_FINISH = 2;
 
     @Id
     @GeneratedValue
@@ -75,6 +85,9 @@ public class Route {
     @EmbeddedColumnNaming("path_%s")
     private RoutePath path;
 
+    @Embedded
+    private RouteCompletion completion;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by_id")
     private User createdBy;
@@ -92,6 +105,11 @@ public class Route {
     @OrderColumn(name = "position")
     private List<RouteStop> stops = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(name = "route_participant", joinColumns = @JoinColumn(name = "route_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Set<User> participants = new LinkedHashSet<>();
+
     public Route(Chat chat, String name, User createdBy, TravelMode travelMode) {
         this.chat = chat;
         this.name = name;
@@ -107,6 +125,7 @@ public class Route {
     }
 
     public void changeTravelMode(TravelMode travelMode) {
+        requirePlanned();
         if (this.travelMode == travelMode) {
             return;
         }
@@ -116,6 +135,7 @@ public class Route {
     }
 
     public void addStop(RouteStop stop) {
+        requirePlanned();
         if (stops.size() >= MAX_STOPS) {
             throw new RouteFullException(MAX_STOPS);
         }
@@ -125,6 +145,7 @@ public class Route {
     }
 
     public void removeStop(Long stopId) {
+        requirePlanned();
         if (!stops.removeIf(stop -> stop.getId().equals(stopId))) {
             throw new RouteStopNotFoundException();
         }
@@ -133,6 +154,7 @@ public class Route {
     }
 
     public void reorderStops(List<Long> stopIds) {
+        requirePlanned();
         Map<Long, Integer> newIndex = new HashMap<>();
         for (int i = 0; i < stopIds.size(); i++) {
             newIndex.put(stopIds.get(i), i);
@@ -146,6 +168,32 @@ public class Route {
         stops.sort(Comparator.comparing(stop -> newIndex.get(stop.getId())));
         markPathStale();
         touch();
+    }
+
+    public void complete(LocalDate finishedOn, RouteVisibility visibility, Collection<User> participants) {
+        if (stops.size() < MIN_STOPS_TO_FINISH) {
+            throw new RouteTooFewStopsException(MIN_STOPS_TO_FINISH);
+        }
+        this.completion = new RouteCompletion(finishedOn, visibility);
+        this.participants.clear();
+        this.participants.addAll(participants);
+        touch();
+    }
+
+    public boolean reopen() {
+        if (completion == null) {
+            return false;
+        }
+        completion = null;
+        participants.clear();
+        touch();
+        return true;
+    }
+
+    public RouteVisibility effectiveVisibility() {
+        RouteVisibility visibility = completion.visibility();
+        boolean hasPrivateParticipant = participants.stream().anyMatch(User::isPrivateAccount);
+        return visibility == RouteVisibility.EVERYONE && hasPrivateParticipant ? RouteVisibility.FRIENDS : visibility;
     }
 
     public RoutingRequest routingRequest() {
@@ -191,6 +239,12 @@ public class Route {
             }
         }
         return pathStatus != oldStatus || !Objects.equals(path, oldPath);
+    }
+
+    private void requirePlanned() {
+        if (completion != null) {
+            throw new RouteFinishedException();
+        }
     }
 
     private boolean needsPath() {

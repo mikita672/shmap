@@ -2,6 +2,7 @@ import { apiClient } from "./client";
 import type {
   ChatPlace,
   CreateRouteRequest,
+  RouteCompletionRequest,
   RouteResponse,
   RouteSummaryResponse,
   UpdateRouteRequest,
@@ -35,3 +36,9 @@ export const reorderRouteStops = (routeId: number, stopIds: number[]) =>
 
 export const retryRoutePath = (routeId: number) =>
   apiClient.put<RouteResponse>(`/api/v1/routes/${routeId}/path`);
+
+export const completeRoute = (routeId: number, data: RouteCompletionRequest) =>
+  apiClient.put<RouteResponse>(`/api/v1/routes/${routeId}/completion`, data);
+
+export const reopenRoute = (routeId: number) =>
+  apiClient.delete<RouteResponse>(`/api/v1/routes/${routeId}/completion`);

@@ -10,6 +10,7 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 import { AddPlaceButton } from "@/components/routes/add-place-button";
+import { DoneCard } from "@/components/routes/done-card";
 import { OpenInMapsButton } from "@/components/routes/open-in-maps-button";
 import { PathSummary } from "@/components/routes/path-summary";
 import { StopDetails } from "@/components/routes/stop-details";
@@ -32,6 +33,7 @@ export interface RouteSheetProps {
   onOpenInMaps?: () => void;
   onTravelModeChange?: (travelMode: TravelMode) => void;
   onRetryPath?: () => void;
+  onEditCompletion?: () => void;
   selectedStopId?: number | null;
   onSelectStop?: (stopId: number | null) => void;
   onRemoveStop?: (stopId: number) => void;
@@ -46,6 +48,7 @@ export function RouteSheet({
   onOpenInMaps,
   onTravelModeChange,
   onRetryPath,
+  onEditCompletion,
   selectedStopId,
   onSelectStop,
   onRemoveStop,
@@ -104,6 +107,13 @@ export function RouteSheet({
           />
         ) : (
           <>
+            {route.completion && (
+              <DoneCard
+                completion={route.completion}
+                myId={profile?.id}
+                onPress={route.canEdit ? onEditCompletion : undefined}
+              />
+            )}
             <View className="flex-row items-center gap-3">
               <View className="flex-1">
                 <PathSummary
@@ -132,7 +142,7 @@ export function RouteSheet({
               />
             )}
 
-            {route.canEdit && (
+            {onAddPlace && (
               <AddPlaceButton
                 label="Add place"
                 isFull={isFull}
