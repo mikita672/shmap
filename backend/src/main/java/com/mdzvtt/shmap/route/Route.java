@@ -180,6 +180,16 @@ public class Route {
         touch();
     }
 
+    public boolean reopen() {
+        if (completion == null) {
+            return false;
+        }
+        completion = null;
+        participants.clear();
+        touch();
+        return true;
+    }
+
     public RouteVisibility effectiveVisibility() {
         RouteVisibility visibility = completion.visibility();
         boolean hasPrivateParticipant = participants.stream().anyMatch(User::isPrivateAccount);

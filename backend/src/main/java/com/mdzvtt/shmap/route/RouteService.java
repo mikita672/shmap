@@ -101,6 +101,15 @@ public class RouteService {
     }
 
     @Transactional
+    public RouteResponse reopen(Integer userId, Long routeId) {
+        Route route = lockRoute(userId, routeId);
+        if (route.reopen()) {
+            announceChanged(route);
+        }
+        return toResponse(route, userId);
+    }
+
+    @Transactional
     public void delete(Integer userId, Long routeId) {
         Route route = lockRoute(userId, routeId);
         Chat chat = route.getChat();

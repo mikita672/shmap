@@ -85,6 +85,11 @@ public class RouteController {
                 request.visibility());
     }
 
+    @DeleteMapping("/routes/{routeId}/completion")
+    public RouteResponse reopen(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
+        return routeService.reopen(user.getId(), routeId);
+    }
+
     @PostMapping("/chats/{chatId}/routes")
     @ResponseStatus(HttpStatus.CREATED)
     public RouteResponse create(@AuthenticationPrincipal User user, @PathVariable Long chatId,
