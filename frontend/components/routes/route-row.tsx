@@ -4,6 +4,7 @@ import { MaterialIcons } from "@/lib/icons";
 import {
   TRAVEL_MODE_LABELS,
   formatDistance,
+  formatDoneMeta,
   formatRouteUpdated,
   formatStopCount,
   joinMeta,
@@ -17,11 +18,13 @@ export interface RouteRowProps {
 }
 
 export function RouteRow({ route, now, onPress }: RouteRowProps) {
-  const meta = joinMeta(
+  const stats = [
     formatStopCount(route.stopCount),
     route.distanceMeters != null && formatDistance(route.distanceMeters),
-    TRAVEL_MODE_LABELS[route.travelMode],
-  );
+  ];
+  const meta = route.finishedOn
+    ? joinMeta(formatDoneMeta(route.finishedOn, now), ...stats)
+    : joinMeta(...stats, TRAVEL_MODE_LABELS[route.travelMode]);
   const updated = joinMeta(
     route.createdBy.firstName,
     formatRouteUpdated(route.updatedAt, now),

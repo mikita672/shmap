@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(
     async (options?: SignOutOptions) => {
-      await logoutUser().catch(console.warn);
+      await logoutUser();
       setPendingRedirect(options?.redirectTo ?? null);
       await clearSession();
     },

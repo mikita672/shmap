@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { AppState, type AppStateStatus } from "react-native";
 import axios from "axios";
 import * as Notifications from "expo-notifications";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +28,7 @@ export function usePushRegistration() {
     let cancelled = false;
     let sentToken: string | null = null;
     let retries = 0;
+    let pending = 0;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     async function register(devicePushToken?: Notifications.DevicePushToken) {
@@ -50,9 +52,12 @@ export function usePushRegistration() {
         clearTimeout(retryTimer);
         retryTimer = null;
       }
-      register(devicePushToken).catch((error) =>
-        handleFailure(error, devicePushToken),
-      );
+      pending += 1;
+      register(devicePushToken)
+        .catch((error) => handleFailure(error, devicePushToken))
+        .finally(() => {
+          pending -= 1;
+        });
     }
 
     function handleFailure(
@@ -74,10 +79,20 @@ export function usePushRegistration() {
         attempt(devicePushToken);
       },
     );
+    const appStateSubscription = AppState.addEventListener(
+      "change",
+      (status: AppStateStatus) => {
+        if (status === "active" && sentToken === null && pending === 0) {
+          retries = 0;
+          attempt();
+        }
+      },
+    );
     attempt();
 
     return () => {
       cancelled = true;
+      appStateSubscription.remove();
       if (retryTimer) {
         clearTimeout(retryTimer);
       }

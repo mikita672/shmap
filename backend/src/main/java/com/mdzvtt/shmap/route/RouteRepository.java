@@ -17,7 +17,7 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
     @Query("""
             select new com.mdzvtt.shmap.route.RouteListRow(
                 r.id, r.name, r.travelMode, size(r.stops),
-                r.path.distanceMeters, r.path.durationSeconds,
+                r.path.distanceMeters, r.path.durationSeconds, r.completion.finishedOn,
                 u, r.createdAt, r.updatedAt)
             from Route r
             join r.createdBy u
@@ -34,4 +34,8 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
               and m.user.id = :userId
             """)
     Optional<Route> findForMember(Long routeId, Integer userId);
+
+    @EntityGraph(attributePaths = { "createdBy", "stops", "stops.addedBy" })
+    @Query("select r from Route r where r.id = :routeId and " + RouteQueries.VISIBLE_TO_VIEWER)
+    Optional<Route> findVisibleTo(Long routeId, Integer viewerId);
 }
