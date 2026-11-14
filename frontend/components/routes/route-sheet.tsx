@@ -142,7 +142,7 @@ export function RouteSheet({
               />
             )}
 
-            {route.canEdit && (
+            {onAddPlace && (
               <AddPlaceButton
                 label="Add place"
                 isFull={isFull}
