@@ -134,3 +134,10 @@ export function formatVisibility(completion: RouteCompletionResponse) {
   };
   return { line: lines[completion.effectiveVisibility], note: null };
 }
+
+export function formatRoutesSummary(planned: number, done: number) {
+  return joinMeta(
+    planned > 0 && `${planned} planned`,
+    done > 0 && `${done} done`,
+  );
+}
