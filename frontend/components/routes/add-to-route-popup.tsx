@@ -52,6 +52,7 @@ export function AddToRoutePopup({
     addingRouteId !== null &&
     Boolean(routes?.some((route) => route.id === addingRouteId));
   const isBusy = isAdding || createWithPlace.isPending;
+  const plannedRoutes = routes?.filter((route) => route.finishedOn === null);
 
   const close = () => {
     setStep("list");
@@ -171,12 +172,12 @@ export function AddToRoutePopup({
           </View>
         ) : (
           <>
-            {routes.length > 0 ? (
+            {plannedRoutes && plannedRoutes.length > 0 ? (
               <ScrollView
                 className="max-h-[296px]"
                 contentContainerClassName="gap-2 px-5"
               >
-                {routes.map((route) => (
+                {plannedRoutes.map((route) => (
                   <AddToRouteRow
                     key={route.id}
                     chatId={chat.id}
@@ -192,7 +193,9 @@ export function AddToRoutePopup({
               </ScrollView>
             ) : (
               <Text className="px-6 pb-2 text-center text-sm leading-5 text-card-muted">
-                This chat has no routes yet.
+                {routes.length === 0
+                  ? "This chat has no routes yet."
+                  : "All routes in this chat are finished."}
               </Text>
             )}
             <View className="px-5 pt-2">
