@@ -10,9 +10,9 @@ import com.mdzvtt.shmap.chat.ChatType;
 import com.mdzvtt.shmap.directions.RoutingRequest;
 import com.mdzvtt.shmap.directions.RoutingResult;
 import com.mdzvtt.shmap.directions.TravelMode;
+import com.mdzvtt.shmap.exception.NotChatMemberException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
-import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.route.dto.RouteCompletionResponse;
@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -89,11 +90,12 @@ public class RouteService {
     public RouteResponse complete(Integer userId, Long routeId, LocalDate finishedOn, Set<Integer> participantIds,
             RouteVisibility visibility) {
         Route route = lockRoute(userId, routeId);
-        List<User> participants = userRepository.findAllById(participantIds);
-        if (participants.size() != participantIds.size()) {
-            throw new UserNotFoundException();
+        Set<Integer> allowedIds = new HashSet<>(chatMemberRepository.findUserIdsByChatId(route.getChat().getId()));
+        route.getParticipants().forEach(participant -> allowedIds.add(participant.getId()));
+        if (!allowedIds.containsAll(participantIds)) {
+            throw new NotChatMemberException();
         }
-        route.complete(finishedOn, visibility, participants);
+        route.complete(finishedOn, visibility, userRepository.findAllById(participantIds));
         announceChanged(route);
         return toResponse(route, userId);
     }
