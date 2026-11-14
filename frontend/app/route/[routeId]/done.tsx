@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,6 +7,7 @@ import { PickerRow } from "@/components/chats/picker-row";
 import { DateRow } from "@/components/routes/date-row";
 import { VisibilityOption } from "@/components/routes/visibility-option";
 import { Button } from "@/components/ui/button";
+import { NoteCard } from "@/components/ui/note-card";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
@@ -17,13 +18,14 @@ import { useCompleteRoute } from "@/hooks/useRouteMutations";
 import { toLocalDateString } from "@/lib/local-date";
 import { getParticipantCandidates } from "@/lib/route-participants";
 import { VISIBILITY_OPTIONS } from "@/lib/route-format";
-import type { RouteVisibility } from "@/lib/types/api";
+import { AuthErrorCode, type RouteVisibility } from "@/lib/types/api";
+import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function DoneRouteScreen() {
   const insets = useSafeAreaInsets();
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
   const numericRouteId = Number(routeId);
-  const { data: route } = useRoute(numericRouteId);
+  const { data: route, isPending, error, refetch } = useRoute(numericRouteId);
   const { data: chat } = useQuery({
     ...chatQueryOptions(route?.chatId ?? 0),
     enabled: route?.chatId != null,
@@ -81,6 +83,35 @@ export default function DoneRouteScreen() {
       { onSuccess: () => router.back() },
     );
   };
+
+  if (!route) {
+    return (
+      <View className="flex-1 bg-background">
+        <TitleHeader title="Mark as done" />
+        {isPending ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" />
+          </View>
+        ) : isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND) ? (
+          <View className="flex-1 justify-center px-6">
+            <NoteCard
+              title="This route was deleted"
+              description="Someone in the chat deleted it, or you're no longer in this chat"
+            />
+          </View>
+        ) : (
+          <View className="flex-1 items-center justify-center gap-4 px-6">
+            <Text className="text-center">
+              {getErrorMessage(error, "Couldn't load this route")}
+            </Text>
+            <Button onPress={() => refetch()}>
+              <Text>Retry</Text>
+            </Button>
+          </View>
+        )}
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-background">
