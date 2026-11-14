@@ -69,7 +69,12 @@ public class RouteService {
 
     @Transactional(readOnly = true)
     public RouteResponse getRoute(Integer userId, Long routeId) {
-        return toResponse(findRoute(userId, routeId), userId);
+        Optional<Route> asMember = routeRepository.findForMember(routeId, userId);
+        if (asMember.isPresent()) {
+            return toResponse(asMember.get(), userId);
+        }
+        Route route = routeRepository.findVisibleTo(routeId, userId).orElseThrow(RouteNotFoundException::new);
+        return toResponse(route, null, false, false);
     }
 
     @Transactional
@@ -194,16 +199,21 @@ public class RouteService {
 
     private RouteResponse toResponse(Route route, Integer userId) {
         Chat chat = route.getChat();
+        return toResponse(route, chat.getId(), true, chatAccess.canSend(chat, userId));
+    }
+
+    private RouteResponse toResponse(Route route, Long chatId, boolean member, boolean canEdit) {
         return new RouteResponse(
                 route.getId(),
-                chat.getId(),
+                chatId,
                 route.getName(),
                 route.getTravelMode(),
                 RoutePathResponse.from(route.getPathStatus(), route.getPath()),
                 toSummary(route.getCreatedBy()),
                 route.getCreatedAt(),
                 route.getUpdatedAt(),
-                chatAccess.canSend(chat, userId),
+                member,
+                canEdit,
                 toCompletionResponse(route),
                 route.getStops().stream()
                         .map(this::toStopResponse)

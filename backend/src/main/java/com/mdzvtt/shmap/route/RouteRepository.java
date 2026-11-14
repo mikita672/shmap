@@ -34,4 +34,8 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
               and m.user.id = :userId
             """)
     Optional<Route> findForMember(Long routeId, Integer userId);
+
+    @EntityGraph(attributePaths = { "createdBy", "stops", "stops.addedBy" })
+    @Query("select r from Route r where r.id = :routeId and " + RouteQueries.VISIBLE_TO_VIEWER)
+    Optional<Route> findVisibleTo(Long routeId, Integer viewerId);
 }
