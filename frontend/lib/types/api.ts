@@ -289,7 +289,7 @@ export type RoutePathResponse =
 export interface RouteStopResponse {
   id: number;
   place: ChatPlace;
-  addedBy: UserSummaryResponse;
+  addedBy: UserSummaryResponse | null;
   addedAt: string;
 }
 
@@ -304,11 +304,11 @@ export interface RouteCompletionResponse {
 
 export interface RouteResponse {
   id: number;
-  chatId: number;
+  chatId: number | null;
   name: string;
   travelMode: TravelMode;
   path: RoutePathResponse;
-  createdBy: UserSummaryResponse;
+  createdBy: UserSummaryResponse | null;
   createdAt: string;
   updatedAt: string;
   member: boolean;

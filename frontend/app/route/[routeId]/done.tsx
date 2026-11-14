@@ -26,7 +26,7 @@ export default function DoneRouteScreen() {
   const { data: route } = useRoute(numericRouteId);
   const { data: chat } = useQuery({
     ...chatQueryOptions(route?.chatId ?? 0),
-    enabled: route !== undefined,
+    enabled: route?.chatId != null,
   });
   const { data: me } = useProfile();
   const complete = useCompleteRoute(numericRouteId);

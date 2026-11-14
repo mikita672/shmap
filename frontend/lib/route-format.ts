@@ -54,10 +54,14 @@ export function formatRouteUpdated(isoDate: string, now: number) {
 }
 
 export function formatStopSubtitle(stop: RouteStopResponse, myId?: number) {
-  const addedBy = stop.addedBy.id === myId ? "you" : stop.addedBy.firstName;
+  const addedBy = stop.addedBy
+    ? stop.addedBy.id === myId
+      ? "you"
+      : stop.addedBy.firstName
+    : null;
   const { osmKey, osmValue } = stop.place;
   return joinMeta(
-    `Added by ${addedBy}`,
+    addedBy && `Added by ${addedBy}`,
     osmKey && osmValue && formatOsmCategory(osmKey, osmValue),
   );
 }

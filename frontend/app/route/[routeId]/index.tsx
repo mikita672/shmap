@@ -38,7 +38,7 @@ export default function RouteScreen() {
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
     ...chatQueryOptions(route?.chatId ?? 0),
-    enabled: route !== undefined,
+    enabled: route?.chatId != null,
   });
   const setTravelMode = useSetTravelMode(Number(routeId));
   const retryPath = useRetryPath(Number(routeId));

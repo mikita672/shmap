@@ -54,14 +54,18 @@ export function RouteActionsMenu({
   const [step, setStep] = useState<MenuStep>("menu");
   const [name, setName] = useState(route.name);
   const trimmedName = name.trim();
-  const creator =
-    route.createdBy.id === profile?.id ? "you" : route.createdBy.firstName;
+  const creator = route.createdBy
+    ? route.createdBy.id === profile?.id
+      ? "you"
+      : route.createdBy.firstName
+    : null;
 
   const handleClose = () => {
     if (!rename.isPending && !remove.isPending && !reopen.isPending) onClose();
   };
 
   const handleAllRoutes = () => {
+    if (route.chatId === null) return;
     onClose();
     router.push({
       pathname: "/chat/[chatId]/routes",
@@ -97,14 +101,15 @@ export function RouteActionsMenu({
             confirmLabel="Delete route"
             pendingLabel="Deleting…"
             isPending={remove.isPending}
-            onConfirm={() =>
+            onConfirm={() => {
+              if (route.chatId === null) return;
               remove.mutate(route.chatId, {
                 onSuccess: () => {
                   onClose();
                   onDeleted();
                 },
-              })
-            }
+              });
+            }}
             onCancel={handleClose}
           />
         </Animated.View>
@@ -201,7 +206,7 @@ export function RouteActionsMenu({
         </Text>
         <Text className="text-center text-sm leading-5 tracking-[0.5px] text-card-muted">
           {joinMeta(
-            `Created by ${creator}`,
+            creator && `Created by ${creator}`,
             route.completion
               ? formatDoneMeta(route.completion.finishedOn, now)
               : formatStopCount(route.stops.length),
@@ -231,7 +236,9 @@ export function RouteActionsMenu({
       {route.canEdit && route.completion && (
         <SheetItem label="Mark as not done" onPress={() => setStep("reopen")} />
       )}
-      <SheetItem label="All routes in this chat" onPress={handleAllRoutes} />
+      {route.chatId !== null && (
+        <SheetItem label="All routes in this chat" onPress={handleAllRoutes} />
+      )}
       {route.canEdit && (
         <>
           <MenuDivider />

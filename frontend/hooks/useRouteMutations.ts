@@ -188,10 +188,7 @@ export function useRenameRoute(routeId: number) {
     },
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
-      void queryClient.invalidateQueries({
-        queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
-        exact: true,
-      });
+      invalidateChatRoutes(queryClient, route.chatId);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't rename the route"));
@@ -212,10 +209,7 @@ export function useCompleteRoute(routeId: number) {
     },
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
-      void queryClient.invalidateQueries({
-        queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
-        exact: true,
-      });
+      invalidateChatRoutes(queryClient, route.chatId);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -237,10 +231,7 @@ export function useReopenRoute(routeId: number) {
     },
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
-      void queryClient.invalidateQueries({
-        queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
-        exact: true,
-      });
+      invalidateChatRoutes(queryClient, route.chatId);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -288,10 +279,7 @@ export function useAddStop(routeId: number) {
     },
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
-      void queryClient.invalidateQueries({
-        queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
-        exact: true,
-      });
+      invalidateChatRoutes(queryClient, route.chatId);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -342,12 +330,17 @@ function useOptimisticRouteEdit<TVariables>(
         void queryClient.invalidateQueries({ queryKey, exact: true });
       }
       if (route) {
-        void queryClient.invalidateQueries({
-          queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
-          exact: true,
-        });
+        invalidateChatRoutes(queryClient, route.chatId);
       }
     },
+  });
+}
+
+function invalidateChatRoutes(queryClient: QueryClient, chatId: number | null) {
+  if (chatId === null) return;
+  void queryClient.invalidateQueries({
+    queryKey: chatRoutesQueryOptions(chatId).queryKey,
+    exact: true,
   });
 }
 
