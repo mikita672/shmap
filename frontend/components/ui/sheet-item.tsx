@@ -20,11 +20,13 @@ export interface SheetItemProps
     Omit<PressableProps, "children">,
     VariantProps<typeof sheetItemTextVariants> {
   label: string;
+  description?: string;
   className?: string;
 }
 
 export function SheetItem({
   label,
+  description,
   tone,
   className,
   disabled,
@@ -35,13 +37,17 @@ export function SheetItem({
       accessibilityRole="menuitem"
       disabled={disabled}
       className={cn(
-        "h-14 justify-center px-6 active:opacity-60",
+        "justify-center px-6 active:opacity-60",
+        description ? "min-h-14 py-2" : "h-14",
         disabled && "opacity-50",
         className,
       )}
       {...props}
     >
       <Text className={sheetItemTextVariants({ tone })}>{label}</Text>
+      {description && (
+        <Text className="text-sm leading-5 text-card-muted">{description}</Text>
+      )}
     </Pressable>
   );
 }

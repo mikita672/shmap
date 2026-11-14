@@ -14,6 +14,7 @@ import type {
 } from "@/lib/types/api";
 
 export const MAX_ROUTE_STOPS = 10;
+export const MIN_STOPS_TO_FINISH = 2;
 
 export const TRAVEL_MODE_LABELS: Record<TravelMode, string> = {
   WALKING: "Walking",
