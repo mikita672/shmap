@@ -9,7 +9,6 @@ import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
 import { useChat } from "@/hooks/useChat";
 import { useChatRoutes } from "@/hooks/useChatRoutes";
-import { getChatTitle } from "@/lib/chat-preview";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export default function ChatRoutesScreen() {
@@ -57,7 +56,6 @@ export default function ChatRoutesScreen() {
         <>
           <RoutesList
             routes={routes}
-            chatTitle={chat ? getChatTitle(chat) : undefined}
             now={dataUpdatedAt}
             onOpenRoute={openRoute}
             onRefresh={refetch}
