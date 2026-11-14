@@ -30,9 +30,17 @@ export default function DoneRouteScreen() {
   });
   const { data: me } = useProfile();
   const complete = useCompleteRoute(numericRouteId);
-  const [date, setDate] = useState(() => toLocalDateString(new Date()));
-  const [excludedIds, setExcludedIds] = useState<Set<number>>(() => new Set());
-  const [visibility, setVisibility] = useState<RouteVisibility>("FRIENDS");
+  const completion = route?.completion ?? null;
+  const isEditing = completion !== null;
+  const [today] = useState(() => toLocalDateString(new Date()));
+  const [dateOverride, setDateOverride] = useState<string | null>(null);
+  const [excludedOverride, setExcludedOverride] = useState<Set<number> | null>(
+    null,
+  );
+  const [visibilityOverride, setVisibilityOverride] =
+    useState<RouteVisibility | null>(null);
+  const date = dateOverride ?? completion?.finishedOn ?? today;
+  const visibility = visibilityOverride ?? completion?.visibility ?? "FRIENDS";
 
   const candidates =
     me && chat
@@ -42,20 +50,28 @@ export default function DoneRouteScreen() {
           route?.completion?.participants ?? [],
         )
       : [];
+  const listedIds = new Set(completion?.participants.map((user) => user.id));
+  const excludedIds =
+    excludedOverride ??
+    new Set(
+      completion
+        ? candidates
+            .filter((candidate) => !listedIds.has(candidate.id))
+            .map((candidate) => candidate.id)
+        : [],
+    );
   const participantIds = candidates
     .filter((candidate) => !excludedIds.has(candidate.id))
     .map((candidate) => candidate.id);
 
   const handleToggle = (userId: number) => {
-    setExcludedIds((previous) => {
-      const next = new Set(previous);
-      if (next.has(userId)) {
-        next.delete(userId);
-      } else {
-        next.add(userId);
-      }
-      return next;
-    });
+    const next = new Set(excludedIds);
+    if (next.has(userId)) {
+      next.delete(userId);
+    } else {
+      next.add(userId);
+    }
+    setExcludedOverride(next);
   };
 
   const handleSubmit = () => {
@@ -68,12 +84,12 @@ export default function DoneRouteScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TitleHeader title="Mark as done" />
+      <TitleHeader title={isEditing ? "Edit details" : "Mark as done"} />
 
       <ScrollView contentContainerClassName="gap-4 px-6 pt-4">
         <DateRow
           value={date}
-          onChange={setDate}
+          onChange={setDateOverride}
           disabled={complete.isPending}
         />
 
@@ -105,7 +121,7 @@ export default function DoneRouteScreen() {
               description={option.description}
               selected={visibility === option.value}
               disabled={complete.isPending}
-              onPress={() => setVisibility(option.value)}
+              onPress={() => setVisibilityOverride(option.value)}
             />
           ))}
           <Text className="px-5 text-[13px] leading-4 text-secondary">
@@ -121,7 +137,11 @@ export default function DoneRouteScreen() {
           onPress={handleSubmit}
         >
           <Text className="text-2xl">
-            {complete.isPending ? "Saving…" : "Mark as done"}
+            {complete.isPending
+              ? "Saving…"
+              : isEditing
+                ? "Save"
+                : "Mark as done"}
           </Text>
         </Button>
       </View>
