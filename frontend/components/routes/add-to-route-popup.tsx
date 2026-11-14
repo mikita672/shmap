@@ -52,7 +52,9 @@ export function AddToRoutePopup({
     addingRouteId !== null &&
     Boolean(routes?.some((route) => route.id === addingRouteId));
   const isBusy = isAdding || createWithPlace.isPending;
-  const plannedRoutes = routes?.filter((route) => route.finishedOn === null);
+  const visibleRoutes = routes?.filter(
+    (route) => route.finishedOn === null || route.id === addingRouteId,
+  );
 
   const close = () => {
     setStep("list");
@@ -172,12 +174,12 @@ export function AddToRoutePopup({
           </View>
         ) : (
           <>
-            {plannedRoutes && plannedRoutes.length > 0 ? (
+            {visibleRoutes && visibleRoutes.length > 0 ? (
               <ScrollView
                 className="max-h-[296px]"
                 contentContainerClassName="gap-2 px-5"
               >
-                {plannedRoutes.map((route) => (
+                {visibleRoutes.map((route) => (
                   <AddToRouteRow
                     key={route.id}
                     chatId={chat.id}
