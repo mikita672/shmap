@@ -35,6 +35,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -203,20 +205,21 @@ public class RouteService {
     }
 
     private RouteResponse toResponse(Route route, Long chatId, boolean member, boolean canEdit) {
+        Predicate<User> mayShow = usersVisibleTo(route, member);
         return new RouteResponse(
                 route.getId(),
                 chatId,
                 route.getName(),
                 route.getTravelMode(),
                 RoutePathResponse.from(route.getPathStatus(), route.getPath()),
-                toSummary(route.getCreatedBy()),
+                toSummaryIf(mayShow, route.getCreatedBy()),
                 route.getCreatedAt(),
                 route.getUpdatedAt(),
                 member,
                 canEdit,
                 toCompletionResponse(route),
                 route.getStops().stream()
-                        .map(this::toStopResponse)
+                        .map(stop -> toStopResponse(stop, mayShow))
                         .toList());
     }
 
@@ -249,12 +252,26 @@ public class RouteService {
                 row.updatedAt());
     }
 
-    private RouteStopResponse toStopResponse(RouteStop stop) {
+    private RouteStopResponse toStopResponse(RouteStop stop, Predicate<User> mayShow) {
         return new RouteStopResponse(
                 stop.getId(),
                 PlaceResponse.from(stop.getPlace()),
-                toSummary(stop.getAddedBy()),
+                toSummaryIf(mayShow, stop.getAddedBy()),
                 stop.getCreatedAt());
+    }
+
+    private Predicate<User> usersVisibleTo(Route route, boolean member) {
+        if (member) {
+            return user -> true;
+        }
+        Set<Integer> participantIds = route.getParticipants().stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+        return user -> participantIds.contains(user.getId());
+    }
+
+    private UserSummaryResponse toSummaryIf(Predicate<User> mayShow, User user) {
+        return mayShow.test(user) ? toSummary(user) : null;
     }
 
     private UserSummaryResponse toSummary(User user) {
