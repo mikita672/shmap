@@ -3,6 +3,7 @@ import { ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { DateRow } from "@/components/routes/date-row";
 import { VisibilityOption } from "@/components/routes/visibility-option";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
@@ -27,6 +28,7 @@ export default function DoneRouteScreen() {
   });
   const { data: me } = useProfile();
   const complete = useCompleteRoute(numericRouteId);
+  const [date, setDate] = useState(() => toLocalDateString(new Date()));
   const [visibility, setVisibility] = useState<RouteVisibility>("FRIENDS");
 
   const participantIds =
@@ -36,7 +38,7 @@ export default function DoneRouteScreen() {
     if (!participantIds || complete.isPending) return;
     complete.mutate(
       {
-        finishedOn: toLocalDateString(new Date()),
+        finishedOn: date,
         participantIds,
         visibility,
       },
@@ -49,6 +51,12 @@ export default function DoneRouteScreen() {
       <TitleHeader title="Mark as done" />
 
       <ScrollView contentContainerClassName="gap-2 px-6 pt-4">
+        <DateRow
+          value={date}
+          onChange={setDate}
+          disabled={complete.isPending}
+        />
+        <View className="h-2" />
         <SectionLabel title="Who can see it" />
         {VISIBILITY_OPTIONS.map((option) => (
           <VisibilityOption
