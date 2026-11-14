@@ -171,7 +171,11 @@ export default function ChangePasswordScreen() {
           <Button
             variant="ghost"
             className="h-auto px-0 py-0 active:bg-transparent"
-            onPress={() => signOut({ redirectTo: "/passwordReset" })}
+            onPress={() =>
+              signOut({ redirectTo: "/passwordReset" }).catch(() =>
+                toast.error("Couldn't log out. Please try again."),
+              )
+            }
           >
             <Text className="text-secondary text-base font-normal tracking-[0.5px] underline">
               Reset it
