@@ -97,6 +97,12 @@ export default function RouteScreen() {
             route.canEdit ? (mode) => setTravelMode.mutate(mode) : undefined
           }
           onRetryPath={() => retryPath.mutate()}
+          onEditCompletion={() =>
+            router.push({
+              pathname: "/route/[routeId]/done",
+              params: { routeId: String(route.id) },
+            })
+          }
           onOpenInMaps={() => openRouteInMaps(route)}
         />
         <RouteHeader
