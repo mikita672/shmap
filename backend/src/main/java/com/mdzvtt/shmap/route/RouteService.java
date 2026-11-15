@@ -273,6 +273,7 @@ public class RouteService {
         }
         return new RouteCompletionResponse(
                 completion.finishedOn(),
+                completion.completedAt(),
                 completion.visibility(),
                 route.effectiveVisibility(),
                 route.getParticipants().stream()
