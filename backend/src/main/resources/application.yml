@@ -47,6 +47,10 @@ spring:
         read-timeout: 5s
         default-header:
           User-Agent: shmap-backend
+      ai:
+        base-url: ${ai.base-url}
+        connect-timeout: 2s
+        read-timeout: 20s
 application:
   security:
     jwt:
@@ -62,6 +66,11 @@ directions:
 push:
   expo:
     access-token: ${EXPO_ACCESS_TOKEN:}
+ai:
+  base-url: ${AI_BASE_URL:}
+  model: ${AI_MODEL:}
+  api-key: ${AI_API_KEY:}
+  reasoning-effort: ${AI_REASONING_EFFORT:}
 app:
   realtime:
     stream-timeout: 55m
