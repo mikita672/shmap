@@ -44,7 +44,7 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
     Optional<Route> findVisibleTo(Long routeId, Integer viewerId);
 
     String FEED_KEYS = "select new com.mdzvtt.shmap.feed.FeedCursor(r.completion.completedAt, r.id)"
-            + " from Route r where " + RouteQueries.IN_FRIENDS_FEED;
+            + " from Route r where r.completion.completedAt is not null and " + RouteQueries.IN_FRIENDS_FEED;
 
     String NEWEST_DONE_FIRST = " order by r.completion.completedAt desc, r.id desc";
 
