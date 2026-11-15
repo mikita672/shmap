@@ -188,6 +188,16 @@ public class RouteService {
                 .ifPresent(this::announceChanged);
     }
 
+    public Route findEditable(Integer userId, Long routeId) {
+        Route route = findRoute(userId, routeId);
+        requireCanEdit(route.getChat(), userId);
+        return route;
+    }
+
+    public Route lockEditable(Integer userId, Long routeId) {
+        return lockRoute(userId, routeId);
+    }
+
     private Route lockRoute(Integer userId, Long routeId) {
         routeRepository.findByIdForUpdate(routeId).orElseThrow(RouteNotFoundException::new);
         Route route = findRoute(userId, routeId);
@@ -199,7 +209,7 @@ public class RouteService {
         return routeRepository.findForMember(routeId, userId).orElseThrow(RouteNotFoundException::new);
     }
 
-    private void announceChanged(Route route) {
+    public void announceChanged(Route route) {
         Long chatId = route.getChat().getId();
         eventPublisher.publishEvent(
                 new RouteChanged(chatId, route.getId(), chatMemberRepository.findUserIdsByChatId(chatId)));
