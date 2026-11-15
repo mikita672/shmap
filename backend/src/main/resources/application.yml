@@ -41,6 +41,12 @@ spring:
         base-url: https://exp.host
         connect-timeout: 2s
         read-timeout: 5s
+      photon:
+        base-url: https://photon.komoot.io
+        connect-timeout: 2s
+        read-timeout: 5s
+        default-header:
+          User-Agent: shmap-backend
 application:
   security:
     jwt:
