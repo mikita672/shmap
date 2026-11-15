@@ -53,7 +53,9 @@ import java.util.Optional;
 import java.util.Set;
 
 @Entity
-@Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"), check = @CheckConstraint(name = "ck_route_completion", constraint = "(finished_on is null) = (visibility is null) and (finished_on is null) = (completed_at is null)"))
+@Table(name = "route", indexes = {
+        @Index(name = "idx_route_chat", columnList = "chat_id"),
+        @Index(name = "idx_route_completed_at", columnList = "completed_at desc, id desc") }, check = @CheckConstraint(name = "ck_route_completion", constraint = "(finished_on is null) = (visibility is null) and (finished_on is null) = (completed_at is null)"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Route {
