@@ -40,6 +40,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -174,7 +175,10 @@ public class Route {
         if (stops.size() < MIN_STOPS_TO_FINISH) {
             throw new RouteTooFewStopsException(MIN_STOPS_TO_FINISH);
         }
-        this.completion = new RouteCompletion(finishedOn, visibility);
+        Instant completedAt = completion != null
+                ? completion.completedAt()
+                : Instant.now().truncatedTo(ChronoUnit.MICROS);
+        this.completion = new RouteCompletion(finishedOn, visibility, completedAt);
         this.participants.clear();
         this.participants.addAll(participants);
         touch();
