@@ -39,11 +39,22 @@ public class FeedService {
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
-    public FeedPageResponse getFeed(Integer viewerId) {
-        List<Long> ids = routeRepository.findFeedIds(viewerId, Limit.of(PAGE_SIZE));
-        if (ids.isEmpty()) {
+    public FeedPageResponse getFeed(Integer viewerId, String cursor) {
+        Limit oneMore = Limit.of(PAGE_SIZE + 1);
+        List<FeedCursor> keys;
+        if (cursor == null) {
+            keys = routeRepository.findFeedKeys(viewerId, oneMore);
+        } else {
+            FeedCursor after = FeedCursor.decode(cursor);
+            keys = routeRepository.findFeedKeysBefore(viewerId, after.completedAt(), after.routeId(), oneMore);
+        }
+        if (keys.isEmpty()) {
             return new FeedPageResponse(List.of(), null);
         }
+        boolean hasMore = keys.size() > PAGE_SIZE;
+        List<FeedCursor> page = hasMore ? keys.subList(0, PAGE_SIZE) : keys;
+        String nextCursor = hasMore ? page.getLast().encode() : null;
+        List<Long> ids = page.stream().map(FeedCursor::routeId).toList();
         Map<Long, Route> routesById = routeRepository.findWithParticipantsAndStopsByIdIn(ids).stream()
                 .collect(Collectors.toMap(Route::getId, Function.identity()));
         Comparator<User> participantOrder = participantOrder(viewerId, routesById.values());
@@ -52,7 +63,7 @@ public class FeedService {
                 .filter(Objects::nonNull)
                 .map(route -> toResponse(route, participantOrder))
                 .toList();
-        return new FeedPageResponse(routes, null);
+        return new FeedPageResponse(routes, nextCursor);
     }
 
     private Comparator<User> participantOrder(Integer viewerId, Iterable<Route> routes) {
