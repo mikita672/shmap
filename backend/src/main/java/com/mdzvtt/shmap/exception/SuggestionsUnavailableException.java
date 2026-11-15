@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class SuggestionsUnavailableException extends AppException {
+public class SuggestionsUnavailableException extends AppException implements RetryAfter {
     private final Long retryAfterSeconds;
 
     public SuggestionsUnavailableException() {

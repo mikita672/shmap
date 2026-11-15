@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -46,7 +47,11 @@ public class GlobalExceptionHandler {
                                 .fieldErrors(fieldErrors)
                                 .build();
 
-                return ResponseEntity.status(ex.getHttpStatus()).body(response);
+                ResponseEntity.BodyBuilder builder = ResponseEntity.status(ex.getHttpStatus());
+                if (ex instanceof RetryAfter retryAfter && retryAfter.getRetryAfterSeconds() != null) {
+                        builder.header(HttpHeaders.RETRY_AFTER, String.valueOf(retryAfter.getRetryAfterSeconds()));
+                }
+                return builder.body(response);
         }
 
         @ExceptionHandler(MethodArgumentNotValidException.class)

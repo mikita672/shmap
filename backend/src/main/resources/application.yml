@@ -71,6 +71,9 @@ ai:
   model: ${AI_MODEL:}
   api-key: ${AI_API_KEY:}
   reasoning-effort: ${AI_REASONING_EFFORT:}
+  limits:
+    per-user-daily: ${AI_USER_DAILY_LIMIT:10}
+    global-daily: ${AI_GLOBAL_DAILY_LIMIT:40}
 app:
   realtime:
     stream-timeout: 55m
