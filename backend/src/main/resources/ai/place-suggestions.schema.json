@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "candidateId": {
+            "type": "string",
+            "description": "The id of one candidate from the list, for example c12"
+          },
+          "reason": {
+            "type": "string",
+            "description": "One short English sentence on why this place fits the group"
+          }
+        },
+        "required": [
+          "candidateId",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Up to 8 picks from the candidate list, best first"
+    }
+  },
+  "required": [
+    "suggestions"
+  ],
+  "additionalProperties": false
+}
