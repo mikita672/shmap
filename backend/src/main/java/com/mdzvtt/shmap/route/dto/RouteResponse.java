@@ -7,16 +7,17 @@ import java.time.Instant;
 import java.util.List;
 
 public record RouteResponse(
-                Long id,
-                Long chatId,
-                String name,
-                TravelMode travelMode,
-                RoutePathResponse path,
-                UserSummaryResponse createdBy,
-                Instant createdAt,
-                Instant updatedAt,
-                boolean member,
-                boolean canEdit,
-                RouteCompletionResponse completion,
-                List<RouteStopResponse> stops) {
+        Long id,
+        Long chatId,
+        String name,
+        TravelMode travelMode,
+        RoutePathResponse path,
+        UserSummaryResponse createdBy,
+        Instant createdAt,
+        Instant updatedAt,
+        boolean member,
+        boolean canEdit,
+        RouteCompletionResponse completion,
+        List<RouteInterestResponse> interests,
+        List<RouteStopResponse> stops) {
 }

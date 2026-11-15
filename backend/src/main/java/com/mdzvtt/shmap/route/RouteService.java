@@ -13,9 +13,11 @@ import com.mdzvtt.shmap.directions.TravelMode;
 import com.mdzvtt.shmap.exception.NotChatMemberException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
+import com.mdzvtt.shmap.place.PlaceCategory;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.route.dto.RouteCompletionResponse;
+import com.mdzvtt.shmap.route.dto.RouteInterestResponse;
 import com.mdzvtt.shmap.route.dto.RoutePathResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
@@ -31,10 +33,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -42,6 +47,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RouteService {
     private final RouteRepository routeRepository;
+    private final RouteInterestRepository routeInterestRepository;
     private final UserRepository userRepository;
     private final ChatAccess chatAccess;
     private final ChatMemberRepository chatMemberRepository;
@@ -127,6 +133,19 @@ public class RouteService {
     }
 
     @Transactional
+    public RouteResponse setInterests(Integer userId, Long routeId, Set<PlaceCategory> categories) {
+        Route route = lockRoute(userId, routeId);
+        route.requirePlanned();
+        routeInterestRepository.deleteByRouteIdAndUserId(routeId, userId);
+        User user = userRepository.getReferenceById(userId);
+        routeInterestRepository.saveAll(categories.stream()
+                .map(category -> new RouteInterest(route, user, category))
+                .toList());
+        announceChanged(route);
+        return toResponse(route, userId);
+    }
+
+    @Transactional
     public Optional<RoutingRequest> addStop(Integer userId, Long routeId, PlaceSnapshot place) {
         Route route = lockRoute(userId, routeId);
         route.addStop(new RouteStop(place, userRepository.getReferenceById(userId)));
@@ -169,6 +188,16 @@ public class RouteService {
                 .ifPresent(this::announceChanged);
     }
 
+    public Route findEditable(Integer userId, Long routeId) {
+        Route route = findRoute(userId, routeId);
+        requireCanEdit(route.getChat(), userId);
+        return route;
+    }
+
+    public Route lockEditable(Integer userId, Long routeId) {
+        return lockRoute(userId, routeId);
+    }
+
     private Route lockRoute(Integer userId, Long routeId) {
         routeRepository.findByIdForUpdate(routeId).orElseThrow(RouteNotFoundException::new);
         Route route = findRoute(userId, routeId);
@@ -180,7 +209,7 @@ public class RouteService {
         return routeRepository.findForMember(routeId, userId).orElseThrow(RouteNotFoundException::new);
     }
 
-    private void announceChanged(Route route) {
+    public void announceChanged(Route route) {
         Long chatId = route.getChat().getId();
         eventPublisher.publishEvent(
                 new RouteChanged(chatId, route.getId(), chatMemberRepository.findUserIdsByChatId(chatId)));
@@ -218,9 +247,23 @@ public class RouteService {
                 member,
                 canEdit,
                 toCompletionResponse(route),
+                member ? toInterestResponses(route) : List.of(),
                 route.getStops().stream()
                         .map(stop -> toStopResponse(stop, mayShow))
                         .toList());
+    }
+
+    private List<RouteInterestResponse> toInterestResponses(Route route) {
+        Map<User, Set<PlaceCategory>> byUser = routeInterestRepository.findForCurrentMembers(route.getId())
+                .stream()
+                .collect(Collectors.groupingBy(
+                        RouteInterest::getUser,
+                        () -> new TreeMap<>(Comparator.comparing(User::getId)),
+                        Collectors.mapping(RouteInterest::getCategory,
+                                Collectors.toCollection(() -> EnumSet.noneOf(PlaceCategory.class)))));
+        return byUser.entrySet().stream()
+                .map(entry -> new RouteInterestResponse(toSummary(entry.getKey()), List.copyOf(entry.getValue())))
+                .toList();
     }
 
     private RouteCompletionResponse toCompletionResponse(Route route) {
