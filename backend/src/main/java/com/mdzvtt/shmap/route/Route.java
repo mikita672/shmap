@@ -241,7 +241,7 @@ public class Route {
         return pathStatus != oldStatus || !Objects.equals(path, oldPath);
     }
 
-    private void requirePlanned() {
+    public void requirePlanned() {
         if (completion != null) {
             throw new RouteFinishedException();
         }

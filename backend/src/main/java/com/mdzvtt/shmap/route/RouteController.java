@@ -4,6 +4,7 @@ import com.mdzvtt.shmap.route.dto.AddRouteStopRequest;
 import com.mdzvtt.shmap.route.dto.CreateRouteRequest;
 import com.mdzvtt.shmap.route.dto.ReorderRouteStopsRequest;
 import com.mdzvtt.shmap.route.dto.RouteCompletionRequest;
+import com.mdzvtt.shmap.route.dto.RouteInterestsRequest;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteSummaryResponse;
 import com.mdzvtt.shmap.route.dto.UpdateRouteRequest;
@@ -76,6 +77,12 @@ public class RouteController {
     @PutMapping("/routes/{routeId}/path")
     public RouteResponse retryPath(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
         return routeEditor.retryPath(user.getId(), routeId);
+    }
+
+    @PutMapping("/routes/{routeId}/interests")
+    public RouteResponse setInterests(@AuthenticationPrincipal User user, @PathVariable Long routeId,
+            @Valid @RequestBody RouteInterestsRequest request) {
+        return routeService.setInterests(user.getId(), routeId, request.categories());
     }
 
     @PutMapping("/routes/{routeId}/completion")

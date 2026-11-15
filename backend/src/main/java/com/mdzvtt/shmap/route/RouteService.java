@@ -13,6 +13,7 @@ import com.mdzvtt.shmap.directions.TravelMode;
 import com.mdzvtt.shmap.exception.NotChatMemberException;
 import com.mdzvtt.shmap.exception.NotFriendsException;
 import com.mdzvtt.shmap.exception.RouteNotFoundException;
+import com.mdzvtt.shmap.place.PlaceCategory;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.route.dto.RouteCompletionResponse;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RouteService {
     private final RouteRepository routeRepository;
+    private final RouteInterestRepository routeInterestRepository;
     private final UserRepository userRepository;
     private final ChatAccess chatAccess;
     private final ChatMemberRepository chatMemberRepository;
@@ -124,6 +126,19 @@ public class RouteService {
         eventPublisher.publishEvent(
                 new RouteDeleted(chat.getId(), routeId, chatMemberRepository.findUserIdsByChatId(chat.getId())));
         announceDirectChat(chat);
+    }
+
+    @Transactional
+    public RouteResponse setInterests(Integer userId, Long routeId, Set<PlaceCategory> categories) {
+        Route route = lockRoute(userId, routeId);
+        route.requirePlanned();
+        routeInterestRepository.deleteByRouteIdAndUserId(routeId, userId);
+        User user = userRepository.getReferenceById(userId);
+        routeInterestRepository.saveAll(categories.stream()
+                .map(category -> new RouteInterest(route, user, category))
+                .toList());
+        announceChanged(route);
+        return toResponse(route, userId);
     }
 
     @Transactional
