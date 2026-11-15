@@ -1,11 +1,13 @@
 package com.mdzvtt.shmap.route;
 
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,4 +40,11 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
     @EntityGraph(attributePaths = { "createdBy", "stops", "stops.addedBy" })
     @Query("select r from Route r where r.id = :routeId and " + RouteQueries.VISIBLE_TO_VIEWER)
     Optional<Route> findVisibleTo(Long routeId, Integer viewerId);
+
+    @Query("select r.id from Route r where " + RouteQueries.IN_FRIENDS_FEED
+            + " order by r.completion.completedAt desc, r.id desc")
+    List<Long> findFeedIds(Integer viewerId, Limit limit);
+
+    @EntityGraph(attributePaths = { "participants", "stops" })
+    List<Route> findWithParticipantsAndStopsByIdIn(Collection<Long> ids);
 }
