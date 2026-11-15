@@ -15,6 +15,7 @@ import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Collator;
@@ -38,7 +39,7 @@ public class FeedService {
     private final FriendshipRepository friendshipRepository;
     private final StorageService storageService;
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public FeedPageResponse getFeed(Integer viewerId, String cursor) {
         Limit oneMore = Limit.of(PAGE_SIZE + 1);
         List<FeedCursor> keys;
