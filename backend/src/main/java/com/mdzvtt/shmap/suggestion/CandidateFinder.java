@@ -46,9 +46,15 @@ public class CandidateFinder {
     }
 
     private List<Found> search(SearchArea area, PlaceCategory category, int limit) {
+        return area.bboxes().stream()
+                .flatMap(bbox -> search(bbox, category, limit).stream())
+                .toList();
+    }
+
+    private List<Found> search(String bbox, PlaceCategory category, int limit) {
         PhotonResponse response;
         try {
-            response = photon.search(String.join(",", category.photonIncludes()), area.bbox(), limit, LANGUAGE);
+            response = photon.search(String.join(",", category.photonIncludes()), bbox, limit, LANGUAGE);
         } catch (RestClientException e) {
             log.warn("photon search for {} failed: {}", category, e.getMessage());
             throw new SuggestionsUnavailableException();
