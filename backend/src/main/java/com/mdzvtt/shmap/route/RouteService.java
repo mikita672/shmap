@@ -17,6 +17,7 @@ import com.mdzvtt.shmap.place.PlaceCategory;
 import com.mdzvtt.shmap.place.PlaceSnapshot;
 import com.mdzvtt.shmap.place.dto.PlaceResponse;
 import com.mdzvtt.shmap.route.dto.RouteCompletionResponse;
+import com.mdzvtt.shmap.route.dto.RouteInterestResponse;
 import com.mdzvtt.shmap.route.dto.RoutePathResponse;
 import com.mdzvtt.shmap.route.dto.RouteResponse;
 import com.mdzvtt.shmap.route.dto.RouteStopResponse;
@@ -32,10 +33,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -233,9 +237,23 @@ public class RouteService {
                 member,
                 canEdit,
                 toCompletionResponse(route),
+                member ? toInterestResponses(route) : List.of(),
                 route.getStops().stream()
                         .map(stop -> toStopResponse(stop, mayShow))
                         .toList());
+    }
+
+    private List<RouteInterestResponse> toInterestResponses(Route route) {
+        Map<User, Set<PlaceCategory>> byUser = routeInterestRepository.findForCurrentMembers(route.getId())
+                .stream()
+                .collect(Collectors.groupingBy(
+                        RouteInterest::getUser,
+                        () -> new TreeMap<>(Comparator.comparing(User::getId)),
+                        Collectors.mapping(RouteInterest::getCategory,
+                                Collectors.toCollection(() -> EnumSet.noneOf(PlaceCategory.class)))));
+        return byUser.entrySet().stream()
+                .map(entry -> new RouteInterestResponse(toSummary(entry.getKey()), List.copyOf(entry.getValue())))
+                .toList();
     }
 
     private RouteCompletionResponse toCompletionResponse(Route route) {
