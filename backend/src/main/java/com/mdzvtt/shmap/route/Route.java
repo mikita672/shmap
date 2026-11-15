@@ -40,6 +40,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -52,7 +53,9 @@ import java.util.Optional;
 import java.util.Set;
 
 @Entity
-@Table(name = "route", indexes = @Index(name = "idx_route_chat", columnList = "chat_id"), check = @CheckConstraint(name = "ck_route_completion", constraint = "(finished_on is null) = (visibility is null)"))
+@Table(name = "route", indexes = {
+        @Index(name = "idx_route_chat", columnList = "chat_id"),
+        @Index(name = "idx_route_completed_at", columnList = "completed_at desc, id desc") }, check = @CheckConstraint(name = "ck_route_completion", constraint = "(finished_on is null) = (visibility is null) and (finished_on is null) = (completed_at is null)"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Route {
@@ -174,7 +177,10 @@ public class Route {
         if (stops.size() < MIN_STOPS_TO_FINISH) {
             throw new RouteTooFewStopsException(MIN_STOPS_TO_FINISH);
         }
-        this.completion = new RouteCompletion(finishedOn, visibility);
+        Instant completedAt = completion != null
+                ? completion.completedAt()
+                : Instant.now().truncatedTo(ChronoUnit.MICROS);
+        this.completion = new RouteCompletion(finishedOn, visibility, completedAt);
         this.participants.clear();
         this.participants.addAll(participants);
         touch();
