@@ -10,15 +10,18 @@ import { routeQueryOptions } from "@/hooks/useRoute";
 import {
   addRouteStop,
   createRoute,
+  completeRoute,
   deleteRoute,
   removeRouteStop,
   reorderRouteStops,
+  reopenRoute,
   retryRoutePath,
   updateRoute,
 } from "@/lib/api/routes";
 import type {
   ChatPlace,
   CreateRouteRequest,
+  RouteCompletionRequest,
   RoutePathResponse,
   RouteResponse,
   TravelMode,
@@ -185,13 +188,56 @@ export function useRenameRoute(routeId: number) {
     },
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
-      void queryClient.invalidateQueries({
-        queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
-        exact: true,
-      });
+      invalidateChatRoutes(queryClient, route.chatId);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't rename the route"));
+    },
+  });
+}
+
+export function useCompleteRoute(routeId: number) {
+  const queryClient = useQueryClient();
+  const { queryKey } = routeQueryOptions(routeId);
+
+  return useMutation({
+    mutationKey: routeEditMutationKey(routeId),
+    scope: { id: `route-${routeId}` },
+    mutationFn: async (data: RouteCompletionRequest) => {
+      const response = await completeRoute(routeId, data);
+      return response.data;
+    },
+    onSuccess: (route) => {
+      queryClient.setQueryData(queryKey, route);
+      invalidateChatRoutes(queryClient, route.chatId);
+    },
+    onError: (error) => {
+      void queryClient.invalidateQueries({ queryKey, exact: true });
+      toast.error(getErrorMessage(error, "Couldn't save the finished route"));
+    },
+  });
+}
+
+export function useReopenRoute(routeId: number) {
+  const queryClient = useQueryClient();
+  const { queryKey } = routeQueryOptions(routeId);
+
+  return useMutation({
+    mutationKey: routeEditMutationKey(routeId),
+    scope: { id: `route-${routeId}` },
+    mutationFn: async () => {
+      const response = await reopenRoute(routeId);
+      return response.data;
+    },
+    onSuccess: (route) => {
+      queryClient.setQueryData(queryKey, route);
+      invalidateChatRoutes(queryClient, route.chatId);
+    },
+    onError: (error) => {
+      void queryClient.invalidateQueries({ queryKey, exact: true });
+      toast.error(
+        getErrorMessage(error, "Couldn't mark the route as not done"),
+      );
     },
   });
 }
@@ -233,10 +279,7 @@ export function useAddStop(routeId: number) {
     },
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
-      void queryClient.invalidateQueries({
-        queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
-        exact: true,
-      });
+      invalidateChatRoutes(queryClient, route.chatId);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -287,12 +330,17 @@ function useOptimisticRouteEdit<TVariables>(
         void queryClient.invalidateQueries({ queryKey, exact: true });
       }
       if (route) {
-        void queryClient.invalidateQueries({
-          queryKey: chatRoutesQueryOptions(route.chatId).queryKey,
-          exact: true,
-        });
+        invalidateChatRoutes(queryClient, route.chatId);
       }
     },
+  });
+}
+
+function invalidateChatRoutes(queryClient: QueryClient, chatId: number | null) {
+  if (chatId === null) return;
+  void queryClient.invalidateQueries({
+    queryKey: chatRoutesQueryOptions(chatId).queryKey,
+    exact: true,
   });
 }
 

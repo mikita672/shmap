@@ -41,23 +41,27 @@ export function StopDetails({
 
       <Separator />
 
-      <View className="flex-row items-center gap-3">
-        <Avatar uri={addedBy.avatarUrl} size={36} />
-        <View className="min-w-0 flex-1">
-          <Text
-            numberOfLines={1}
-            className="text-sm font-medium leading-5 text-on-surface"
-          >
-            Added by {addedBy.firstName} {addedBy.lastName}
-          </Text>
-          <Text className="text-[13px] leading-[18px] text-on-surface-muted">
-            {formatDayLabel(stop.addedAt, now)},{" "}
-            {formatMessageTime(stop.addedAt)}
-          </Text>
-        </View>
-      </View>
+      {addedBy && (
+        <>
+          <View className="flex-row items-center gap-3">
+            <Avatar uri={addedBy.avatarUrl} size={36} />
+            <View className="min-w-0 flex-1">
+              <Text
+                numberOfLines={1}
+                className="text-sm font-medium leading-5 text-on-surface"
+              >
+                Added by {addedBy.firstName} {addedBy.lastName}
+              </Text>
+              <Text className="text-[13px] leading-[18px] text-on-surface-muted">
+                {formatDayLabel(stop.addedAt, now)},{" "}
+                {formatMessageTime(stop.addedAt)}
+              </Text>
+            </View>
+          </View>
 
-      <Separator />
+          <Separator />
+        </>
+      )}
 
       <View className="flex-row gap-3">
         {removeAction}

@@ -11,16 +11,25 @@ import { SheetItem } from "@/components/ui/sheet-item";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { useProfile } from "@/hooks/useProfile";
-import { useDeleteRoute, useRenameRoute } from "@/hooks/useRouteMutations";
+import {
+  useDeleteRoute,
+  useRenameRoute,
+  useReopenRoute,
+} from "@/hooks/useRouteMutations";
 import { MaterialIcons } from "@/lib/icons";
-import { formatStopCount, joinMeta } from "@/lib/route-format";
+import {
+  MIN_STOPS_TO_FINISH,
+  formatDoneMeta,
+  formatStopCount,
+  joinMeta,
+} from "@/lib/route-format";
 import type { ChatResponse, RouteResponse } from "@/lib/types/api";
 import { cn } from "@/lib/utils";
 
 const STEP_ENTERING = FadeIn.duration(200);
 const MAX_NAME_LENGTH = 50;
 
-type MenuStep = "menu" | "rename" | "delete";
+type MenuStep = "menu" | "rename" | "delete" | "reopen";
 
 export interface RouteActionsMenuProps {
   route: RouteResponse;
@@ -40,21 +49,35 @@ export function RouteActionsMenu({
   const { data: profile } = useProfile();
   const rename = useRenameRoute(route.id);
   const remove = useDeleteRoute(route.id);
+  const reopen = useReopenRoute(route.id);
+  const [now] = useState(() => Date.now());
   const [step, setStep] = useState<MenuStep>("menu");
   const [name, setName] = useState(route.name);
   const trimmedName = name.trim();
-  const creator =
-    route.createdBy.id === profile?.id ? "you" : route.createdBy.firstName;
+  const creator = route.createdBy
+    ? route.createdBy.id === profile?.id
+      ? "you"
+      : route.createdBy.firstName
+    : null;
 
   const handleClose = () => {
-    if (!rename.isPending && !remove.isPending) onClose();
+    if (!rename.isPending && !remove.isPending && !reopen.isPending) onClose();
   };
 
   const handleAllRoutes = () => {
+    if (route.chatId === null) return;
     onClose();
     router.push({
       pathname: "/chat/[chatId]/routes",
       params: { chatId: String(route.chatId) },
+    });
+  };
+
+  const handleOpenDone = () => {
+    onClose();
+    router.push({
+      pathname: "/route/[routeId]/done",
+      params: { routeId: String(route.id) },
     });
   };
 
@@ -78,14 +101,35 @@ export function RouteActionsMenu({
             confirmLabel="Delete route"
             pendingLabel="Deleting…"
             isPending={remove.isPending}
-            onConfirm={() =>
+            onConfirm={() => {
+              if (route.chatId === null) return;
               remove.mutate(route.chatId, {
                 onSuccess: () => {
                   onClose();
                   onDeleted();
                 },
-              })
-            }
+              });
+            }}
+            onCancel={handleClose}
+          />
+        </Animated.View>
+      </Popup>
+    );
+  }
+
+  if (step === "reopen") {
+    return (
+      <Popup visible={visible} onClose={handleClose}>
+        <Animated.View entering={STEP_ENTERING}>
+          <ConfirmCard
+            icon="undo"
+            title="Mark as not done?"
+            message={`${route.name} goes back to planning. Its date, participants and visibility are cleared.`}
+            confirmLabel="Mark as not done"
+            pendingLabel="Saving…"
+            destructive={false}
+            isPending={reopen.isPending}
+            onConfirm={() => reopen.mutate(undefined, { onSuccess: onClose })}
             onCancel={handleClose}
           />
         </Animated.View>
@@ -162,17 +206,39 @@ export function RouteActionsMenu({
         </Text>
         <Text className="text-center text-sm leading-5 tracking-[0.5px] text-card-muted">
           {joinMeta(
-            `Created by ${creator}`,
-            formatStopCount(route.stops.length),
+            creator && `Created by ${creator}`,
+            route.completion
+              ? formatDoneMeta(route.completion.finishedOn, now)
+              : formatStopCount(route.stops.length),
           )}
         </Text>
       </View>
 
       <MenuDivider />
+      {route.canEdit && route.completion && (
+        <SheetItem label="Edit details" onPress={handleOpenDone} />
+      )}
       {route.canEdit && (
         <SheetItem label="Rename" onPress={() => setStep("rename")} />
       )}
-      <SheetItem label="All routes in this chat" onPress={handleAllRoutes} />
+      {route.canEdit && !route.completion && (
+        <SheetItem
+          label="Mark as done"
+          description={
+            route.stops.length < MIN_STOPS_TO_FINISH
+              ? `Add at least ${MIN_STOPS_TO_FINISH} stops`
+              : undefined
+          }
+          disabled={route.stops.length < MIN_STOPS_TO_FINISH}
+          onPress={handleOpenDone}
+        />
+      )}
+      {route.canEdit && route.completion && (
+        <SheetItem label="Mark as not done" onPress={() => setStep("reopen")} />
+      )}
+      {route.chatId !== null && (
+        <SheetItem label="All routes in this chat" onPress={handleAllRoutes} />
+      )}
       {route.canEdit && (
         <>
           <MenuDivider />

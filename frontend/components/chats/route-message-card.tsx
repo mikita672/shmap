@@ -58,6 +58,11 @@ export function RouteMessageCard({
     ? "text-bubble-out-muted opacity-80"
     : "text-bubble-in-muted";
   const isDeleted = rest.state === "deleted";
+  const isDone = rest.state === "active" && rest.route.completion !== null;
+  const chipFill = isMine
+    ? "bg-bubble-out-foreground"
+    : "bg-bubble-in-foreground";
+  const chipInk = isMine ? "text-bubble-out" : "text-bubble-in";
   const meta =
     rest.state === "active"
       ? getRouteCardMeta(rest.route)
@@ -112,6 +117,23 @@ export function RouteMessageCard({
           <Text className={cn("text-xs font-medium leading-4", muted)}>
             {isDeleted ? "Route deleted" : "Shared route"}
           </Text>
+          {isDone && (
+            <View
+              className={cn(
+                "flex-row items-center gap-1 rounded-full py-px pl-1 pr-2",
+                chipFill,
+              )}
+            >
+              <MaterialIcons
+                name="check-circle"
+                size={12}
+                className={chipInk}
+              />
+              <Text className={cn("text-xs font-medium leading-4", chipInk)}>
+                Done
+              </Text>
+            </View>
+          )}
         </View>
         <Text
           numberOfLines={1}

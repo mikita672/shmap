@@ -9,11 +9,17 @@ export interface SectionLabelAction {
 
 export interface SectionLabelProps {
   title: string;
+  detail?: string;
   action?: SectionLabelAction;
   className?: string;
 }
 
-export function SectionLabel({ title, action, className }: SectionLabelProps) {
+export function SectionLabel({
+  title,
+  detail,
+  action,
+  className,
+}: SectionLabelProps) {
   return (
     <View
       className={cn("flex-row items-center justify-between px-5", className)}
@@ -24,6 +30,11 @@ export function SectionLabel({ title, action, className }: SectionLabelProps) {
       >
         {title}
       </Text>
+      {detail && !action && (
+        <Text className="text-sm font-medium leading-5 tracking-[0.5px] text-action-foreground">
+          {detail}
+        </Text>
+      )}
       {action && (
         <Pressable
           onPress={action.onPress}

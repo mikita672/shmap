@@ -289,20 +289,31 @@ export type RoutePathResponse =
 export interface RouteStopResponse {
   id: number;
   place: ChatPlace;
-  addedBy: UserSummaryResponse;
+  addedBy: UserSummaryResponse | null;
   addedAt: string;
+}
+
+export type RouteVisibility = "PARTICIPANTS" | "FRIENDS" | "EVERYONE";
+
+export interface RouteCompletionResponse {
+  finishedOn: string;
+  visibility: RouteVisibility;
+  effectiveVisibility: RouteVisibility;
+  participants: UserSummaryResponse[];
 }
 
 export interface RouteResponse {
   id: number;
-  chatId: number;
+  chatId: number | null;
   name: string;
   travelMode: TravelMode;
   path: RoutePathResponse;
-  createdBy: UserSummaryResponse;
+  createdBy: UserSummaryResponse | null;
   createdAt: string;
   updatedAt: string;
+  member: boolean;
   canEdit: boolean;
+  completion: RouteCompletionResponse | null;
   stops: RouteStopResponse[];
 }
 
@@ -313,6 +324,7 @@ export interface RouteSummaryResponse {
   stopCount: number;
   distanceMeters: number | null;
   durationSeconds: number | null;
+  finishedOn: string | null;
   createdBy: UserSummaryResponse;
   createdAt: string;
   updatedAt: string;
@@ -322,6 +334,12 @@ export interface CreateRouteRequest {
   name: string;
   travelMode?: TravelMode;
   message?: string;
+}
+
+export interface RouteCompletionRequest {
+  finishedOn: string;
+  participantIds: number[];
+  visibility: RouteVisibility;
 }
 
 export type UpdateRouteRequest =

@@ -64,6 +64,7 @@ public class FriendRequestService {
         }
 
         FriendRequest request = friendRequestRepository.save(new FriendRequest(sender, receiver));
+        eventPublisher.publishEvent(new FriendRequestSent(request.getId(), senderId, receiverId));
 
         return SendFriendRequestResponse.requestSent(request.getId());
     }

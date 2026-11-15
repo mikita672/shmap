@@ -93,6 +93,7 @@ public class ChatService {
         Set<Integer> recipientIds = new LinkedHashSet<>(otherIds);
         recipientIds.add(userId);
         eventPublisher.publishEvent(new ChatChanged(chat.getId(), recipientIds));
+        eventPublisher.publishEvent(new ChatMembersAdded(chat.getId(), userId, otherIds));
 
         return toResponse(chat, userId);
     }
@@ -114,6 +115,9 @@ public class ChatService {
                 .toList();
         chatMemberRepository.saveAll(newMembers);
         eventPublisher.publishEvent(new ChatChanged(chatId, chatMemberRepository.findUserIdsByChatId(chatId)));
+        if (!newIds.isEmpty()) {
+            eventPublisher.publishEvent(new ChatMembersAdded(chatId, userId, newIds));
+        }
 
         return toResponse(chat, userId);
     }

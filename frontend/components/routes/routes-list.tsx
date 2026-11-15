@@ -1,15 +1,14 @@
-import { FlatList, View } from "react-native";
+import { SectionList, View } from "react-native";
 import { ChatsEmpty } from "@/components/chats/chats-empty";
 import { RouteRow } from "@/components/routes/route-row";
 import { RefreshControl } from "@/components/ui/refresh-control";
 import { SectionLabel } from "@/components/ui/section-label";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
-import { formatRouteCount, joinMeta } from "@/lib/route-format";
 import type { RouteSummaryResponse } from "@/lib/types/api";
+import { cn } from "@/lib/utils";
 
 export interface RoutesListProps {
   routes: RouteSummaryResponse[];
-  chatTitle?: string;
   now: number;
   onOpenRoute: (routeId: number) => void;
   onRefresh: () => Promise<unknown>;
@@ -18,7 +17,6 @@ export interface RoutesListProps {
 
 export function RoutesList({
   routes,
-  chatTitle,
   now,
   onOpenRoute,
   onRefresh,
@@ -26,21 +24,29 @@ export function RoutesList({
 }: RoutesListProps) {
   const { isRefetchingByUser, refetchByUser } = useRefreshByUser(onRefresh);
 
+  const planned = routes.filter((route) => route.finishedOn === null);
+  const done = routes
+    .filter((route) => route.finishedOn !== null)
+    .sort((a, b) => (b.finishedOn ?? "").localeCompare(a.finishedOn ?? ""));
+  const sections = [
+    { title: "Planned", data: planned },
+    { title: "Done", data: done },
+  ].filter((section) => section.data.length > 0);
+
   return (
-    <FlatList
-      data={routes}
+    <SectionList
+      sections={sections}
       keyExtractor={(route) => String(route.id)}
       renderItem={({ item }) => (
         <RouteRow route={item} now={now} onPress={() => onOpenRoute(item.id)} />
       )}
-      ListHeaderComponent={
-        routes.length > 0 ? (
-          <SectionLabel
-            title={joinMeta(chatTitle, formatRouteCount(routes.length))}
-            className="mb-2"
-          />
-        ) : null
-      }
+      renderSectionHeader={({ section }) => (
+        <SectionLabel
+          title={`${section.title} · ${section.data.length}`}
+          className={cn("mb-2", section !== sections[0] && "mt-4")}
+        />
+      )}
+      stickySectionHeadersEnabled={false}
       ListEmptyComponent={
         <ChatsEmpty
           title="No routes yet"

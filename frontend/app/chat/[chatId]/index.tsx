@@ -22,6 +22,7 @@ import { useMarkReadWhileOpen } from "@/hooks/useMarkChatRead";
 import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useReadPositionOnOpen } from "@/hooks/useReadPositionOnOpen";
 import { useSendMessage } from "@/hooks/useSendMessage";
+import { dismissChatNotifications } from "@/lib/notifications";
 import { setOpenChatId } from "@/lib/open-chat";
 import { AuthErrorCode, type ChatPlace } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -36,13 +37,15 @@ export default function ChatScreen() {
   useFocusEffect(
     useCallback(() => {
       setOpenChatId(Number(chatId));
+      dismissChatNotifications(Number(chatId)).catch(console.warn);
       return () => setOpenChatId(null);
     }, [chatId]),
   );
   const { data: friends } = useFriends();
   const { data: routes } = useChatRoutes(Number(chatId));
-  const latestRoute = routes?.[0];
-  const moreRouteCount = routes ? routes.length - 1 : 0;
+  const plannedRoutes = routes?.filter((route) => route.finishedOn === null);
+  const latestRoute = plannedRoutes?.[0];
+  const moreRouteCount = plannedRoutes ? plannedRoutes.length - 1 : 0;
   const { send } = useSendMessage(Number(chatId));
   const menu = useFriendActionsMenu();
   const openProfile = useOpenProfile();

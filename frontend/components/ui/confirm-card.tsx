@@ -10,6 +10,7 @@ export interface ConfirmCardProps {
   confirmLabel: string;
   pendingLabel: string;
   isPending?: boolean;
+  destructive?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -21,6 +22,7 @@ export function ConfirmCard({
   confirmLabel,
   pendingLabel,
   isPending = false,
+  destructive = true,
   onConfirm,
   onCancel,
 }: ConfirmCardProps) {
@@ -43,14 +45,16 @@ export function ConfirmCard({
 
       <View className="w-full gap-2">
         <Button
-          variant="destructive"
+          variant={destructive ? "destructive" : "default"}
           size="xl"
           className="w-full"
           disabled={isPending}
           onPress={onConfirm}
         >
-          <MaterialIcons name={icon} size={24} className="text-white" />
-          <Text className="font-medium">
+          {destructive && (
+            <MaterialIcons name={icon} size={24} className="text-white" />
+          )}
+          <Text className={destructive ? "font-medium" : undefined}>
             {isPending ? pendingLabel : confirmLabel}
           </Text>
         </Button>
