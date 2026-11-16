@@ -15,6 +15,7 @@ import { OpenInMapsButton } from "@/components/routes/open-in-maps-button";
 import { PathSummary } from "@/components/routes/path-summary";
 import { StopDetails } from "@/components/routes/stop-details";
 import { StopList } from "@/components/routes/stop-list";
+import { SuggestionsButton } from "@/components/routes/suggestions-button";
 import { TravelModeSwitch } from "@/components/routes/travel-mode-switch";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -38,6 +39,8 @@ export interface RouteSheetProps {
   onSelectStop?: (stopId: number | null) => void;
   onRemoveStop?: (stopId: number) => void;
   onReorderStops?: (stopIds: number[]) => void;
+  onOpenSuggestions?: () => void;
+  suggestionsView?: ReactNode;
   notice?: ReactNode;
 }
 
@@ -53,6 +56,8 @@ export function RouteSheet({
   onSelectStop,
   onRemoveStop,
   onReorderStops,
+  onOpenSuggestions,
+  suggestionsView,
   notice,
 }: RouteSheetProps) {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -83,7 +88,9 @@ export function RouteSheet({
           paddingBottom: insets.bottom + 16,
         }}
       >
-        {selectedStop ? (
+        {suggestionsView ? (
+          suggestionsView
+        ) : selectedStop ? (
           <StopDetails
             stop={selectedStop}
             number={selectedIndex + 1}
@@ -142,12 +149,23 @@ export function RouteSheet({
               />
             )}
 
-            {onAddPlace && (
-              <AddPlaceButton
-                label="Add place"
-                isFull={isFull}
-                onPress={onAddPlace}
-              />
+            {(onAddPlace || onOpenSuggestions) && (
+              <View className="flex-row gap-3">
+                {onAddPlace && (
+                  <AddPlaceButton
+                    label="Add place"
+                    isFull={isFull}
+                    onPress={onAddPlace}
+                    className="flex-1"
+                  />
+                )}
+                {onOpenSuggestions && (
+                  <SuggestionsButton
+                    onPress={onOpenSuggestions}
+                    className="flex-1"
+                  />
+                )}
+              </View>
             )}
             {route.stops.length > 0 && (
               <OpenInMapsButton

@@ -9,6 +9,7 @@ import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
 import { RouteSheet } from "@/components/routes/route-sheet";
+import { SuggestionsView } from "@/components/routes/suggestions-view";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
@@ -34,6 +35,7 @@ export default function RouteScreen() {
   const sheetPosition = useSharedValue(height);
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
   const [menuKey, setMenuKey] = useState(0);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
@@ -55,7 +57,10 @@ export default function RouteScreen() {
         <RouteMap
           route={route}
           selectedStopId={selectedStopId}
-          onSelectStop={setSelectedStopId}
+          onSelectStop={(stopId) => {
+            setIsSuggestionsOpen(false);
+            setSelectedStopId(stopId);
+          }}
         />
         <RouteCredit sheetPosition={sheetPosition} />
         <RouteSheet
@@ -104,6 +109,19 @@ export default function RouteScreen() {
             })
           }
           onOpenInMaps={() => openRouteInMaps(route)}
+          onOpenSuggestions={
+            route.member
+              ? () => {
+                  setSelectedStopId(null);
+                  setIsSuggestionsOpen(true);
+                }
+              : undefined
+          }
+          suggestionsView={
+            isSuggestionsOpen ? (
+              <SuggestionsView onClose={() => setIsSuggestionsOpen(false)} />
+            ) : undefined
+          }
         />
         <RouteHeader
           name={route.name}
