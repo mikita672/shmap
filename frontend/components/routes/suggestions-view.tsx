@@ -7,6 +7,7 @@ import { AskPopup } from "@/components/routes/ask-popup";
 import { InterestsPopup } from "@/components/routes/interests-popup";
 import { InterestsSummary } from "@/components/routes/interests-summary";
 import { SuggestionCard } from "@/components/routes/suggestion-card";
+import { SuggestionDetails } from "@/components/routes/suggestion-details";
 import { SuggestionSetHeader } from "@/components/routes/suggestion-set-header";
 import { SuggestionsEmpty } from "@/components/routes/suggestions-empty";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,8 @@ export interface SuggestionsViewProps {
   chat?: ChatResponse;
   suggestions?: RouteSuggestionsResponse | null;
   memberCount?: number;
+  selectedSuggestionId: number | null;
+  onSelectSuggestion: (suggestionId: number | null) => void;
   onClose: () => void;
 }
 
@@ -41,6 +44,8 @@ export function SuggestionsView({
   chat,
   suggestions,
   memberCount,
+  selectedSuggestionId,
+  onSelectSuggestion,
   onClose,
 }: SuggestionsViewProps) {
   const { data: profile } = useProfile();
@@ -108,6 +113,22 @@ export function SuggestionsView({
     });
   };
 
+  const selected = suggestions?.suggestions.find(
+    ({ id }) => id === selectedSuggestionId,
+  );
+
+  if (selected) {
+    return (
+      <SuggestionDetails
+        suggestion={selected}
+        onClose={() => onSelectSuggestion(null)}
+        onAdd={canEditPlan ? () => handleAdd(selected) : undefined}
+        isAdding={addStop.isPending}
+        isFull={isFull}
+      />
+    );
+  }
+
   return (
     <View className="gap-3">
       <View className="flex-row items-center gap-2">
@@ -168,6 +189,7 @@ export function SuggestionsView({
               <SuggestionCard
                 key={suggestion.id}
                 suggestion={suggestion}
+                onPress={() => onSelectSuggestion(suggestion.id)}
                 onAdd={canEditPlan ? () => handleAdd(suggestion) : undefined}
                 isAdding={
                   addStop.isPending && addStop.variables === suggestion.place

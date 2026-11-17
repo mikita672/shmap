@@ -37,6 +37,9 @@ export default function RouteScreen() {
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<
+    number | null
+  >(null);
   const [menuKey, setMenuKey] = useState(0);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
@@ -129,7 +132,12 @@ export default function RouteScreen() {
                 chat={chat}
                 suggestions={suggestions}
                 memberCount={chat ? chat.members.length + 1 : undefined}
-                onClose={() => setIsSuggestionsOpen(false)}
+                selectedSuggestionId={selectedSuggestionId}
+                onSelectSuggestion={setSelectedSuggestionId}
+                onClose={() => {
+                  setSelectedSuggestionId(null);
+                  setIsSuggestionsOpen(false);
+                }}
               />
             ) : undefined
           }
