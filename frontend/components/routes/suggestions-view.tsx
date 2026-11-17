@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { InterestsPopup } from "@/components/routes/interests-popup";
 import { InterestsSummary } from "@/components/routes/interests-summary";
 import { SuggestionCard } from "@/components/routes/suggestion-card";
@@ -7,8 +8,15 @@ import { SuggestionSetHeader } from "@/components/routes/suggestion-set-header";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
+import { useAddStop } from "@/hooks/useRouteMutations";
+import { routeSuggestionsQueryOptions } from "@/hooks/useRouteSuggestions";
 import { Ionicons } from "@/lib/icons";
-import type { RouteResponse, RouteSuggestionsResponse } from "@/lib/types/api";
+import { MAX_ROUTE_STOPS } from "@/lib/route-format";
+import type {
+  RouteResponse,
+  RouteSuggestionResponse,
+  RouteSuggestionsResponse,
+} from "@/lib/types/api";
 
 export interface SuggestionsViewProps {
   route: RouteResponse;
@@ -30,6 +38,26 @@ export function SuggestionsView({
   const myInterests =
     route.interests.find(({ user }) => user.id === profile?.id)?.categories ??
     [];
+  const queryClient = useQueryClient();
+  const addStop = useAddStop(route.id);
+  const isFull = route.stops.length >= MAX_ROUTE_STOPS;
+
+  const handleAdd = (suggestion: RouteSuggestionResponse) => {
+    addStop.mutate(suggestion.place, {
+      onSuccess: () => {
+        queryClient.setQueryData(
+          routeSuggestionsQueryOptions(route.id).queryKey,
+          (current) =>
+            current && {
+              ...current,
+              suggestions: current.suggestions.filter(
+                ({ id }) => id !== suggestion.id,
+              ),
+            },
+        );
+      },
+    });
+  };
 
   return (
     <View className="gap-3">
@@ -67,7 +95,15 @@ export function SuggestionsView({
           <SuggestionSetHeader suggestions={suggestions} myId={profile?.id} />
           <View className="gap-2">
             {suggestions.suggestions.map((suggestion) => (
-              <SuggestionCard key={suggestion.id} suggestion={suggestion} />
+              <SuggestionCard
+                key={suggestion.id}
+                suggestion={suggestion}
+                onAdd={canEditPlan ? () => handleAdd(suggestion) : undefined}
+                isAdding={
+                  addStop.isPending && addStop.variables === suggestion.place
+                }
+                addDisabled={isFull || addStop.isPending}
+              />
             ))}
           </View>
           <Text className="text-center text-[11px] leading-4 text-on-surface-muted">

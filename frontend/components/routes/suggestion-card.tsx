@@ -1,4 +1,4 @@
-import { Pressable, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
 import { PLACE_CATEGORY_INFO } from "@/lib/place-categories";
@@ -8,12 +8,18 @@ import { cn } from "@/lib/utils";
 export interface SuggestionCardProps {
   suggestion: RouteSuggestionResponse;
   onPress?: () => void;
+  onAdd?: () => void;
+  isAdding?: boolean;
+  addDisabled?: boolean;
   className?: string;
 }
 
 export function SuggestionCard({
   suggestion,
   onPress,
+  onAdd,
+  isAdding = false,
+  addDisabled = false,
   className,
 }: SuggestionCardProps) {
   const { place, category, reason } = suggestion;
@@ -51,6 +57,36 @@ export function SuggestionCard({
           {reason}
         </Text>
       </View>
+
+      {onAdd && (
+        <Pressable
+          onPress={onAdd}
+          disabled={isAdding || addDisabled}
+          accessibilityRole="button"
+          accessibilityLabel={`Add ${place.name} to the route`}
+          accessibilityState={{ disabled: addDisabled, busy: isAdding }}
+          className={cn(
+            "h-8 flex-row items-center gap-1 rounded-full bg-primary pl-2.5 pr-3 active:opacity-80",
+            addDisabled && !isAdding && "opacity-40",
+          )}
+        >
+          {isAdding ? (
+            <ActivityIndicator
+              size="small"
+              className="h-4 w-4 text-primary-foreground"
+            />
+          ) : (
+            <MaterialIcons
+              name="add"
+              size={16}
+              className="text-primary-foreground"
+            />
+          )}
+          <Text className="text-sm font-medium leading-5 text-primary-foreground">
+            {isAdding ? "Adding" : "Add"}
+          </Text>
+        </Pressable>
+      )}
     </Pressable>
   );
 }
