@@ -9,6 +9,7 @@ import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
 import { RouteSheet } from "@/components/routes/route-sheet";
+import { SuggestionsView } from "@/components/routes/suggestions-view";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
@@ -21,6 +22,7 @@ import {
   useRetryPath,
   useSetTravelMode,
 } from "@/hooks/useRouteMutations";
+import { useRouteSuggestions } from "@/hooks/useRouteSuggestions";
 import { useStalePathRetry } from "@/hooks/useStalePathRetry";
 import { getChatTitle } from "@/lib/chat-preview";
 import { openRouteInMaps } from "@/lib/open-route-in-maps";
@@ -34,6 +36,11 @@ export default function RouteScreen() {
   const sheetPosition = useSharedValue(height);
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [fitKey, setFitKey] = useState(0);
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<
+    number | null
+  >(null);
   const [menuKey, setMenuKey] = useState(0);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
@@ -44,6 +51,10 @@ export default function RouteScreen() {
   const retryPath = useRetryPath(Number(routeId));
   const removeStop = useRemoveStop(Number(routeId));
   const reorderStops = useReorderStops(Number(routeId));
+  const { data: suggestions } = useRouteSuggestions(
+    Number(routeId),
+    route?.member === true,
+  );
   useStalePathRetry(route, () => retryPath.mutate());
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
@@ -55,7 +66,15 @@ export default function RouteScreen() {
         <RouteMap
           route={route}
           selectedStopId={selectedStopId}
-          onSelectStop={setSelectedStopId}
+          onSelectStop={(stopId) => {
+            setIsSuggestionsOpen(false);
+            setSelectedSuggestionId(null);
+            setSelectedStopId(stopId);
+          }}
+          suggestions={isSuggestionsOpen ? suggestions?.suggestions : undefined}
+          selectedSuggestionId={selectedSuggestionId}
+          onSelectSuggestion={setSelectedSuggestionId}
+          fitKey={fitKey}
         />
         <RouteCredit sheetPosition={sheetPosition} />
         <RouteSheet
@@ -104,6 +123,33 @@ export default function RouteScreen() {
             })
           }
           onOpenInMaps={() => openRouteInMaps(route)}
+          suggestionCount={suggestions?.suggestions.length}
+          onOpenSuggestions={
+            route.member
+              ? () => {
+                  setSelectedStopId(null);
+                  setIsSuggestionsOpen(true);
+                  setFitKey((key) => key + 1);
+                }
+              : undefined
+          }
+          suggestionsView={
+            isSuggestionsOpen ? (
+              <SuggestionsView
+                route={route}
+                chat={chat}
+                suggestions={suggestions}
+                memberCount={chat ? chat.members.length + 1 : undefined}
+                selectedSuggestionId={selectedSuggestionId}
+                onSelectSuggestion={setSelectedSuggestionId}
+                onAsked={() => setFitKey((key) => key + 1)}
+                onClose={() => {
+                  setSelectedSuggestionId(null);
+                  setIsSuggestionsOpen(false);
+                }}
+              />
+            ) : undefined
+          }
         />
         <RouteHeader
           name={route.name}

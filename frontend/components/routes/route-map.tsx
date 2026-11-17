@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
@@ -11,15 +17,17 @@ import {
 } from "@maplibre/maplibre-react-native";
 import "@/lib/maplibre-log-filter";
 import { RouteLayers } from "@/components/routes/route-layers";
+import { SuggestionLayers } from "@/components/routes/suggestion-layers";
 import { getBounds } from "@/lib/map-camera";
 import { MAP_STYLE } from "@/lib/map-style";
 import { takeRouteFocus } from "@/lib/route-focus";
-import type { RouteResponse } from "@/lib/types/api";
+import type { RouteResponse, RouteSuggestionResponse } from "@/lib/types/api";
 
 const STOP_ZOOM = 14;
 const WORLD_ZOOM = 1;
 const HEADER_SPACE = 88;
 const SHEET_SHARE = 0.5;
+const SUGGESTIONS_SHEET_SHARE = 0.6;
 const FIT_MARGIN = 40;
 const FOCUS_DURATION = 800;
 
@@ -27,12 +35,20 @@ export interface RouteMapProps {
   route: RouteResponse;
   selectedStopId?: number | null;
   onSelectStop?: (stopId: number) => void;
+  suggestions?: RouteSuggestionResponse[];
+  selectedSuggestionId?: number | null;
+  onSelectSuggestion?: (suggestionId: number) => void;
+  fitKey?: number;
 }
 
 export function RouteMap({
   route,
   selectedStopId,
   onSelectStop,
+  suggestions,
+  selectedSuggestionId,
+  onSelectSuggestion,
+  fitKey = 0,
 }: RouteMapProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -74,6 +90,52 @@ export function RouteMap({
     });
   }, [selectedLng, selectedLat, height]);
 
+  const selectedSuggestion = suggestions?.find(
+    ({ id }) => id === selectedSuggestionId,
+  )?.place;
+  const suggestionLng = selectedSuggestion?.longitude;
+  const suggestionLat = selectedSuggestion?.latitude;
+
+  useEffect(() => {
+    if (suggestionLng === undefined || suggestionLat === undefined) return;
+    cameraRef.current?.easeTo({
+      center: [suggestionLng, suggestionLat],
+      padding: { bottom: height * SHEET_SHARE },
+      duration: FOCUS_DURATION,
+    });
+  }, [suggestionLng, suggestionLat, height]);
+
+  const fitToSuggestions = useEffectEvent(() => {
+    const points = [
+      ...route.stops.map(({ place }) => place),
+      ...(suggestions ?? []).map(({ place }) => place),
+    ].map(({ longitude, latitude }): LngLat => [longitude, latitude]);
+    const bounds = getBounds(points);
+    if (!bounds) return;
+    if (points.length === 1) {
+      cameraRef.current?.easeTo({
+        center: points[0],
+        zoom: STOP_ZOOM,
+        padding: { bottom: height * SUGGESTIONS_SHEET_SHARE },
+        duration: FOCUS_DURATION,
+      });
+      return;
+    }
+    cameraRef.current?.fitBounds(bounds, {
+      padding: {
+        top: insets.top + HEADER_SPACE,
+        bottom: height * SUGGESTIONS_SHEET_SHARE + FIT_MARGIN,
+        left: FIT_MARGIN,
+        right: FIT_MARGIN,
+      },
+      duration: FOCUS_DURATION,
+    });
+  });
+
+  useEffect(() => {
+    if (fitKey) fitToSuggestions();
+  }, [fitKey]);
+
   useFocusEffect(
     useCallback(() => {
       const point = takeRouteFocus(routeId);
@@ -95,6 +157,13 @@ export function RouteMap({
       attributionPosition={{ top: insets.top + HEADER_SPACE, left: 12 }}
     >
       <Camera ref={cameraRef} initialViewState={initialViewState} />
+      {suggestions && (
+        <SuggestionLayers
+          suggestions={suggestions}
+          selectedSuggestionId={selectedSuggestionId}
+          onPressSuggestion={onSelectSuggestion}
+        />
+      )}
       <RouteLayers
         route={route}
         selectedStopId={selectedStopId}

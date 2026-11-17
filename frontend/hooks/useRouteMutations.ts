@@ -16,11 +16,13 @@ import {
   reorderRouteStops,
   reopenRoute,
   retryRoutePath,
+  setRouteInterests,
   updateRoute,
 } from "@/lib/api/routes";
 import type {
   ChatPlace,
   CreateRouteRequest,
+  PlaceCategory,
   RouteCompletionRequest,
   RoutePathResponse,
   RouteResponse,
@@ -284,6 +286,23 @@ export function useAddStop(routeId: number) {
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
       toast.error(getErrorMessage(error, "Couldn't add the place"));
+    },
+  });
+}
+
+export function useSetInterests(routeId: number) {
+  const queryClient = useQueryClient();
+  const { queryKey } = routeQueryOptions(routeId);
+
+  return useMutation({
+    mutationKey: routeEditMutationKey(routeId),
+    scope: { id: `route-${routeId}` },
+    mutationFn: async (categories: PlaceCategory[]) => {
+      const response = await setRouteInterests(routeId, categories);
+      return response.data;
+    },
+    onSuccess: (route) => {
+      queryClient.setQueryData(queryKey, route);
     },
   });
 }
