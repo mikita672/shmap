@@ -37,6 +37,7 @@ export default function RouteScreen() {
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [fitKey, setFitKey] = useState(0);
   const [selectedSuggestionId, setSelectedSuggestionId] = useState<
     number | null
   >(null);
@@ -73,6 +74,7 @@ export default function RouteScreen() {
           suggestions={isSuggestionsOpen ? suggestions?.suggestions : undefined}
           selectedSuggestionId={selectedSuggestionId}
           onSelectSuggestion={setSelectedSuggestionId}
+          fitKey={fitKey}
         />
         <RouteCredit sheetPosition={sheetPosition} />
         <RouteSheet
@@ -126,6 +128,7 @@ export default function RouteScreen() {
               ? () => {
                   setSelectedStopId(null);
                   setIsSuggestionsOpen(true);
+                  setFitKey((key) => key + 1);
                 }
               : undefined
           }
@@ -138,6 +141,7 @@ export default function RouteScreen() {
                 memberCount={chat ? chat.members.length + 1 : undefined}
                 selectedSuggestionId={selectedSuggestionId}
                 onSelectSuggestion={setSelectedSuggestionId}
+                onAsked={() => setFitKey((key) => key + 1)}
                 onClose={() => {
                   setSelectedSuggestionId(null);
                   setIsSuggestionsOpen(false);

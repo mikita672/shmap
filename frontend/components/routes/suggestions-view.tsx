@@ -36,6 +36,7 @@ export interface SuggestionsViewProps {
   memberCount?: number;
   selectedSuggestionId: number | null;
   onSelectSuggestion: (suggestionId: number | null) => void;
+  onAsked?: () => void;
   onClose: () => void;
 }
 
@@ -46,6 +47,7 @@ export function SuggestionsView({
   memberCount,
   selectedSuggestionId,
   onSelectSuggestion,
+  onAsked,
   onClose,
 }: SuggestionsViewProps) {
   const { data: profile } = useProfile();
@@ -83,7 +85,7 @@ export function SuggestionsView({
     setIsAskOpen(false);
     setNoLocation(false);
     if (route.stops.length > 0) {
-      suggest.mutate({ note: note || undefined });
+      suggest.mutate({ note: note || undefined }, { onSuccess: onAsked });
       return;
     }
     setIsLocating(true);
@@ -93,7 +95,7 @@ export function SuggestionsView({
       setNoLocation(true);
       return;
     }
-    suggest.mutate({ note: note || undefined, near });
+    suggest.mutate({ note: note || undefined, near }, { onSuccess: onAsked });
   };
 
   const handleAdd = (suggestion: RouteSuggestionResponse) => {
