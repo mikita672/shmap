@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { AskButton } from "@/components/routes/ask-button";
+import { AskError } from "@/components/routes/ask-error";
 import { AskPopup } from "@/components/routes/ask-popup";
 import { InterestsPopup } from "@/components/routes/interests-popup";
 import { InterestsSummary } from "@/components/routes/interests-summary";
@@ -53,7 +54,7 @@ export function SuggestionsView({
   const addStop = useAddStop(route.id);
   const isFull = route.stops.length >= MAX_ROUTE_STOPS;
   const suggest = useSuggestPlaces(route.id);
-  const { isAsking } = useSuggestStatus(route.id);
+  const { isAsking, error: askError } = useSuggestStatus(route.id);
 
   const handleAdd = (suggestion: RouteSuggestionResponse) => {
     addStop.mutate(suggestion.place, {
@@ -116,6 +117,7 @@ export function SuggestionsView({
               This can take up to half a minute
             </Text>
           )}
+          {askError && <AskError error={askError} />}
         </View>
       )}
 
