@@ -26,6 +26,7 @@ import { useRouteSuggestions } from "@/hooks/useRouteSuggestions";
 import { useStalePathRetry } from "@/hooks/useStalePathRetry";
 import { getChatTitle } from "@/lib/chat-preview";
 import { openRouteInMaps } from "@/lib/open-route-in-maps";
+import { withoutPlacesOnRoute } from "@/lib/route-format";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
@@ -62,6 +63,7 @@ export default function RouteScreen() {
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
   if (route && !isDeleted) {
+    const visibleSuggestions = withoutPlacesOnRoute(suggestions, route.stops);
     const canEditPlan = route.canEdit && route.completion === null;
 
     return (
@@ -74,7 +76,9 @@ export default function RouteScreen() {
             setSelectedSuggestionId(null);
             setSelectedStopId(stopId);
           }}
-          suggestions={isSuggestionsOpen ? suggestions?.suggestions : undefined}
+          suggestions={
+            isSuggestionsOpen ? visibleSuggestions?.suggestions : undefined
+          }
           selectedSuggestionId={selectedSuggestionId}
           onSelectSuggestion={setSelectedSuggestionId}
           fitKey={fitKey}
@@ -127,7 +131,7 @@ export default function RouteScreen() {
             })
           }
           onOpenInMaps={() => openRouteInMaps(route)}
-          suggestionCount={suggestions?.suggestions.length}
+          suggestionCount={visibleSuggestions?.suggestions.length}
           onOpenSuggestions={
             route.member
               ? () => {
@@ -142,7 +146,7 @@ export default function RouteScreen() {
               <SuggestionsView
                 route={route}
                 chat={chat}
-                suggestions={suggestions}
+                suggestions={visibleSuggestions}
                 suggestionsError={suggestionsError}
                 isRetryingSuggestions={isRetryingSuggestions}
                 onRetrySuggestions={() => void refetchSuggestions()}

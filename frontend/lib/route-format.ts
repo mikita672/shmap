@@ -6,8 +6,10 @@ import {
   isLocalToday,
 } from "@/lib/local-date";
 import type {
+  ChatPlace,
   RouteCompletionResponse,
   RouteStopResponse,
+  RouteSuggestionsResponse,
   RouteVisibility,
   TravelMode,
   UserSummaryResponse,
@@ -144,4 +146,28 @@ export function formatRoutesSummary(planned: number, done: number) {
     planned > 0 && `${planned} planned`,
     done > 0 && `${done} done`,
   );
+}
+
+export function isPlaceOnRoute(place: ChatPlace, stops: RouteStopResponse[]) {
+  return stops.some(({ place: stop }) =>
+    place.osmId
+      ? stop.osmId === place.osmId
+      : stop.osmId === null &&
+        stop.name === place.name &&
+        stop.latitude === place.latitude &&
+        stop.longitude === place.longitude,
+  );
+}
+
+export function withoutPlacesOnRoute(
+  suggestions: RouteSuggestionsResponse | null | undefined,
+  stops: RouteStopResponse[],
+) {
+  if (!suggestions) return suggestions;
+  return {
+    ...suggestions,
+    suggestions: suggestions.suggestions.filter(
+      ({ place }) => !isPlaceOnRoute(place, stops),
+    ),
+  };
 }
