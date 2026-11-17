@@ -18,7 +18,8 @@ import {
   useSuggestPlaces,
   useSuggestStatus,
 } from "@/hooks/useRouteSuggestions";
-import { Ionicons } from "@/lib/icons";
+import { getCurrentLocation } from "@/lib/current-location";
+import { Ionicons, MaterialIcons } from "@/lib/icons";
 import { MAX_ROUTE_STOPS } from "@/lib/route-format";
 import type {
   ChatResponse,
@@ -47,6 +48,8 @@ export function SuggestionsView({
   const [interestsKey, setInterestsKey] = useState(0);
   const [isAskOpen, setIsAskOpen] = useState(false);
   const [askKey, setAskKey] = useState(0);
+  const [isLocating, setIsLocating] = useState(false);
+  const [noLocation, setNoLocation] = useState(false);
   const canEditPlan = route.canEdit && route.completion === null;
   const myInterests =
     route.interests.find(({ user }) => user.id === profile?.id)?.categories ??
@@ -69,6 +72,23 @@ export function SuggestionsView({
   const openAsk = () => {
     setAskKey((key) => key + 1);
     setIsAskOpen(true);
+  };
+
+  const handleSuggest = async (note: string) => {
+    setIsAskOpen(false);
+    setNoLocation(false);
+    if (route.stops.length > 0) {
+      suggest.mutate({ note: note || undefined });
+      return;
+    }
+    setIsLocating(true);
+    const near = await getCurrentLocation();
+    setIsLocating(false);
+    if (!near) {
+      setNoLocation(true);
+      return;
+    }
+    suggest.mutate({ note: note || undefined, near });
   };
 
   const handleAdd = (suggestion: RouteSuggestionResponse) => {
@@ -115,7 +135,7 @@ export function SuggestionsView({
         <View className="gap-1.5">
           <AskButton
             variant={nobodyPicked ? "pick" : "ask"}
-            isAsking={isAsking}
+            isAsking={isAsking || isLocating}
             onPress={nobodyPicked ? openInterests : openAsk}
           />
           {isAsking && (
@@ -123,7 +143,19 @@ export function SuggestionsView({
               This can take up to half a minute
             </Text>
           )}
-          {askError && <AskError error={askError} />}
+          {askError && !noLocation && <AskError error={askError} />}
+          {noLocation && (
+            <View className="flex-row items-start gap-2">
+              <MaterialIcons
+                name="location-on"
+                size={16}
+                className="text-on-surface-muted"
+              />
+              <Text className="flex-1 text-[13px] leading-[18px] text-on-surface">
+                Add a place first or allow location, so AI knows where to look.
+              </Text>
+            </View>
+          )}
         </View>
       )}
 
@@ -170,10 +202,7 @@ export function SuggestionsView({
         chat={chat}
         visible={isAskOpen}
         onClose={() => setIsAskOpen(false)}
-        onSuggest={(note) => {
-          setIsAskOpen(false);
-          suggest.mutate({ note: note || undefined });
-        }}
+        onSuggest={(note) => void handleSuggest(note)}
       />
     </View>
   );
