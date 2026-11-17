@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { AskButton } from "@/components/routes/ask-button";
+import { AskPopup } from "@/components/routes/ask-popup";
 import { InterestsPopup } from "@/components/routes/interests-popup";
 import { InterestsSummary } from "@/components/routes/interests-summary";
 import { SuggestionCard } from "@/components/routes/suggestion-card";
@@ -13,6 +15,7 @@ import { routeSuggestionsQueryOptions } from "@/hooks/useRouteSuggestions";
 import { Ionicons } from "@/lib/icons";
 import { MAX_ROUTE_STOPS } from "@/lib/route-format";
 import type {
+  ChatResponse,
   RouteResponse,
   RouteSuggestionResponse,
   RouteSuggestionsResponse,
@@ -20,6 +23,7 @@ import type {
 
 export interface SuggestionsViewProps {
   route: RouteResponse;
+  chat?: ChatResponse;
   suggestions?: RouteSuggestionsResponse | null;
   memberCount?: number;
   onClose: () => void;
@@ -27,6 +31,7 @@ export interface SuggestionsViewProps {
 
 export function SuggestionsView({
   route,
+  chat,
   suggestions,
   memberCount,
   onClose,
@@ -34,6 +39,8 @@ export function SuggestionsView({
   const { data: profile } = useProfile();
   const [isInterestsOpen, setIsInterestsOpen] = useState(false);
   const [interestsKey, setInterestsKey] = useState(0);
+  const [isAskOpen, setIsAskOpen] = useState(false);
+  const [askKey, setAskKey] = useState(0);
   const canEditPlan = route.canEdit && route.completion === null;
   const myInterests =
     route.interests.find(({ user }) => user.id === profile?.id)?.categories ??
@@ -89,6 +96,15 @@ export function SuggestionsView({
         }
       />
 
+      {canEditPlan && (
+        <AskButton
+          onPress={() => {
+            setAskKey((key) => key + 1);
+            setIsAskOpen(true);
+          }}
+        />
+      )}
+
       {suggestions && suggestions.suggestions.length > 0 && (
         <>
           <View className="h-px bg-on-surface-muted/25" />
@@ -113,11 +129,19 @@ export function SuggestionsView({
       )}
 
       <InterestsPopup
-        key={interestsKey}
+        key={`interests-${interestsKey}`}
         routeId={route.id}
         initial={myInterests}
         visible={isInterestsOpen}
         onClose={() => setIsInterestsOpen(false)}
+      />
+
+      <AskPopup
+        key={`ask-${askKey}`}
+        chat={chat}
+        visible={isAskOpen}
+        onClose={() => setIsAskOpen(false)}
+        onSuggest={() => setIsAskOpen(false)}
       />
     </View>
   );
