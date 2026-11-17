@@ -1,5 +1,5 @@
 import type { MaterialIconName } from "@/lib/icons";
-import { PlaceCategory } from "@/lib/types/api";
+import { PlaceCategory, type RouteInterestResponse } from "@/lib/types/api";
 
 export const PLACE_CATEGORY_INFO: Record<
   PlaceCategory,
@@ -19,3 +19,23 @@ export const PLACE_CATEGORY_INFO: Record<
 };
 
 export const PLACE_CATEGORIES = Object.values(PlaceCategory);
+
+export function countInterests(interests: RouteInterestResponse[]) {
+  const counts = new Map<PlaceCategory, number>();
+  for (const { categories } of interests) {
+    for (const category of categories) {
+      counts.set(category, (counts.get(category) ?? 0) + 1);
+    }
+  }
+  return PLACE_CATEGORIES.flatMap((category) => {
+    const count = counts.get(category);
+    return count ? [{ category, count }] : [];
+  }).sort((a, b) => b.count - a.count);
+}
+
+export function formatPickedCount(pickedCount: number, memberCount?: number) {
+  if (pickedCount === 0) return "Nobody picked yet";
+  if (memberCount === undefined) return `${pickedCount} picked`;
+  const people = memberCount === 1 ? "person" : "people";
+  return `${pickedCount} of ${memberCount} ${people} picked`;
+}

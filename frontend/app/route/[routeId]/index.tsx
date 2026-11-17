@@ -119,7 +119,11 @@ export default function RouteScreen() {
           }
           suggestionsView={
             isSuggestionsOpen ? (
-              <SuggestionsView onClose={() => setIsSuggestionsOpen(false)} />
+              <SuggestionsView
+                route={route}
+                memberCount={chat ? chat.members.length + 1 : undefined}
+                onClose={() => setIsSuggestionsOpen(false)}
+              />
             ) : undefined
           }
         />
