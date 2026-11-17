@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { View } from "react-native";
-import { useQueryClient } from "@tanstack/react-query";
 import { AskButton } from "@/components/routes/ask-button";
 import { AskError } from "@/components/routes/ask-error";
 import { AskPopup } from "@/components/routes/ask-popup";
@@ -13,9 +12,11 @@ import { SuggestionsEmpty } from "@/components/routes/suggestions-empty";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
-import { useAddStop } from "@/hooks/useRouteMutations";
 import {
-  routeSuggestionsQueryOptions,
+  useAddSuggestion,
+  usePendingSuggestionAdds,
+} from "@/hooks/useRouteMutations";
+import {
   useSuggestPlaces,
   useSuggestStatus,
 } from "@/hooks/useRouteSuggestions";
@@ -68,8 +69,8 @@ export function SuggestionsView({
   const myInterests =
     route.interests.find(({ user }) => user.id === profile?.id)?.categories ??
     [];
-  const queryClient = useQueryClient();
-  const addStop = useAddStop(route.id);
+  const addSuggestion = useAddSuggestion(route.id);
+  const pendingAddIds = usePendingSuggestionAdds(route.id);
   const isFull = route.stops.length >= MAX_ROUTE_STOPS;
   const suggest = useSuggestPlaces(route.id);
   const { isAsking, error: askError } = useSuggestStatus(route.id);
@@ -106,20 +107,8 @@ export function SuggestionsView({
   };
 
   const handleAdd = (suggestion: RouteSuggestionResponse) => {
-    addStop.mutate(suggestion.place, {
-      onSuccess: () => {
-        queryClient.setQueryData(
-          routeSuggestionsQueryOptions(route.id).queryKey,
-          (current) =>
-            current && {
-              ...current,
-              suggestions: current.suggestions.filter(
-                ({ id }) => id !== suggestion.id,
-              ),
-            },
-        );
-      },
-    });
+    if (pendingAddIds.includes(suggestion.id)) return;
+    addSuggestion.mutate(suggestion);
   };
 
   const selected = suggestions?.suggestions.find(
@@ -132,7 +121,7 @@ export function SuggestionsView({
         suggestion={selected}
         onClose={() => onSelectSuggestion(null)}
         onAdd={canEditPlan ? () => handleAdd(selected) : undefined}
-        isAdding={addStop.isPending}
+        isAdding={pendingAddIds.includes(selected.id)}
         isFull={isFull}
       />
     );
@@ -208,10 +197,8 @@ export function SuggestionsView({
                 suggestion={suggestion}
                 onPress={() => onSelectSuggestion(suggestion.id)}
                 onAdd={canEditPlan ? () => handleAdd(suggestion) : undefined}
-                isAdding={
-                  addStop.isPending && addStop.variables === suggestion.place
-                }
-                addDisabled={isFull || addStop.isPending}
+                isAdding={pendingAddIds.includes(suggestion.id)}
+                addDisabled={isFull}
               />
             ))}
           </View>

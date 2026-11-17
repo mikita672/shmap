@@ -1,12 +1,14 @@
 import { AxiosError } from "axios";
 import {
   useMutation,
+  useMutationState,
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { chatRoutesQueryOptions } from "@/hooks/useChatRoutes";
 import { routeQueryOptions } from "@/hooks/useRoute";
+import { routeSuggestionsQueryOptions } from "@/hooks/useRouteSuggestions";
 import {
   addRouteStop,
   createRoute,
@@ -26,6 +28,7 @@ import type {
   RouteCompletionRequest,
   RoutePathResponse,
   RouteResponse,
+  RouteSuggestionResponse,
   TravelMode,
 } from "@/lib/types/api";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -287,6 +290,54 @@ export function useAddStop(routeId: number) {
       void queryClient.invalidateQueries({ queryKey, exact: true });
       toast.error(getErrorMessage(error, "Couldn't add the place"));
     },
+  });
+}
+
+const addSuggestionMutationKey = (routeId: number) => [
+  ...routeEditMutationKey(routeId),
+  "suggestion",
+];
+
+export function useAddSuggestion(routeId: number) {
+  const queryClient = useQueryClient();
+  const { queryKey } = routeQueryOptions(routeId);
+
+  return useMutation({
+    mutationKey: addSuggestionMutationKey(routeId),
+    scope: { id: `route-${routeId}` },
+    mutationFn: async (suggestion: RouteSuggestionResponse) => {
+      const response = await addRouteStop(routeId, suggestion.place);
+      return response.data;
+    },
+    onSuccess: (route, suggestion) => {
+      queryClient.setQueryData(queryKey, route);
+      queryClient.setQueryData(
+        routeSuggestionsQueryOptions(routeId).queryKey,
+        (current) =>
+          current && {
+            ...current,
+            suggestions: current.suggestions.filter(
+              ({ id }) => id !== suggestion.id,
+            ),
+          },
+      );
+      invalidateChatRoutes(queryClient, route.chatId);
+    },
+    onError: (error) => {
+      void queryClient.invalidateQueries({ queryKey, exact: true });
+      toast.error(getErrorMessage(error, "Couldn't add the place"));
+    },
+  });
+}
+
+export function usePendingSuggestionAdds(routeId: number) {
+  return useMutationState({
+    filters: {
+      mutationKey: addSuggestionMutationKey(routeId),
+      status: "pending",
+    },
+    select: (mutation) =>
+      (mutation.state.variables as RouteSuggestionResponse).id,
   });
 }
 
