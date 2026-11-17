@@ -51,8 +51,13 @@ export default function RouteScreen() {
   const retryPath = useRetryPath(Number(routeId));
   const removeStop = useRemoveStop(Number(routeId));
   const reorderStops = useReorderStops(Number(routeId));
-  const { data: suggestions, isPending: suggestionsLoading } =
-    useRouteSuggestions(Number(routeId), route?.member === true);
+  const {
+    data: suggestions,
+    isPending: suggestionsLoading,
+    error: suggestionsError,
+    isRefetching: isRetryingSuggestions,
+    refetch: refetchSuggestions,
+  } = useRouteSuggestions(Number(routeId), route?.member === true);
   useStalePathRetry(route, () => retryPath.mutate());
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
@@ -138,6 +143,9 @@ export default function RouteScreen() {
                 route={route}
                 chat={chat}
                 suggestions={suggestions}
+                suggestionsError={suggestionsError}
+                isRetryingSuggestions={isRetryingSuggestions}
+                onRetrySuggestions={() => void refetchSuggestions()}
                 memberCount={chat ? chat.members.length + 1 : undefined}
                 selectedSuggestionId={selectedSuggestionId}
                 onSelectSuggestion={setSelectedSuggestionId}

@@ -22,6 +22,7 @@ import {
 import { getCurrentLocation } from "@/lib/current-location";
 import { Ionicons, MaterialIcons } from "@/lib/icons";
 import { MAX_ROUTE_STOPS } from "@/lib/route-format";
+import { getErrorMessage } from "@/lib/utils/error";
 import type {
   ChatResponse,
   RouteResponse,
@@ -33,6 +34,9 @@ export interface SuggestionsViewProps {
   route: RouteResponse;
   chat?: ChatResponse;
   suggestions?: RouteSuggestionsResponse | null;
+  suggestionsError?: unknown;
+  isRetryingSuggestions?: boolean;
+  onRetrySuggestions?: () => void;
   memberCount?: number;
   selectedSuggestionId: number | null;
   onSelectSuggestion: (suggestionId: number | null) => void;
@@ -44,6 +48,9 @@ export function SuggestionsView({
   route,
   chat,
   suggestions,
+  suggestionsError,
+  isRetryingSuggestions = false,
+  onRetrySuggestions,
   memberCount,
   selectedSuggestionId,
   onSelectSuggestion,
@@ -211,6 +218,25 @@ export function SuggestionsView({
           <Text className="text-center text-[11px] leading-4 text-on-surface-muted">
             Places © OpenStreetMap contributors
           </Text>
+        </>
+      )}
+
+      {suggestions === undefined && suggestionsError != null && (
+        <>
+          <View className="h-px bg-on-surface-muted/25" />
+          <View className="items-center gap-2 py-3">
+            <Text className="text-center text-sm leading-5 text-on-surface-muted">
+              {getErrorMessage(suggestionsError, "Couldn't load suggestions")}
+            </Text>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={isRetryingSuggestions}
+              onPress={onRetrySuggestions}
+            >
+              <Text>{isRetryingSuggestions ? "Retrying…" : "Retry"}</Text>
+            </Button>
+          </View>
         </>
       )}
 
