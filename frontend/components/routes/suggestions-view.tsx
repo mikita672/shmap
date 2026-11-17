@@ -159,6 +159,7 @@ export function SuggestionsView({
           <AskButton
             variant={nobodyPicked ? "pick" : "ask"}
             isAsking={isAsking || isLocating}
+            isFull={isFull}
             onPress={nobodyPicked ? openInterests : openAsk}
           />
           {isAsking && (
@@ -180,6 +181,13 @@ export function SuggestionsView({
             </View>
           )}
         </View>
+      )}
+
+      {!canEditPlan && (
+        <Text className="text-[13px] leading-[18px] text-on-surface-muted">
+          You can see these suggestions, but you can&apos;t ask for new ones or
+          add them to this route.
+        </Text>
       )}
 
       {suggestions && suggestions.suggestions.length > 0 && (

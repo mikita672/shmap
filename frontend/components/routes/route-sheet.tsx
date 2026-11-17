@@ -40,6 +40,7 @@ export interface RouteSheetProps {
   onRemoveStop?: (stopId: number) => void;
   onReorderStops?: (stopIds: number[]) => void;
   onOpenSuggestions?: () => void;
+  suggestionCount?: number;
   suggestionsView?: ReactNode;
   notice?: ReactNode;
 }
@@ -57,6 +58,7 @@ export function RouteSheet({
   onRemoveStop,
   onReorderStops,
   onOpenSuggestions,
+  suggestionCount,
   suggestionsView,
   notice,
 }: RouteSheetProps) {
@@ -162,6 +164,7 @@ export function RouteSheet({
                 {onOpenSuggestions && (
                   <SuggestionsButton
                     onPress={onOpenSuggestions}
+                    count={suggestionCount}
                     className="flex-1"
                   />
                 )}

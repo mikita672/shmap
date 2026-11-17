@@ -1,12 +1,14 @@
 import { ActivityIndicator, Pressable } from "react-native";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
+import { MAX_ROUTE_STOPS } from "@/lib/route-format";
 import { cn } from "@/lib/utils";
 
 export interface AskButtonProps {
   onPress: () => void;
   variant?: "ask" | "pick";
   isAsking?: boolean;
+  isFull?: boolean;
   className?: string;
 }
 
@@ -14,22 +16,27 @@ export function AskButton({
   onPress,
   variant = "ask",
   isAsking = false,
+  isFull = false,
   className,
 }: AskButtonProps) {
+  const isDisabled = isAsking || isFull;
   const label = isAsking
     ? "Finding places…"
-    : variant === "pick"
-      ? "Pick interests"
-      : "Ask AI for places";
+    : isFull
+      ? `Route is full · ${MAX_ROUTE_STOPS} stops`
+      : variant === "pick"
+        ? "Pick interests"
+        : "Ask AI for places";
 
   return (
     <Pressable
       onPress={onPress}
-      disabled={isAsking}
+      disabled={isDisabled}
       accessibilityRole="button"
-      accessibilityState={{ busy: isAsking }}
+      accessibilityState={{ busy: isAsking, disabled: isDisabled }}
       className={cn(
         "h-11 flex-row items-center justify-center gap-2 rounded-xl bg-primary px-4 active:opacity-80",
+        isFull && !isAsking && "opacity-45",
         className,
       )}
     >
@@ -40,7 +47,7 @@ export function AskButton({
         />
       ) : (
         <MaterialIcons
-          name={variant === "pick" ? "tune" : "auto-awesome"}
+          name={variant === "pick" && !isFull ? "tune" : "auto-awesome"}
           size={18}
           className="text-primary-foreground"
         />

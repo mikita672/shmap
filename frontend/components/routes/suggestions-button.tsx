@@ -5,11 +5,13 @@ import { cn } from "@/lib/utils";
 
 export interface SuggestionsButtonProps {
   onPress: () => void;
+  count?: number;
   className?: string;
 }
 
 export function SuggestionsButton({
   onPress,
+  count,
   className,
 }: SuggestionsButtonProps) {
   return (
@@ -30,7 +32,7 @@ export function SuggestionsButton({
         numberOfLines={1}
         className="shrink text-sm font-medium leading-4 text-action-foreground dark:text-on-surface"
       >
-        Suggestions
+        {count ? `Suggestions · ${count}` : "Suggestions"}
       </Text>
     </Pressable>
   );

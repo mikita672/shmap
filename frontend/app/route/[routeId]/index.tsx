@@ -123,6 +123,7 @@ export default function RouteScreen() {
             })
           }
           onOpenInMaps={() => openRouteInMaps(route)}
+          suggestionCount={suggestions?.suggestions.length}
           onOpenSuggestions={
             route.member
               ? () => {
