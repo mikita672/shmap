@@ -39,6 +39,7 @@ export interface RouteMapProps {
   selectedSuggestionId?: number | null;
   onSelectSuggestion?: (suggestionId: number) => void;
   fitKey?: number;
+  suggestionsLoading?: boolean;
 }
 
 export function RouteMap({
@@ -49,6 +50,7 @@ export function RouteMap({
   selectedSuggestionId,
   onSelectSuggestion,
   fitKey = 0,
+  suggestionsLoading = false,
 }: RouteMapProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -105,6 +107,8 @@ export function RouteMap({
     });
   }, [suggestionLng, suggestionLat, height]);
 
+  const pendingFitRef = useRef(false);
+
   const fitToSuggestions = useEffectEvent(() => {
     const points = [
       ...route.stops.map(({ place }) => place),
@@ -132,9 +136,23 @@ export function RouteMap({
     });
   });
 
+  const requestFit = useEffectEvent(() => {
+    if (suggestionsLoading) {
+      pendingFitRef.current = true;
+      return;
+    }
+    fitToSuggestions();
+  });
+
   useEffect(() => {
-    if (fitKey) fitToSuggestions();
+    if (fitKey) requestFit();
   }, [fitKey]);
+
+  useEffect(() => {
+    if (suggestionsLoading || !pendingFitRef.current) return;
+    pendingFitRef.current = false;
+    fitToSuggestions();
+  }, [suggestionsLoading]);
 
   useFocusEffect(
     useCallback(() => {

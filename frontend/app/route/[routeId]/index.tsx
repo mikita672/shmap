@@ -51,10 +51,8 @@ export default function RouteScreen() {
   const retryPath = useRetryPath(Number(routeId));
   const removeStop = useRemoveStop(Number(routeId));
   const reorderStops = useReorderStops(Number(routeId));
-  const { data: suggestions } = useRouteSuggestions(
-    Number(routeId),
-    route?.member === true,
-  );
+  const { data: suggestions, isPending: suggestionsLoading } =
+    useRouteSuggestions(Number(routeId), route?.member === true);
   useStalePathRetry(route, () => retryPath.mutate());
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
@@ -75,6 +73,7 @@ export default function RouteScreen() {
           selectedSuggestionId={selectedSuggestionId}
           onSelectSuggestion={setSelectedSuggestionId}
           fitKey={fitKey}
+          suggestionsLoading={suggestionsLoading}
         />
         <RouteCredit sheetPosition={sheetPosition} />
         <RouteSheet
