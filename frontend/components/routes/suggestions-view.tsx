@@ -11,7 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
 import { useAddStop } from "@/hooks/useRouteMutations";
-import { routeSuggestionsQueryOptions } from "@/hooks/useRouteSuggestions";
+import {
+  routeSuggestionsQueryOptions,
+  useSuggestPlaces,
+  useSuggestStatus,
+} from "@/hooks/useRouteSuggestions";
 import { Ionicons } from "@/lib/icons";
 import { MAX_ROUTE_STOPS } from "@/lib/route-format";
 import type {
@@ -48,6 +52,8 @@ export function SuggestionsView({
   const queryClient = useQueryClient();
   const addStop = useAddStop(route.id);
   const isFull = route.stops.length >= MAX_ROUTE_STOPS;
+  const suggest = useSuggestPlaces(route.id);
+  const { isAsking } = useSuggestStatus(route.id);
 
   const handleAdd = (suggestion: RouteSuggestionResponse) => {
     addStop.mutate(suggestion.place, {
@@ -97,12 +103,20 @@ export function SuggestionsView({
       />
 
       {canEditPlan && (
-        <AskButton
-          onPress={() => {
-            setAskKey((key) => key + 1);
-            setIsAskOpen(true);
-          }}
-        />
+        <View className="gap-1.5">
+          <AskButton
+            isAsking={isAsking}
+            onPress={() => {
+              setAskKey((key) => key + 1);
+              setIsAskOpen(true);
+            }}
+          />
+          {isAsking && (
+            <Text className="text-center text-[13px] leading-[18px] text-on-surface-muted">
+              This can take up to half a minute
+            </Text>
+          )}
+        </View>
       )}
 
       {suggestions && suggestions.suggestions.length > 0 && (
@@ -141,7 +155,10 @@ export function SuggestionsView({
         chat={chat}
         visible={isAskOpen}
         onClose={() => setIsAskOpen(false)}
-        onSuggest={() => setIsAskOpen(false)}
+        onSuggest={(note) => {
+          setIsAskOpen(false);
+          suggest.mutate({ note: note || undefined });
+        }}
       />
     </View>
   );
