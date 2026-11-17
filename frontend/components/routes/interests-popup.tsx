@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { CategoryChip } from "@/components/routes/category-chip";
 import { Button } from "@/components/ui/button";
 import { Popup } from "@/components/ui/popup";
@@ -47,44 +47,49 @@ export function InterestsPopup({
   };
 
   return (
-    <Popup visible={visible} onClose={handleClose}>
-      <View className="items-center px-6 pb-6 pt-8">
-        <View className="h-14 w-14 items-center justify-center rounded-full bg-action">
-          <MaterialIcons
-            name="auto-awesome"
-            size={28}
-            className="text-action-foreground"
-          />
-        </View>
-
-        <View className="w-full items-center gap-2 pb-5 pt-4">
-          <Text className="text-center text-[22px] text-card-title">
-            What would you like to visit?
-          </Text>
-          <Text className="text-center text-sm leading-5 text-card-muted">
-            Pick your interests for this route. AI suggests places from
-            everyone&apos;s picks.
-          </Text>
-        </View>
-
-        <View className="w-full flex-row flex-wrap gap-2 pb-6">
-          {PLACE_CATEGORIES.map((category) => (
-            <CategoryChip
-              key={category}
-              category={category}
-              variant={selected.has(category) ? "on" : "off"}
-              onPress={save.isPending ? undefined : () => toggle(category)}
+    <Popup visible={visible} onClose={handleClose} className="max-h-[90%]">
+      <View className="shrink pb-6">
+        <ScrollView
+          className="shrink grow-0"
+          contentContainerClassName="items-center px-6 pt-8"
+        >
+          <View className="h-14 w-14 items-center justify-center rounded-full bg-action">
+            <MaterialIcons
+              name="auto-awesome"
+              size={28}
+              className="text-action-foreground"
             />
-          ))}
-        </View>
+          </View>
 
-        {save.isError && (
-          <Text className="w-full pb-4 text-center text-sm leading-5 text-destructive dark:text-card-title">
-            {getErrorMessage(save.error, "Couldn't save your interests")}
-          </Text>
-        )}
+          <View className="w-full items-center gap-2 pb-5 pt-4">
+            <Text className="text-center text-[22px] text-card-title">
+              What would you like to visit?
+            </Text>
+            <Text className="text-center text-sm leading-5 text-card-muted">
+              Pick your interests for this route. AI suggests places from
+              everyone&apos;s picks.
+            </Text>
+          </View>
 
-        <View className="w-full gap-2">
+          <View className="w-full flex-row flex-wrap gap-2 pb-6">
+            {PLACE_CATEGORIES.map((category) => (
+              <CategoryChip
+                key={category}
+                category={category}
+                variant={selected.has(category) ? "on" : "off"}
+                onPress={save.isPending ? undefined : () => toggle(category)}
+              />
+            ))}
+          </View>
+
+          {save.isError && (
+            <Text className="w-full pb-4 text-center text-sm leading-5 text-destructive dark:text-card-title">
+              {getErrorMessage(save.error, "Couldn't save your interests")}
+            </Text>
+          )}
+        </ScrollView>
+
+        <View className="w-full gap-2 px-6">
           <Button
             size="xl"
             className="w-full"
