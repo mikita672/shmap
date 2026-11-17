@@ -11,10 +11,11 @@ import {
 } from "@maplibre/maplibre-react-native";
 import "@/lib/maplibre-log-filter";
 import { RouteLayers } from "@/components/routes/route-layers";
+import { SuggestionLayers } from "@/components/routes/suggestion-layers";
 import { getBounds } from "@/lib/map-camera";
 import { MAP_STYLE } from "@/lib/map-style";
 import { takeRouteFocus } from "@/lib/route-focus";
-import type { RouteResponse } from "@/lib/types/api";
+import type { RouteResponse, RouteSuggestionResponse } from "@/lib/types/api";
 
 const STOP_ZOOM = 14;
 const WORLD_ZOOM = 1;
@@ -27,12 +28,18 @@ export interface RouteMapProps {
   route: RouteResponse;
   selectedStopId?: number | null;
   onSelectStop?: (stopId: number) => void;
+  suggestions?: RouteSuggestionResponse[];
+  selectedSuggestionId?: number | null;
+  onSelectSuggestion?: (suggestionId: number) => void;
 }
 
 export function RouteMap({
   route,
   selectedStopId,
   onSelectStop,
+  suggestions,
+  selectedSuggestionId,
+  onSelectSuggestion,
 }: RouteMapProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -95,6 +102,13 @@ export function RouteMap({
       attributionPosition={{ top: insets.top + HEADER_SPACE, left: 12 }}
     >
       <Camera ref={cameraRef} initialViewState={initialViewState} />
+      {suggestions && (
+        <SuggestionLayers
+          suggestions={suggestions}
+          selectedSuggestionId={selectedSuggestionId}
+          onPressSuggestion={onSelectSuggestion}
+        />
+      )}
       <RouteLayers
         route={route}
         selectedStopId={selectedStopId}

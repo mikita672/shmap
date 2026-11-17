@@ -67,8 +67,12 @@ export default function RouteScreen() {
           selectedStopId={selectedStopId}
           onSelectStop={(stopId) => {
             setIsSuggestionsOpen(false);
+            setSelectedSuggestionId(null);
             setSelectedStopId(stopId);
           }}
+          suggestions={isSuggestionsOpen ? suggestions?.suggestions : undefined}
+          selectedSuggestionId={selectedSuggestionId}
+          onSelectSuggestion={setSelectedSuggestionId}
         />
         <RouteCredit sheetPosition={sheetPosition} />
         <RouteSheet
