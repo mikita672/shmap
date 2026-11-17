@@ -2,20 +2,23 @@ import { useState } from "react";
 import { View } from "react-native";
 import { InterestsPopup } from "@/components/routes/interests-popup";
 import { InterestsSummary } from "@/components/routes/interests-summary";
+import { SuggestionCard } from "@/components/routes/suggestion-card";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
 import { Ionicons } from "@/lib/icons";
-import type { RouteResponse } from "@/lib/types/api";
+import type { RouteResponse, RouteSuggestionsResponse } from "@/lib/types/api";
 
 export interface SuggestionsViewProps {
   route: RouteResponse;
+  suggestions?: RouteSuggestionsResponse | null;
   memberCount?: number;
   onClose: () => void;
 }
 
 export function SuggestionsView({
   route,
+  suggestions,
   memberCount,
   onClose,
 }: SuggestionsViewProps) {
@@ -56,6 +59,17 @@ export function SuggestionsView({
             : undefined
         }
       />
+
+      {suggestions && suggestions.suggestions.length > 0 && (
+        <>
+          <View className="h-px bg-on-surface-muted/25" />
+          <View className="gap-2">
+            {suggestions.suggestions.map((suggestion) => (
+              <SuggestionCard key={suggestion.id} suggestion={suggestion} />
+            ))}
+          </View>
+        </>
+      )}
 
       <InterestsPopup
         key={interestsKey}

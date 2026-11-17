@@ -22,6 +22,7 @@ import {
   useRetryPath,
   useSetTravelMode,
 } from "@/hooks/useRouteMutations";
+import { useRouteSuggestions } from "@/hooks/useRouteSuggestions";
 import { useStalePathRetry } from "@/hooks/useStalePathRetry";
 import { getChatTitle } from "@/lib/chat-preview";
 import { openRouteInMaps } from "@/lib/open-route-in-maps";
@@ -46,6 +47,10 @@ export default function RouteScreen() {
   const retryPath = useRetryPath(Number(routeId));
   const removeStop = useRemoveStop(Number(routeId));
   const reorderStops = useReorderStops(Number(routeId));
+  const { data: suggestions } = useRouteSuggestions(
+    Number(routeId),
+    route?.member === true,
+  );
   useStalePathRetry(route, () => retryPath.mutate());
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
@@ -121,6 +126,7 @@ export default function RouteScreen() {
             isSuggestionsOpen ? (
               <SuggestionsView
                 route={route}
+                suggestions={suggestions}
                 memberCount={chat ? chat.members.length + 1 : undefined}
                 onClose={() => setIsSuggestionsOpen(false)}
               />
