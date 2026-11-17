@@ -42,11 +42,10 @@ export function useSuggestPlaces(routeId: number) {
       const response = await suggestRoutePlaces(routeId, request);
       return response.data;
     },
-    onSuccess: (suggestions) => {
-      queryClient.setQueryData(
-        routeSuggestionsQueryOptions(routeId).queryKey,
-        suggestions,
-      );
+    onSuccess: async (suggestions) => {
+      const { queryKey } = routeSuggestionsQueryOptions(routeId);
+      await queryClient.cancelQueries({ queryKey, exact: true });
+      queryClient.setQueryData(queryKey, suggestions);
     },
   });
 }
