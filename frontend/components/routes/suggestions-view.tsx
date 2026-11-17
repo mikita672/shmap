@@ -8,6 +8,7 @@ import { InterestsPopup } from "@/components/routes/interests-popup";
 import { InterestsSummary } from "@/components/routes/interests-summary";
 import { SuggestionCard } from "@/components/routes/suggestion-card";
 import { SuggestionSetHeader } from "@/components/routes/suggestion-set-header";
+import { SuggestionsEmpty } from "@/components/routes/suggestions-empty";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
@@ -55,6 +56,20 @@ export function SuggestionsView({
   const isFull = route.stops.length >= MAX_ROUTE_STOPS;
   const suggest = useSuggestPlaces(route.id);
   const { isAsking, error: askError } = useSuggestStatus(route.id);
+  const nobodyPicked = route.interests.every(
+    ({ categories }) => categories.length === 0,
+  );
+  const empty = getEmptyText(suggestions, nobodyPicked, canEditPlan);
+
+  const openInterests = () => {
+    setInterestsKey((key) => key + 1);
+    setIsInterestsOpen(true);
+  };
+
+  const openAsk = () => {
+    setAskKey((key) => key + 1);
+    setIsAskOpen(true);
+  };
 
   const handleAdd = (suggestion: RouteSuggestionResponse) => {
     addStop.mutate(suggestion.place, {
@@ -93,24 +108,15 @@ export function SuggestionsView({
       <InterestsSummary
         interests={route.interests}
         memberCount={memberCount}
-        onEdit={
-          canEditPlan && profile
-            ? () => {
-                setInterestsKey((key) => key + 1);
-                setIsInterestsOpen(true);
-              }
-            : undefined
-        }
+        onEdit={canEditPlan && profile ? openInterests : undefined}
       />
 
       {canEditPlan && (
         <View className="gap-1.5">
           <AskButton
+            variant={nobodyPicked ? "pick" : "ask"}
             isAsking={isAsking}
-            onPress={() => {
-              setAskKey((key) => key + 1);
-              setIsAskOpen(true);
-            }}
+            onPress={nobodyPicked ? openInterests : openAsk}
           />
           {isAsking && (
             <Text className="text-center text-[13px] leading-[18px] text-on-surface-muted">
@@ -144,6 +150,13 @@ export function SuggestionsView({
         </>
       )}
 
+      {empty && (
+        <>
+          <View className="h-px bg-on-surface-muted/25" />
+          <SuggestionsEmpty {...empty} />
+        </>
+      )}
+
       <InterestsPopup
         key={`interests-${interestsKey}`}
         routeId={route.id}
@@ -164,4 +177,29 @@ export function SuggestionsView({
       />
     </View>
   );
+}
+
+function getEmptyText(
+  suggestions: RouteSuggestionsResponse | null | undefined,
+  nobodyPicked: boolean,
+  canEditPlan: boolean,
+) {
+  if (suggestions === undefined) return null;
+  if (suggestions) {
+    if (suggestions.suggestions.length > 0) return null;
+    return {
+      title: "All suggestions added",
+      description: canEditPlan
+        ? "Ask AI again for more places."
+        : "Everything AI suggested is on the route now.",
+    };
+  }
+  return {
+    title: "No suggestions yet",
+    description: !canEditPlan
+      ? "Nobody has asked AI for places on this route yet."
+      : nobodyPicked
+        ? "Pick what you'd like to visit. AI then suggests real places near this route from everyone's picks."
+        : "Ask AI for up to 8 real places near this route, based on everyone's picks.",
+  };
 }

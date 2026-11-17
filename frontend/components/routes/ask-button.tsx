@@ -5,15 +5,23 @@ import { cn } from "@/lib/utils";
 
 export interface AskButtonProps {
   onPress: () => void;
+  variant?: "ask" | "pick";
   isAsking?: boolean;
   className?: string;
 }
 
 export function AskButton({
   onPress,
+  variant = "ask",
   isAsking = false,
   className,
 }: AskButtonProps) {
+  const label = isAsking
+    ? "Finding places…"
+    : variant === "pick"
+      ? "Pick interests"
+      : "Ask AI for places";
+
   return (
     <Pressable
       onPress={onPress}
@@ -32,13 +40,13 @@ export function AskButton({
         />
       ) : (
         <MaterialIcons
-          name="auto-awesome"
+          name={variant === "pick" ? "tune" : "auto-awesome"}
           size={18}
           className="text-primary-foreground"
         />
       )}
       <Text className="text-sm font-medium leading-4 text-primary-foreground">
-        {isAsking ? "Finding places…" : "Ask AI for places"}
+        {label}
       </Text>
     </Pressable>
   );
