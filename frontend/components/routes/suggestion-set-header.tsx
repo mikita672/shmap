@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
 import { formatTimeAgo } from "@/lib/time-ago";
 import type { RouteSuggestionsResponse } from "@/lib/types/api";
+
+const NOW_REFRESH_MS = 30_000;
 
 export interface SuggestionSetHeaderProps {
   suggestions: RouteSuggestionsResponse;
@@ -14,7 +16,13 @@ export function SuggestionSetHeader({
   suggestions,
   myId,
 }: SuggestionSetHeaderProps) {
-  const [now] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), NOW_REFRESH_MS);
+    return () => clearInterval(timer);
+  }, []);
+
   const { suggestedBy, suggestedAt, note } = suggestions;
   const who = suggestedBy.id === myId ? "you" : suggestedBy.firstName;
   const time = formatTimeAgo(suggestedAt, now);
