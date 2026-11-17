@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { InterestsPopup } from "@/components/routes/interests-popup";
 import { InterestsSummary } from "@/components/routes/interests-summary";
 import { SuggestionCard } from "@/components/routes/suggestion-card";
+import { SuggestionSetHeader } from "@/components/routes/suggestion-set-header";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useProfile } from "@/hooks/useProfile";
@@ -63,11 +64,15 @@ export function SuggestionsView({
       {suggestions && suggestions.suggestions.length > 0 && (
         <>
           <View className="h-px bg-on-surface-muted/25" />
+          <SuggestionSetHeader suggestions={suggestions} myId={profile?.id} />
           <View className="gap-2">
             {suggestions.suggestions.map((suggestion) => (
               <SuggestionCard key={suggestion.id} suggestion={suggestion} />
             ))}
           </View>
+          <Text className="text-center text-[11px] leading-4 text-on-surface-muted">
+            Places © OpenStreetMap contributors
+          </Text>
         </>
       )}
 
