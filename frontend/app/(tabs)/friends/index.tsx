@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -76,6 +77,16 @@ function FeedBody() {
     fetchNextPage,
   } = useFeed();
   const queryClient = useQueryClient();
+  useRefreshOnFocus(
+    useCallback(
+      () =>
+        queryClient.refetchQueries({
+          queryKey: feedQueryOptions.queryKey,
+          stale: true,
+        }),
+      [queryClient],
+    ),
+  );
   const { isRefetchingByUser, refetchByUser } = useRefreshByUser(async () => {
     queryClient.setQueryData(
       feedQueryOptions.queryKey,
