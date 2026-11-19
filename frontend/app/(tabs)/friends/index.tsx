@@ -1,4 +1,9 @@
-import { ActivityIndicator, FlatList, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { FeedRouteCard } from "@/components/feed/feed-route-card";
@@ -46,7 +51,10 @@ export default function FriendsFeedScreen() {
   );
 }
 
+const FEED_SIDE_PADDING = 8;
+
 function FeedBody() {
+  const { width } = useWindowDimensions();
   const { data: profile } = useProfile();
   const { data, isPending, error, refetch, dataUpdatedAt } = useFeed();
 
@@ -83,9 +91,17 @@ function FeedBody() {
       data={routes}
       keyExtractor={(route) => String(route.id)}
       renderItem={({ item }) => (
-        <FeedRouteCard route={item} myId={profile?.id} now={dataUpdatedAt} />
+        <FeedRouteCard
+          route={item}
+          myId={profile?.id}
+          now={dataUpdatedAt}
+          mapWidth={width - FEED_SIDE_PADDING * 2}
+        />
       )}
       ItemSeparatorComponent={FeedGap}
+      initialNumToRender={3}
+      maxToRenderPerBatch={3}
+      windowSize={5}
       contentContainerClassName="px-2 pb-4 pt-4"
     />
   );

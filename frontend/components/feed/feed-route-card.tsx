@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { RouteMapPreview } from "@/components/chats/route-map-preview";
 import { Avatar } from "@/components/ui/avatar";
 import { Text } from "@/components/ui/text";
 import {
@@ -14,9 +15,17 @@ export interface FeedRouteCardProps {
   route: FeedRouteResponse;
   myId?: number;
   now: number;
+  mapWidth: number;
 }
 
-export function FeedRouteCard({ route, myId, now }: FeedRouteCardProps) {
+const FEED_MAP_HEIGHT = 220;
+
+export function FeedRouteCard({
+  route,
+  myId,
+  now,
+  mapWidth,
+}: FeedRouteCardProps) {
   const { author, withLine } = formatFeedPeople(route.participants, myId);
   const meta = joinMeta(
     formatStopCount(route.stops.length),
@@ -46,6 +55,12 @@ export function FeedRouteCard({ route, myId, now }: FeedRouteCardProps) {
           </Text>
         </View>
       </View>
+
+      <RouteMapPreview
+        route={route}
+        width={mapWidth}
+        height={FEED_MAP_HEIGHT}
+      />
 
       <View className="gap-0.5 px-4 pb-4 pt-3">
         <Text
