@@ -55,7 +55,9 @@ export default function RouteScreen() {
     Number(routeId),
     route?.member === true,
   );
-  useStalePathRetry(route, () => retryPath.mutate());
+  useStalePathRetry(route?.member ? route : undefined, () =>
+    retryPath.mutate(),
+  );
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
 
   if (route && !isDeleted) {
@@ -115,7 +117,7 @@ export default function RouteScreen() {
           onTravelModeChange={
             canEditPlan ? (mode) => setTravelMode.mutate(mode) : undefined
           }
-          onRetryPath={() => retryPath.mutate()}
+          onRetryPath={route.member ? () => retryPath.mutate() : undefined}
           onEditCompletion={() =>
             router.push({
               pathname: "/route/[routeId]/done",
