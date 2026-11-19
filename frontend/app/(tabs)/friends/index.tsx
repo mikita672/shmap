@@ -121,13 +121,6 @@ function FeedBody() {
   }
 
   const routes = data.pages.flatMap((page) => page.routes);
-  if (routes.length === 0) {
-    return (
-      <View className="flex-1 justify-center px-6">
-        <FeedEmpty />
-      </View>
-    );
-  }
 
   return (
     <FlatList
@@ -183,7 +176,14 @@ function FeedBody() {
           className="bg-action text-secondary"
         />
       }
-      contentContainerClassName="px-2 pb-4 pt-4"
+      ListEmptyComponent={
+        hasNextPage ? null : (
+          <View className="flex-1 justify-center px-4">
+            <FeedEmpty />
+          </View>
+        )
+      }
+      contentContainerClassName="flex-grow px-2 pb-4 pt-4"
     />
   );
 }
