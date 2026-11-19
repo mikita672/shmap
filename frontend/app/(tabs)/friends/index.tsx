@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useScrollToTop } from "expo-router";
 import { FeedRouteCard } from "@/components/feed/feed-route-card";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
@@ -22,7 +22,7 @@ import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
-import { AuthErrorCode } from "@/lib/types/api";
+import { AuthErrorCode, type FeedRouteResponse } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function FriendsFeedScreen() {
@@ -62,6 +62,8 @@ const FEED_SIDE_PADDING = 8;
 
 function FeedBody() {
   const { width } = useWindowDimensions();
+  const listRef = useRef<FlatList<FeedRouteResponse>>(null);
+  useScrollToTop(listRef);
   const { data: profile } = useProfile();
   const openProfile = useOpenProfile();
   const {
@@ -129,6 +131,7 @@ function FeedBody() {
 
   return (
     <FlatList
+      ref={listRef}
       data={routes}
       keyExtractor={(route) => String(route.id)}
       renderItem={({ item }) => (
