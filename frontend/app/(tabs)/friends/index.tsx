@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -59,10 +59,18 @@ export default function FriendsFeedScreen() {
 }
 
 const FEED_SIDE_PADDING = 8;
+const NOW_REFRESH_MS = 30_000;
 
 function FeedBody() {
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<FeedRouteResponse>>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), NOW_REFRESH_MS);
+    return () => clearInterval(timer);
+  }, []);
+
   useScrollToTop(listRef);
   const { data: profile } = useProfile();
   const openProfile = useOpenProfile();
@@ -71,7 +79,6 @@ function FeedBody() {
     isPending,
     error,
     refetch,
-    dataUpdatedAt,
     hasNextPage,
     isFetching,
     isFetchingNextPage,
@@ -131,7 +138,7 @@ function FeedBody() {
         <FeedRouteCard
           route={item}
           myId={profile?.id}
-          now={dataUpdatedAt}
+          now={now}
           mapWidth={width - FEED_SIDE_PADDING * 2}
           onPress={() =>
             router.push({
