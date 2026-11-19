@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
+import { markFeedStale } from "@/hooks/useFeed";
 import { friendActivityQueryOptions } from "@/hooks/useFriendActivity";
 import { friendsQueryOptions } from "@/hooks/useFriends";
 import { friendSuggestionsQueryOptions } from "@/hooks/useFriendSuggestions";
@@ -44,6 +45,7 @@ export function useSendFriendRequest() {
           queryClient.invalidateQueries({
             queryKey: friendActivityQueryOptions.queryKey,
           }),
+          markFeedStale(queryClient),
         );
       }
       return Promise.all(invalidations);
@@ -68,6 +70,7 @@ export function useAcceptFriendRequest() {
         queryClient.invalidateQueries({
           queryKey: friendActivityQueryOptions.queryKey,
         }),
+        markFeedStale(queryClient),
         queryClient.invalidateQueries({ queryKey: ["users", "search"] }),
         queryClient.invalidateQueries({ queryKey: ["profiles"] }),
       ]),

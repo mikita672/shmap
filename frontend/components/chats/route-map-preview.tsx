@@ -3,7 +3,7 @@ import { useStaticRouteMap } from "@/hooks/useStaticRouteMap";
 import "@/lib/maplibre-log-filter";
 import { Ionicons } from "@/lib/icons";
 import { Image } from "@/lib/image";
-import type { RouteResponse } from "@/lib/types/api";
+import type { RouteMapShape } from "@/lib/route-map-image";
 import { cn } from "@/lib/utils";
 
 const ICON_SIZE = 36;
@@ -41,7 +41,7 @@ export function RouteMapPlaceholder({
 }
 
 export interface RouteMapPreviewProps {
-  route: RouteResponse;
+  route: RouteMapShape;
   width: number;
   height: number;
   className?: string;

@@ -31,6 +31,10 @@ const MAX_NAME_LENGTH = 50;
 
 type MenuStep = "menu" | "rename" | "delete" | "reopen";
 
+export function hasRouteActions(route: RouteResponse) {
+  return route.canEdit || route.chatId !== null;
+}
+
 export interface RouteActionsMenuProps {
   route: RouteResponse;
   chat?: ChatResponse;

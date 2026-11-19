@@ -302,6 +302,7 @@ export type RouteVisibility = "PARTICIPANTS" | "FRIENDS" | "EVERYONE";
 
 export interface RouteCompletionResponse {
   finishedOn: string;
+  completedAt: string;
   visibility: RouteVisibility;
   effectiveVisibility: RouteVisibility;
   participants: UserSummaryResponse[];
@@ -392,6 +393,27 @@ export interface RouteCompletionRequest {
 export type UpdateRouteRequest =
   | { name: string; travelMode?: TravelMode }
   | { name?: string; travelMode: TravelMode };
+
+export interface RoutePointResponse {
+  latitude: number;
+  longitude: number;
+}
+
+export interface FeedRouteResponse {
+  id: number;
+  name: string;
+  travelMode: TravelMode;
+  path: RoutePathResponse;
+  stops: RoutePointResponse[];
+  finishedOn: string;
+  completedAt: string;
+  participants: UserSummaryResponse[];
+}
+
+export interface FeedPageResponse {
+  routes: FeedRouteResponse[];
+  nextCursor: string | null;
+}
 
 export interface RouteEvent {
   chatId: number;

@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { chatRoutesQueryOptions } from "@/hooks/useChatRoutes";
+import { markFeedStale } from "@/hooks/useFeed";
 import { routeQueryOptions } from "@/hooks/useRoute";
 import {
   addRouteStop,
@@ -191,6 +192,7 @@ export function useRenameRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't rename the route"));
@@ -212,6 +214,7 @@ export function useCompleteRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -234,6 +237,7 @@ export function useReopenRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -261,6 +265,7 @@ export function useDeleteRoute(routeId: number) {
         queryKey: chatRoutesQueryOptions(chatId).queryKey,
         exact: true,
       });
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't delete the route"));

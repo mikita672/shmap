@@ -11,6 +11,7 @@ import {
   joinMeta,
   TRAVEL_MODE_LABELS,
 } from "@/lib/route-format";
+import { toRouteMapShape } from "@/lib/route-map-image";
 import type { RouteResponse } from "@/lib/types/api";
 import { cn } from "@/lib/utils";
 
@@ -97,7 +98,7 @@ export function RouteMessageCard({
       {rest.state === "active" ? (
         rest.route.stops.length > 0 ? (
           <RouteMapPreview
-            route={rest.route}
+            route={toRouteMapShape(rest.route)}
             width={MAP_WIDTH}
             height={MAP_HEIGHT}
             className="rounded-[14px]"

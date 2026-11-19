@@ -5,12 +5,11 @@ import { decodePath } from "@/lib/polyline";
 import {
   buildRouteImageStyle,
   getRouteImageCamera,
-  type RouteImageStop,
+  type RouteMapShape,
 } from "@/lib/route-map-image";
-import type { RouteResponse } from "@/lib/types/api";
 
 export interface StaticRouteMapOptions {
-  route: RouteResponse;
+  route: RouteMapShape;
   width: number;
   height: number;
 }
@@ -21,10 +20,7 @@ export function useStaticRouteMap({
   height,
 }: StaticRouteMapOptions) {
   const { data: baseStyle } = useMapStyle();
-  const stops: RouteImageStop[] = route.stops.map((stop) => ({
-    latitude: stop.place.latitude,
-    longitude: stop.place.longitude,
-  }));
+  const { stops } = route;
   const polyline = route.path.status === "READY" ? route.path.polyline : null;
   const stopKey = stops
     .map((stop) => `${stop.latitude},${stop.longitude}`)

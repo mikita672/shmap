@@ -1,4 +1,5 @@
 import type { MapStyleJson } from "@/hooks/useMapStyle";
+import type { RoutePathResponse, RouteResponse } from "@/lib/types/api";
 
 const PATH_COLOR = "#C4661F";
 const STOP_FILL_COLOR = "#F9EBC7";
@@ -14,6 +15,23 @@ export const ROUTE_IMAGE_LINE_LAYER_ID = "route-image-line";
 export const ROUTE_IMAGE_STOPS_LAYER_ID = "route-image-stops";
 
 export type RouteImageStop = { latitude: number; longitude: number };
+
+export interface RouteMapShape {
+  id: number;
+  stops: RouteImageStop[];
+  path: RoutePathResponse;
+}
+
+export function toRouteMapShape(route: RouteResponse): RouteMapShape {
+  return {
+    id: route.id,
+    stops: route.stops.map((stop) => ({
+      latitude: stop.place.latitude,
+      longitude: stop.place.longitude,
+    })),
+    path: route.path,
+  };
+}
 
 export type RouteImageCamera =
   | { center: [longitude: number, latitude: number]; zoom: number }

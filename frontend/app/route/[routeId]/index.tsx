@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, View, useWindowDimensions } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSharedValue } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ReadOnlyBar } from "@/components/chats/read-only-bar";
-import { RouteActionsMenu } from "@/components/routes/route-actions-menu";
+import {
+  RouteActionsMenu,
+  hasRouteActions,
+} from "@/components/routes/route-actions-menu";
 import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
@@ -15,6 +18,7 @@ import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
 import { chatQueryOptions } from "@/hooks/useChat";
+import { removeRouteFromFeed } from "@/hooks/useFeed";
 import { useRoute } from "@/hooks/useRoute";
 import {
   useRemoveStop,
@@ -55,8 +59,15 @@ export default function RouteScreen() {
     Number(routeId),
     route?.member === true,
   );
-  useStalePathRetry(route, () => retryPath.mutate());
+  useStalePathRetry(route?.member ? route : undefined, () =>
+    retryPath.mutate(),
+  );
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (isDeleted) removeRouteFromFeed(queryClient, Number(routeId));
+  }, [isDeleted, queryClient, routeId]);
 
   if (route && !isDeleted) {
     const canEditPlan = route.canEdit && route.completion === null;
@@ -115,7 +126,7 @@ export default function RouteScreen() {
           onTravelModeChange={
             canEditPlan ? (mode) => setTravelMode.mutate(mode) : undefined
           }
-          onRetryPath={() => retryPath.mutate()}
+          onRetryPath={route.member ? () => retryPath.mutate() : undefined}
           onEditCompletion={() =>
             router.push({
               pathname: "/route/[routeId]/done",
@@ -154,10 +165,14 @@ export default function RouteScreen() {
         <RouteHeader
           name={route.name}
           chatTitle={chat ? getChatTitle(chat) : undefined}
-          onMore={() => {
-            setMenuKey((key) => key + 1);
-            setIsMenuOpen(true);
-          }}
+          onMore={
+            hasRouteActions(route)
+              ? () => {
+                  setMenuKey((key) => key + 1);
+                  setIsMenuOpen(true);
+                }
+              : undefined
+          }
         />
         <RouteActionsMenu
           key={menuKey}
@@ -182,8 +197,8 @@ export default function RouteScreen() {
       ) : isDeleted ? (
         <View className="flex-1 justify-center px-6">
           <NoteCard
-            title="This route was deleted"
-            description="Someone in the chat deleted it, or you're no longer in this chat"
+            title="This route isn't available"
+            description="It was deleted, or you can no longer see it"
           />
         </View>
       ) : (
