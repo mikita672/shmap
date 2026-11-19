@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, View, useWindowDimensions } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSharedValue } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ReadOnlyBar } from "@/components/chats/read-only-bar";
@@ -18,6 +18,7 @@ import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
 import { chatQueryOptions } from "@/hooks/useChat";
+import { removeRouteFromFeed } from "@/hooks/useFeed";
 import { useRoute } from "@/hooks/useRoute";
 import {
   useRemoveStop,
@@ -62,6 +63,11 @@ export default function RouteScreen() {
     retryPath.mutate(),
   );
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (isDeleted) removeRouteFromFeed(queryClient, Number(routeId));
+  }, [isDeleted, queryClient, routeId]);
 
   if (route && !isDeleted) {
     const canEditPlan = route.canEdit && route.completion === null;
