@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
+import { markFeedStale } from "@/hooks/useFeed";
 import { friendActivityQueryOptions } from "@/hooks/useFriendActivity";
 import { friendsQueryOptions } from "@/hooks/useFriends";
 import { friendSuggestionsQueryOptions } from "@/hooks/useFriendSuggestions";
@@ -29,6 +30,7 @@ export function useSetFavorite() {
     },
     onSettled: () =>
       Promise.all([
+        markFeedStale(queryClient),
         queryClient.invalidateQueries({ queryKey: ["profiles"] }),
         queryClient.invalidateQueries({
           queryKey: friendsQueryOptions.queryKey,
@@ -58,6 +60,7 @@ export function useSetMuted() {
     },
     onSettled: () =>
       Promise.all([
+        markFeedStale(queryClient),
         queryClient.invalidateQueries({ queryKey: ["profiles"] }),
         queryClient.invalidateQueries({
           queryKey: friendsQueryOptions.queryKey,
@@ -76,6 +79,7 @@ export function useRemoveFriend() {
     },
     onSettled: () =>
       Promise.all([
+        markFeedStale(queryClient),
         queryClient.invalidateQueries({
           queryKey: friendsQueryOptions.queryKey,
         }),

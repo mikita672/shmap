@@ -192,7 +192,7 @@ export function useRenameRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
-      markFeedStale(queryClient);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't rename the route"));
@@ -214,7 +214,7 @@ export function useCompleteRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
-      markFeedStale(queryClient);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -237,7 +237,7 @@ export function useReopenRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
-      markFeedStale(queryClient);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -265,7 +265,7 @@ export function useDeleteRoute(routeId: number) {
         queryKey: chatRoutesQueryOptions(chatId).queryKey,
         exact: true,
       });
-      markFeedStale(queryClient);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't delete the route"));
