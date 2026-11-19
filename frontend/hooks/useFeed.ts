@@ -35,3 +35,10 @@ export function removeRouteFromFeed(queryClient: QueryClient, routeId: number) {
       : old,
   );
 }
+
+export function markFeedStale(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({
+    queryKey: feedQueryOptions.queryKey,
+    refetchType: "none",
+  });
+}
