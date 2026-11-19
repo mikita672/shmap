@@ -58,7 +58,17 @@ function FeedBody() {
   const { width } = useWindowDimensions();
   const { data: profile } = useProfile();
   const openProfile = useOpenProfile();
-  const { data, isPending, error, refetch, dataUpdatedAt } = useFeed();
+  const {
+    data,
+    isPending,
+    error,
+    refetch,
+    dataUpdatedAt,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useFeed();
 
   if (isPending) {
     return (
@@ -111,6 +121,11 @@ function FeedBody() {
       initialNumToRender={3}
       maxToRenderPerBatch={3}
       windowSize={5}
+      onEndReached={() => {
+        if (hasNextPage && !isFetching) fetchNextPage();
+      }}
+      onEndReachedThreshold={1}
+      ListFooterComponent={isFetchingNextPage ? <FeedLoadingMore /> : null}
       contentContainerClassName="px-2 pb-4 pt-4"
     />
   );
@@ -118,6 +133,14 @@ function FeedBody() {
 
 function FeedGap() {
   return <View className="h-4" />;
+}
+
+function FeedLoadingMore() {
+  return (
+    <View className="items-center pt-4">
+      <ActivityIndicator size="small" className="text-heading" />
+    </View>
+  );
 }
 
 function FeedEmpty() {
