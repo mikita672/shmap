@@ -191,8 +191,8 @@ export default function RouteScreen() {
       ) : isDeleted ? (
         <View className="flex-1 justify-center px-6">
           <NoteCard
-            title="This route was deleted"
-            description="Someone in the chat deleted it, or you're no longer in this chat"
+            title="This route isn't available"
+            description="It was deleted, or you can no longer see it"
           />
         </View>
       ) : (
