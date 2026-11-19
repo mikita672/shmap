@@ -1,12 +1,15 @@
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { FeedRouteCard } from "@/components/feed/feed-route-card";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
+import { useFeed } from "@/hooks/useFeed";
 import { useFriends } from "@/hooks/useFriends";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
+import { useProfile } from "@/hooks/useProfile";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { getErrorMessage } from "@/lib/utils/error";
 
@@ -38,16 +41,62 @@ export default function FriendsFeedScreen() {
         />
       </View>
 
-      <View className="flex-1 justify-center px-6">
-        <FeedBody />
-      </View>
+      <FeedBody />
     </View>
   );
 }
 
 function FeedBody() {
+  const { data: profile } = useProfile();
+  const { data, isPending, error, refetch, dataUpdatedAt } = useFeed();
+
+  if (isPending) {
+    return (
+      <View className="flex-1 justify-center px-6">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!data) {
+    return (
+      <View className="flex-1 justify-center px-6">
+        <LoadError
+          message={getErrorMessage(error, "Couldn't load routes")}
+          onRetry={() => refetch()}
+        />
+      </View>
+    );
+  }
+
+  const routes = data.pages.flatMap((page) => page.routes);
+  if (routes.length === 0) {
+    return (
+      <View className="flex-1 justify-center px-6">
+        <FeedEmpty />
+      </View>
+    );
+  }
+
+  return (
+    <FlatList
+      data={routes}
+      keyExtractor={(route) => String(route.id)}
+      renderItem={({ item }) => (
+        <FeedRouteCard route={item} myId={profile?.id} now={dataUpdatedAt} />
+      )}
+      ItemSeparatorComponent={FeedGap}
+      contentContainerClassName="px-2 pb-4 pt-4"
+    />
+  );
+}
+
+function FeedGap() {
+  return <View className="h-4" />;
+}
+
+function FeedEmpty() {
   const { data: friends, isPending, error, refetch } = useFriends();
-  useRefreshOnFocus(refetch);
 
   if (isPending) {
     return <ActivityIndicator size="large" />;
@@ -55,14 +104,10 @@ function FeedBody() {
 
   if (!friends) {
     return (
-      <View className="items-center gap-4">
-        <Text className="text-center">
-          {getErrorMessage(error, "Couldn't load your friends")}
-        </Text>
-        <Button onPress={() => refetch()}>
-          <Text>Retry</Text>
-        </Button>
-      </View>
+      <LoadError
+        message={getErrorMessage(error, "Couldn't load your friends")}
+        onRetry={() => refetch()}
+      />
     );
   }
 
@@ -80,6 +125,23 @@ function FeedBody() {
       title="No routes yet"
       description="Routes your friends take will show up here."
     />
+  );
+}
+
+function LoadError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <View className="items-center gap-4">
+      <Text className="text-center">{message}</Text>
+      <Button onPress={onRetry}>
+        <Text>Retry</Text>
+      </Button>
+    </View>
   );
 }
 
