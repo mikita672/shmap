@@ -11,6 +11,7 @@ import { FeedRouteCard } from "@/components/feed/feed-route-card";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { PillButton } from "@/components/ui/pill-button";
+import { RefreshControl } from "@/components/ui/refresh-control";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
 import { feedQueryOptions, useFeed } from "@/hooks/useFeed";
@@ -18,6 +19,7 @@ import { useFriends } from "@/hooks/useFriends";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
 import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
+import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -74,6 +76,17 @@ function FeedBody() {
     fetchNextPage,
   } = useFeed();
   const queryClient = useQueryClient();
+  const { isRefetchingByUser, refetchByUser } = useRefreshByUser(async () => {
+    queryClient.setQueryData(
+      feedQueryOptions.queryKey,
+      (old) =>
+        old && {
+          pages: old.pages.slice(0, 1),
+          pageParams: old.pageParams.slice(0, 1),
+        },
+    );
+    await refetch();
+  });
 
   if (isPending) {
     return (
@@ -148,6 +161,13 @@ function FeedBody() {
             }}
           />
         ) : null
+      }
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetchingByUser}
+          onRefresh={refetchByUser}
+          className="bg-action text-secondary"
+        />
       }
       contentContainerClassName="px-2 pb-4 pt-4"
     />
