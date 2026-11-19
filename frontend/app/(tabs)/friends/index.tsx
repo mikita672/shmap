@@ -14,6 +14,7 @@ import { Text } from "@/components/ui/text";
 import { useFeed } from "@/hooks/useFeed";
 import { useFriends } from "@/hooks/useFriends";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
+import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -56,6 +57,7 @@ const FEED_SIDE_PADDING = 8;
 function FeedBody() {
   const { width } = useWindowDimensions();
   const { data: profile } = useProfile();
+  const openProfile = useOpenProfile();
   const { data, isPending, error, refetch, dataUpdatedAt } = useFeed();
 
   if (isPending) {
@@ -96,6 +98,13 @@ function FeedBody() {
           myId={profile?.id}
           now={dataUpdatedAt}
           mapWidth={width - FEED_SIDE_PADDING * 2}
+          onPress={() =>
+            router.push({
+              pathname: "/route/[routeId]",
+              params: { routeId: String(item.id) },
+            })
+          }
+          onAuthorPress={() => openProfile(item.participants[0])}
         />
       )}
       ItemSeparatorComponent={FeedGap}
