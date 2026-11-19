@@ -3,7 +3,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Text } from "@/components/ui/text";
 import { MaterialIcons } from "@/lib/icons";
-import { cn } from "@/lib/utils";
 
 const BUTTON_CLASS =
   "h-14 w-14 items-center justify-center rounded-full bg-searchbar shadow-sm shadow-black/10 elevation-3 active:opacity-80";
@@ -55,15 +54,20 @@ export function RouteHeader({ name, chatTitle, onMore }: RouteHeaderProps) {
         ) : null}
       </View>
 
-      <Pressable
-        onPress={onMore}
-        disabled={!onMore}
-        accessibilityRole="button"
-        accessibilityLabel="Route options"
-        className={cn(BUTTON_CLASS, !onMore && "opacity-50")}
-      >
-        <MaterialIcons name="more-vert" size={24} className="text-card-title" />
-      </Pressable>
+      {onMore ? (
+        <Pressable
+          onPress={onMore}
+          accessibilityRole="button"
+          accessibilityLabel="Route options"
+          className={BUTTON_CLASS}
+        >
+          <MaterialIcons
+            name="more-vert"
+            size={24}
+            className="text-card-title"
+          />
+        </Pressable>
+      ) : null}
     </View>
   );
 }

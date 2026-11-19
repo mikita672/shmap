@@ -4,7 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useSharedValue } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ReadOnlyBar } from "@/components/chats/read-only-bar";
-import { RouteActionsMenu } from "@/components/routes/route-actions-menu";
+import {
+  RouteActionsMenu,
+  hasRouteActions,
+} from "@/components/routes/route-actions-menu";
 import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
@@ -156,10 +159,14 @@ export default function RouteScreen() {
         <RouteHeader
           name={route.name}
           chatTitle={chat ? getChatTitle(chat) : undefined}
-          onMore={() => {
-            setMenuKey((key) => key + 1);
-            setIsMenuOpen(true);
-          }}
+          onMore={
+            hasRouteActions(route)
+              ? () => {
+                  setMenuKey((key) => key + 1);
+                  setIsMenuOpen(true);
+                }
+              : undefined
+          }
         />
         <RouteActionsMenu
           key={menuKey}
