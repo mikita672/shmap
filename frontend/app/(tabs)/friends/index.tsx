@@ -5,19 +5,22 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { FeedRouteCard } from "@/components/feed/feed-route-card";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
+import { PillButton } from "@/components/ui/pill-button";
 import { RoundButton } from "@/components/ui/round-button";
 import { Text } from "@/components/ui/text";
-import { useFeed } from "@/hooks/useFeed";
+import { feedQueryOptions, useFeed } from "@/hooks/useFeed";
 import { useFriends } from "@/hooks/useFriends";
 import { useIncomingRequestCount } from "@/hooks/useIncomingRequestCount";
 import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
-import { getErrorMessage } from "@/lib/utils/error";
+import { AuthErrorCode } from "@/lib/types/api";
+import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
 
 export default function FriendsFeedScreen() {
   const insets = useSafeAreaInsets();
@@ -67,8 +70,10 @@ function FeedBody() {
     hasNextPage,
     isFetching,
     isFetchingNextPage,
+    isFetchNextPageError,
     fetchNextPage,
   } = useFeed();
+  const queryClient = useQueryClient();
 
   if (isPending) {
     return (
@@ -122,10 +127,28 @@ function FeedBody() {
       maxToRenderPerBatch={3}
       windowSize={5}
       onEndReached={() => {
-        if (hasNextPage && !isFetching) fetchNextPage();
+        if (hasNextPage && !isFetching && !isFetchNextPageError) {
+          fetchNextPage();
+        }
       }}
       onEndReachedThreshold={1}
-      ListFooterComponent={isFetchingNextPage ? <FeedLoadingMore /> : null}
+      ListFooterComponent={
+        isFetchingNextPage ? (
+          <FeedLoadingMore />
+        ) : isFetchNextPageError ? (
+          <FeedLoadMoreError
+            onRetry={() => {
+              if (isErrorCode(error, AuthErrorCode.VALIDATION_FAILED)) {
+                queryClient.resetQueries({
+                  queryKey: feedQueryOptions.queryKey,
+                });
+              } else {
+                fetchNextPage();
+              }
+            }}
+          />
+        ) : null
+      }
       contentContainerClassName="px-2 pb-4 pt-4"
     />
   );
@@ -139,6 +162,17 @@ function FeedLoadingMore() {
   return (
     <View className="items-center pt-4">
       <ActivityIndicator size="small" className="text-heading" />
+    </View>
+  );
+}
+
+function FeedLoadMoreError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <View className="items-center gap-2 pt-4">
+      <Text className="text-sm leading-5 tracking-[0.25px]">
+        {"Couldn't load more routes"}
+      </Text>
+      <PillButton label="Retry" onPress={onRetry} />
     </View>
   );
 }
