@@ -23,6 +23,9 @@ export function useFeed() {
 }
 
 export function removeRouteFromFeed(queryClient: QueryClient, routeId: number) {
+  const wasInvalidated =
+    queryClient.getQueryState(feedQueryOptions.queryKey)?.isInvalidated ??
+    false;
   queryClient.setQueryData(feedQueryOptions.queryKey, (old) =>
     old
       ? {
@@ -34,6 +37,7 @@ export function removeRouteFromFeed(queryClient: QueryClient, routeId: number) {
         }
       : old,
   );
+  if (wasInvalidated) void markFeedStale(queryClient);
 }
 
 export function markFeedStale(queryClient: QueryClient) {
