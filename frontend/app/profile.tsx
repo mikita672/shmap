@@ -11,6 +11,7 @@ import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileInfo } from "@/components/profile/profile-info";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
 import { ProfileStats } from "@/components/friends/profile-stats";
+import { LoadError } from "@/components/ui/load-error";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
 import { useAvatarActions } from "@/hooks/useAvatarActions";
@@ -31,7 +32,11 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { data: profile, isPending, error, refetch } = useProfile();
   const username = profile?.username ?? "";
-  const { data: publicProfile } = usePublicProfile(username);
+  const {
+    data: publicProfile,
+    error: statsError,
+    refetch: refetchStats,
+  } = usePublicProfile(username);
   useRefetchInvalidatedProfile(username);
   const avatar = useAvatarActions();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
@@ -94,7 +99,7 @@ export default function ProfileScreen() {
           className="mt-4"
         />
 
-        {publicProfile && (
+        {publicProfile ? (
           <ProfileStats
             className="mx-6 mt-6"
             stats={buildProfileStats({
@@ -107,7 +112,14 @@ export default function ProfileScreen() {
                 router.push(getProfileFriendsHref(profile.username, "root")),
             })}
           />
-        )}
+        ) : statsError ? (
+          <View className="mx-6 mt-6">
+            <LoadError
+              message={getErrorMessage(statsError, "Couldn't load your stats")}
+              onRetry={() => refetchStats()}
+            />
+          </View>
+        ) : null}
       </View>
 
       <ProfileActions
