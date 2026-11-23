@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { blockedUsersQueryOptions } from "@/hooks/useBlockedUsers";
+import { markFeedStale } from "@/hooks/useFeed";
 import { friendActivityQueryOptions } from "@/hooks/useFriendActivity";
 import { friendsQueryOptions } from "@/hooks/useFriends";
 import { friendSuggestionsQueryOptions } from "@/hooks/useFriendSuggestions";
@@ -21,6 +22,7 @@ export function useBlockUser() {
     },
     onSettled: () =>
       Promise.all([
+        markFeedStale(queryClient),
         queryClient.invalidateQueries({
           queryKey: friendsQueryOptions.queryKey,
         }),

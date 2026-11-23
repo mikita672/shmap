@@ -22,7 +22,7 @@ function startOfDay(time: number) {
   return date.getTime();
 }
 
-function calendarDaysAgo(time: number, now: number) {
+export function calendarDaysAgo(time: number, now: number) {
   return Math.round((startOfDay(now) - startOfDay(time)) / DAY);
 }
 

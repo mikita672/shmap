@@ -1,19 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, View, useWindowDimensions } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSharedValue } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ReadOnlyBar } from "@/components/chats/read-only-bar";
-import { RouteActionsMenu } from "@/components/routes/route-actions-menu";
+import {
+  RouteActionsMenu,
+  hasRouteActions,
+} from "@/components/routes/route-actions-menu";
 import { RouteCredit } from "@/components/routes/route-credit";
 import { RouteHeader } from "@/components/routes/route-header";
 import { RouteMap } from "@/components/routes/route-map";
 import { RouteSheet } from "@/components/routes/route-sheet";
+import { SuggestionsView } from "@/components/routes/suggestions-view";
 import { Button } from "@/components/ui/button";
 import { NoteCard } from "@/components/ui/note-card";
 import { Text } from "@/components/ui/text";
 import { TitleHeader } from "@/components/ui/title-header";
 import { chatQueryOptions } from "@/hooks/useChat";
+import { removeRouteFromFeed } from "@/hooks/useFeed";
 import { useRoute } from "@/hooks/useRoute";
 import {
   useRemoveStop,
@@ -21,6 +26,7 @@ import {
   useRetryPath,
   useSetTravelMode,
 } from "@/hooks/useRouteMutations";
+import { useRouteSuggestions } from "@/hooks/useRouteSuggestions";
 import { useStalePathRetry } from "@/hooks/useStalePathRetry";
 import { getChatTitle } from "@/lib/chat-preview";
 import { openRouteInMaps } from "@/lib/open-route-in-maps";
@@ -34,6 +40,11 @@ export default function RouteScreen() {
   const sheetPosition = useSharedValue(height);
   const [selectedStopId, setSelectedStopId] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [fitKey, setFitKey] = useState(0);
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<
+    number | null
+  >(null);
   const [menuKey, setMenuKey] = useState(0);
   const { data: route, isPending, error, refetch } = useRoute(Number(routeId));
   const { data: chat } = useQuery({
@@ -44,8 +55,19 @@ export default function RouteScreen() {
   const retryPath = useRetryPath(Number(routeId));
   const removeStop = useRemoveStop(Number(routeId));
   const reorderStops = useReorderStops(Number(routeId));
-  useStalePathRetry(route, () => retryPath.mutate());
+  const { data: suggestions } = useRouteSuggestions(
+    Number(routeId),
+    route?.member === true,
+  );
+  useStalePathRetry(route?.member ? route : undefined, () =>
+    retryPath.mutate(),
+  );
   const isDeleted = isErrorCode(error, AuthErrorCode.ROUTE_NOT_FOUND);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (isDeleted) removeRouteFromFeed(queryClient, Number(routeId));
+  }, [isDeleted, queryClient, routeId]);
 
   if (route && !isDeleted) {
     const canEditPlan = route.canEdit && route.completion === null;
@@ -55,7 +77,15 @@ export default function RouteScreen() {
         <RouteMap
           route={route}
           selectedStopId={selectedStopId}
-          onSelectStop={setSelectedStopId}
+          onSelectStop={(stopId) => {
+            setIsSuggestionsOpen(false);
+            setSelectedSuggestionId(null);
+            setSelectedStopId(stopId);
+          }}
+          suggestions={isSuggestionsOpen ? suggestions?.suggestions : undefined}
+          selectedSuggestionId={selectedSuggestionId}
+          onSelectSuggestion={setSelectedSuggestionId}
+          fitKey={fitKey}
         />
         <RouteCredit sheetPosition={sheetPosition} />
         <RouteSheet
@@ -96,7 +126,7 @@ export default function RouteScreen() {
           onTravelModeChange={
             canEditPlan ? (mode) => setTravelMode.mutate(mode) : undefined
           }
-          onRetryPath={() => retryPath.mutate()}
+          onRetryPath={route.member ? () => retryPath.mutate() : undefined}
           onEditCompletion={() =>
             router.push({
               pathname: "/route/[routeId]/done",
@@ -104,14 +134,45 @@ export default function RouteScreen() {
             })
           }
           onOpenInMaps={() => openRouteInMaps(route)}
+          suggestionCount={suggestions?.suggestions.length}
+          onOpenSuggestions={
+            route.member
+              ? () => {
+                  setSelectedStopId(null);
+                  setIsSuggestionsOpen(true);
+                  setFitKey((key) => key + 1);
+                }
+              : undefined
+          }
+          suggestionsView={
+            isSuggestionsOpen ? (
+              <SuggestionsView
+                route={route}
+                chat={chat}
+                suggestions={suggestions}
+                memberCount={chat ? chat.members.length + 1 : undefined}
+                selectedSuggestionId={selectedSuggestionId}
+                onSelectSuggestion={setSelectedSuggestionId}
+                onAsked={() => setFitKey((key) => key + 1)}
+                onClose={() => {
+                  setSelectedSuggestionId(null);
+                  setIsSuggestionsOpen(false);
+                }}
+              />
+            ) : undefined
+          }
         />
         <RouteHeader
           name={route.name}
           chatTitle={chat ? getChatTitle(chat) : undefined}
-          onMore={() => {
-            setMenuKey((key) => key + 1);
-            setIsMenuOpen(true);
-          }}
+          onMore={
+            hasRouteActions(route)
+              ? () => {
+                  setMenuKey((key) => key + 1);
+                  setIsMenuOpen(true);
+                }
+              : undefined
+          }
         />
         <RouteActionsMenu
           key={menuKey}
@@ -136,8 +197,8 @@ export default function RouteScreen() {
       ) : isDeleted ? (
         <View className="flex-1 justify-center px-6">
           <NoteCard
-            title="This route was deleted"
-            description="Someone in the chat deleted it, or you're no longer in this chat"
+            title="This route isn't available"
+            description="It was deleted, or you can no longer see it"
           />
         </View>
       ) : (

@@ -19,6 +19,11 @@ export const AuthErrorCode = {
   ROUTE_FULL: "ROUTE_FULL",
   ROUTE_STOP_NOT_FOUND: "ROUTE_STOP_NOT_FOUND",
   ROUTE_STOPS_CHANGED: "ROUTE_STOPS_CHANGED",
+  ROUTE_SUGGESTIONS_NOT_FOUND: "ROUTE_SUGGESTIONS_NOT_FOUND",
+  NO_ROUTE_INTERESTS: "NO_ROUTE_INTERESTS",
+  NO_PLACES_FOUND: "NO_PLACES_FOUND",
+  SUGGESTION_LIMIT_REACHED: "SUGGESTION_LIMIT_REACHED",
+  SUGGESTIONS_UNAVAILABLE: "SUGGESTIONS_UNAVAILABLE",
   UNAUTHORIZED: "UNAUTHORIZED",
   INVALID_REFRESH_TOKEN: "INVALID_REFRESH_TOKEN",
   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
@@ -297,9 +302,31 @@ export type RouteVisibility = "PARTICIPANTS" | "FRIENDS" | "EVERYONE";
 
 export interface RouteCompletionResponse {
   finishedOn: string;
+  completedAt: string;
   visibility: RouteVisibility;
   effectiveVisibility: RouteVisibility;
   participants: UserSummaryResponse[];
+}
+
+export const PlaceCategory = {
+  MUSEUMS: "MUSEUMS",
+  LANDMARKS: "LANDMARKS",
+  VIEWPOINTS: "VIEWPOINTS",
+  PARKS: "PARKS",
+  FOOD: "FOOD",
+  CAFES: "CAFES",
+  NIGHTLIFE: "NIGHTLIFE",
+  CULTURE: "CULTURE",
+  FAMILY: "FAMILY",
+  SHOPPING: "SHOPPING",
+  CHURCHES: "CHURCHES",
+} as const;
+
+export type PlaceCategory = (typeof PlaceCategory)[keyof typeof PlaceCategory];
+
+export interface RouteInterestResponse {
+  user: UserSummaryResponse;
+  categories: PlaceCategory[];
 }
 
 export interface RouteResponse {
@@ -314,7 +341,28 @@ export interface RouteResponse {
   member: boolean;
   canEdit: boolean;
   completion: RouteCompletionResponse | null;
+  interests: RouteInterestResponse[];
   stops: RouteStopResponse[];
+}
+
+export interface RouteSuggestionResponse {
+  id: number;
+  place: ChatPlace;
+  category: PlaceCategory;
+  reason: string;
+}
+
+export interface RouteSuggestionsResponse {
+  suggestedBy: UserSummaryResponse;
+  suggestedAt: string;
+  note: string | null;
+  model: string;
+  suggestions: RouteSuggestionResponse[];
+}
+
+export interface SuggestRequest {
+  note?: string;
+  near?: { latitude: number; longitude: number };
 }
 
 export interface RouteSummaryResponse {
@@ -345,6 +393,27 @@ export interface RouteCompletionRequest {
 export type UpdateRouteRequest =
   | { name: string; travelMode?: TravelMode }
   | { name?: string; travelMode: TravelMode };
+
+export interface RoutePointResponse {
+  latitude: number;
+  longitude: number;
+}
+
+export interface FeedRouteResponse {
+  id: number;
+  name: string;
+  travelMode: TravelMode;
+  path: RoutePathResponse;
+  stops: RoutePointResponse[];
+  finishedOn: string;
+  completedAt: string;
+  participants: UserSummaryResponse[];
+}
+
+export interface FeedPageResponse {
+  routes: FeedRouteResponse[];
+  nextCursor: string | null;
+}
 
 export interface RouteEvent {
   chatId: number;

@@ -2,11 +2,16 @@ import { apiClient } from "./client";
 import type {
   ChatPlace,
   CreateRouteRequest,
+  PlaceCategory,
   RouteCompletionRequest,
   RouteResponse,
+  RouteSuggestionsResponse,
   RouteSummaryResponse,
+  SuggestRequest,
   UpdateRouteRequest,
 } from "@/lib/types/api";
+
+const SUGGEST_TIMEOUT_MS = 45_000;
 
 export const getChatRoutes = (chatId: number) =>
   apiClient.get<RouteSummaryResponse[]>(`/api/v1/chats/${chatId}/routes`);
@@ -42,3 +47,23 @@ export const completeRoute = (routeId: number, data: RouteCompletionRequest) =>
 
 export const reopenRoute = (routeId: number) =>
   apiClient.delete<RouteResponse>(`/api/v1/routes/${routeId}/completion`);
+
+export const setRouteInterests = (
+  routeId: number,
+  categories: PlaceCategory[],
+) =>
+  apiClient.put<RouteResponse>(`/api/v1/routes/${routeId}/interests`, {
+    categories,
+  });
+
+export const getRouteSuggestions = (routeId: number) =>
+  apiClient.get<RouteSuggestionsResponse>(
+    `/api/v1/routes/${routeId}/suggestions`,
+  );
+
+export const suggestRoutePlaces = (routeId: number, data: SuggestRequest) =>
+  apiClient.post<RouteSuggestionsResponse>(
+    `/api/v1/routes/${routeId}/suggestions`,
+    data,
+    { timeout: SUGGEST_TIMEOUT_MS },
+  );

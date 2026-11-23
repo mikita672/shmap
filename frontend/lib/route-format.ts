@@ -145,3 +145,23 @@ export function formatRoutesSummary(planned: number, done: number) {
     done > 0 && `${done} done`,
   );
 }
+
+export function formatFeedPeople(
+  participants: UserSummaryResponse[],
+  myId?: number,
+) {
+  const [first, ...rest] = participants;
+  const fullName = first ? `${first.firstName} ${first.lastName}`.trim() : "";
+  const author = fullName || (first ? `@${first.username}` : "");
+  const names = rest.map((participant) =>
+    participant.id === myId ? "you" : participant.firstName,
+  );
+
+  let withLine: string | null = null;
+  if (names.length === 1) withLine = `with ${names[0]}`;
+  if (names.length === 2) withLine = `with ${names[0]} and ${names[1]}`;
+  if (names.length > 2) {
+    withLine = `with ${names[0]} and ${names.length - 1} others`;
+  }
+  return { author, withLine };
+}

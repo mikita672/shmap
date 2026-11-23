@@ -8,6 +8,7 @@ import { chatsQueryOptions } from "@/hooks/useChats";
 import { profileQueryOptions } from "@/hooks/useProfile";
 import { routeQueryOptions } from "@/hooks/useRoute";
 import { routeEditMutationKey } from "@/hooks/useRouteMutations";
+import { routeSuggestionsQueryOptions } from "@/hooks/useRouteSuggestions";
 import { getAccessToken, refreshAccessToken } from "@/lib/api/client";
 import {
   addMessageToCache,
@@ -178,6 +179,11 @@ export function useChatEvents() {
                 });
                 if (event.event === "route.deleted") {
                   markRouteDeleted(queryClient, chatId, routeId);
+                } else {
+                  void queryClient.invalidateQueries({
+                    queryKey: routeSuggestionsQueryOptions(routeId).queryKey,
+                    exact: true,
+                  });
                 }
                 const hasQueuedEdits =
                   queryClient.isMutating({

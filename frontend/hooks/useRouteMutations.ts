@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import { chatRoutesQueryOptions } from "@/hooks/useChatRoutes";
+import { markFeedStale } from "@/hooks/useFeed";
 import { routeQueryOptions } from "@/hooks/useRoute";
 import {
   addRouteStop,
@@ -16,11 +17,13 @@ import {
   reorderRouteStops,
   reopenRoute,
   retryRoutePath,
+  setRouteInterests,
   updateRoute,
 } from "@/lib/api/routes";
 import type {
   ChatPlace,
   CreateRouteRequest,
+  PlaceCategory,
   RouteCompletionRequest,
   RoutePathResponse,
   RouteResponse,
@@ -189,6 +192,7 @@ export function useRenameRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't rename the route"));
@@ -210,6 +214,7 @@ export function useCompleteRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -232,6 +237,7 @@ export function useReopenRoute(routeId: number) {
     onSuccess: (route) => {
       queryClient.setQueryData(queryKey, route);
       invalidateChatRoutes(queryClient, route.chatId);
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
@@ -259,6 +265,7 @@ export function useDeleteRoute(routeId: number) {
         queryKey: chatRoutesQueryOptions(chatId).queryKey,
         exact: true,
       });
+      void markFeedStale(queryClient);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Couldn't delete the route"));
@@ -284,6 +291,23 @@ export function useAddStop(routeId: number) {
     onError: (error) => {
       void queryClient.invalidateQueries({ queryKey, exact: true });
       toast.error(getErrorMessage(error, "Couldn't add the place"));
+    },
+  });
+}
+
+export function useSetInterests(routeId: number) {
+  const queryClient = useQueryClient();
+  const { queryKey } = routeQueryOptions(routeId);
+
+  return useMutation({
+    mutationKey: routeEditMutationKey(routeId),
+    scope: { id: `route-${routeId}` },
+    mutationFn: async (categories: PlaceCategory[]) => {
+      const response = await setRouteInterests(routeId, categories);
+      return response.data;
+    },
+    onSuccess: (route) => {
+      queryClient.setQueryData(queryKey, route);
     },
   });
 }
