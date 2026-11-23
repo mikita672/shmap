@@ -109,7 +109,7 @@ public class Route {
     private List<RouteStop> stops = new ArrayList<>();
 
     @ManyToMany
-    @JoinTable(name = "route_participant", joinColumns = @JoinColumn(name = "route_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @JoinTable(name = "route_participant", joinColumns = @JoinColumn(name = "route_id"), inverseJoinColumns = @JoinColumn(name = "user_id"), indexes = @Index(name = "idx_route_participant_user", columnList = "user_id"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<User> participants = new LinkedHashSet<>();
 
