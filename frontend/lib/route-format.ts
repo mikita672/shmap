@@ -35,6 +35,10 @@ export function formatDistance(meters: number) {
   return `${Math.round(kilometers)} km`;
 }
 
+export function formatTotalDistance(meters: number) {
+  return meters === 0 ? "0 km" : formatDistance(meters);
+}
+
 export function formatDuration(seconds: number) {
   const totalMinutes = Math.max(1, Math.round(seconds / 60));
   const hours = Math.floor(totalMinutes / 60);
