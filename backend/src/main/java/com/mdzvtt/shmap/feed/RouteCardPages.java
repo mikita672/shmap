@@ -43,6 +43,10 @@ public class RouteCardPages {
     }
 
     public FeedPageResponse load(Integer viewerId, String cursor, KeysQuery keysQuery) {
+        return load(viewerId, null, cursor, keysQuery);
+    }
+
+    public FeedPageResponse load(Integer viewerId, Integer firstUserId, String cursor, KeysQuery keysQuery) {
         Limit oneMore = Limit.of(PAGE_SIZE + 1);
         FeedCursor after = cursor == null ? null : FeedCursor.decode(cursor);
         List<FeedCursor> keys = keysQuery.find(after, oneMore);
@@ -55,7 +59,7 @@ public class RouteCardPages {
         List<Long> ids = page.stream().map(key -> key.routeId()).toList();
         Map<Long, Route> routesById = routeRepository.findWithParticipantsAndStopsByIdIn(ids).stream()
                 .collect(Collectors.toMap(route -> route.getId(), Function.identity()));
-        Comparator<User> participantOrder = participantOrder(viewerId, routesById.values());
+        Comparator<User> participantOrder = participantOrder(viewerId, firstUserId, routesById.values());
         List<FeedRouteResponse> routes = ids.stream()
                 .map(routesById::get)
                 .filter(Objects::nonNull)
@@ -64,7 +68,7 @@ public class RouteCardPages {
         return new FeedPageResponse(routes, nextCursor);
     }
 
-    private Comparator<User> participantOrder(Integer viewerId, Iterable<Route> routes) {
+    private Comparator<User> participantOrder(Integer viewerId, Integer firstUserId, Iterable<Route> routes) {
         Set<Integer> participantIds = new HashSet<>();
         routes.forEach(route -> route.getParticipants().forEach(user -> participantIds.add(user.getId())));
         Map<Integer, Friendship> friendshipsByFriendId = friendshipRepository
@@ -75,14 +79,18 @@ public class RouteCardPages {
         collator.setStrength(Collator.SECONDARY);
         Comparator<String> byText = Comparator.nullsLast(collator::compare);
 
-        return Comparator.<User>comparingInt(user -> rank(user, viewerId, friendshipsByFriendId))
+        return Comparator.<User>comparingInt(user -> rank(user, viewerId, firstUserId, friendshipsByFriendId))
                 .thenComparing(user -> user.getFirstName(), byText)
                 .thenComparing(user -> user.getLastName(), byText)
                 .thenComparing(user -> user.getPublicUsername(), byText)
                 .thenComparing(user -> user.getId());
     }
 
-    private int rank(User user, Integer viewerId, Map<Integer, Friendship> friendshipsByFriendId) {
+    private int rank(User user, Integer viewerId, Integer firstUserId,
+            Map<Integer, Friendship> friendshipsByFriendId) {
+        if (user.getId().equals(firstUserId)) {
+            return -1;
+        }
         Friendship friendship = friendshipsByFriendId.get(user.getId());
         if (friendship != null && !friendship.isMuted()) {
             return friendship.isFavorite() ? 0 : 1;
