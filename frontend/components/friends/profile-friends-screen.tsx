@@ -19,11 +19,17 @@ export function ProfileFriendsScreen() {
     error,
     refetch,
   } = useProfileFriends(username);
+  const isSelf = profile?.relationship === "SELF";
   const firstName = profile?.user.firstName;
+  const title = isSelf
+    ? "Your friends"
+    : firstName
+      ? `${firstName}'s friends`
+      : "Friends";
 
   return (
     <View className="flex-1 bg-background">
-      <ScreenHeader title={firstName ? `${firstName}'s friends` : "Friends"} />
+      <ScreenHeader title={title} />
 
       {isPending ? (
         <View className="flex-1 items-center justify-center">
@@ -58,7 +64,11 @@ export function ProfileFriendsScreen() {
         <UserList
           users={users}
           emptyTitle="No friends yet"
-          emptyDescription="Their friends will show up here"
+          emptyDescription={
+            isSelf
+              ? "Your friends will show up here"
+              : "Their friends will show up here"
+          }
         />
       )}
     </View>

@@ -20,7 +20,11 @@ import {
   useRefetchInvalidatedProfile,
 } from "@/hooks/usePublicProfile";
 import { buildProfileStats } from "@/lib/profile-stats";
-import { getProfileRoutesHref, shareProfile } from "@/lib/profile-link";
+import {
+  getProfileFriendsHref,
+  getProfileRoutesHref,
+  shareProfile,
+} from "@/lib/profile-link";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export default function ProfileScreen() {
@@ -99,7 +103,8 @@ export default function ProfileScreen() {
               friendsCount: publicProfile.friendsCount,
               onRoutesPress: () =>
                 router.push(getProfileRoutesHref(profile.username, "root")),
-              onFriendsPress: () => router.push("/friends/hub"),
+              onFriendsPress: () =>
+                router.push(getProfileFriendsHref(profile.username, "root")),
             })}
           />
         )}

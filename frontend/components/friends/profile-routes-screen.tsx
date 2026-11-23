@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { View } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { RouteCardList } from "@/components/routes/route-card-list";
 import { NoteCard } from "@/components/ui/note-card";
@@ -8,13 +9,17 @@ import {
   profileRoutesQueryOptions,
   useProfileRoutes,
 } from "@/hooks/useProfileRoutes";
-import { usePublicProfile } from "@/hooks/usePublicProfile";
+import {
+  publicProfileQueryOptions,
+  usePublicProfile,
+} from "@/hooks/usePublicProfile";
 import { AuthErrorCode } from "@/lib/types/api";
 import { isErrorCode } from "@/lib/utils/error";
 
 export function ProfileRoutesScreen() {
   const { username } = useLocalSearchParams<{ username: string }>();
   const { data: profile } = usePublicProfile(username);
+  const queryClient = useQueryClient();
   const query = useProfileRoutes(username);
   const queryKey = useMemo(
     () => profileRoutesQueryOptions(username).queryKey,
@@ -43,6 +48,12 @@ export function ProfileRoutesScreen() {
           query={query}
           queryKey={queryKey}
           errorMessage="Couldn't load routes"
+          onRefreshed={() =>
+            queryClient.invalidateQueries({
+              queryKey: publicProfileQueryOptions(username).queryKey,
+              exact: true,
+            })
+          }
           empty={
             <NoteCard
               title="No routes yet"

@@ -45,6 +45,7 @@ export interface RouteCardListProps {
   empty: ReactNode;
   onAuthorPress?: (user: UserSummaryResponse) => void;
   listRef?: RefObject<FlatList<FeedRouteResponse> | null>;
+  onRefreshed?: () => void;
 }
 
 export function RouteCardList({
@@ -54,6 +55,7 @@ export function RouteCardList({
   empty,
   onAuthorPress,
   listRef,
+  onRefreshed,
 }: RouteCardListProps) {
   const { width } = useWindowDimensions();
   const [now, setNow] = useState(() => Date.now());
@@ -70,7 +72,7 @@ export function RouteCardList({
     error,
     refetch,
     hasNextPage,
-    isFetching,
+    fetchStatus,
     isFetchingNextPage,
     isFetchNextPageError,
     fetchNextPage,
@@ -92,6 +94,7 @@ export function RouteCardList({
         },
     );
     await refetch();
+    onRefreshed?.();
   });
 
   if (isPending) {
@@ -142,7 +145,7 @@ export function RouteCardList({
       maxToRenderPerBatch={3}
       windowSize={5}
       onEndReached={() => {
-        if (hasNextPage && !isFetching && !isFetchNextPageError) {
+        if (hasNextPage && fetchStatus === "idle" && !isFetchNextPageError) {
           fetchNextPage();
         }
       }}
