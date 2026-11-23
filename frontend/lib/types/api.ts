@@ -200,6 +200,8 @@ export type PublicProfileResponse = {
   previewOnly: boolean;
   friendsCount: number | null;
   friendsListVisible: boolean;
+  routesCount: number | null;
+  distanceMeters: number | null;
 } & (
   | { relationship: "NONE" | "FRIENDS" | "SELF"; requestId: null }
   | { relationship: "REQUESTED" | "INCOMING"; requestId: number }

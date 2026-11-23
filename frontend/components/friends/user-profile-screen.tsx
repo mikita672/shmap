@@ -17,12 +17,17 @@ import { Text } from "@/components/ui/text";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useMutualFriends } from "@/hooks/useMutualFriends";
 import { useProfileScope } from "@/hooks/useProfileScope";
-import { usePublicProfile } from "@/hooks/usePublicProfile";
+import {
+  usePublicProfile,
+  useRefetchInvalidatedProfile,
+} from "@/hooks/usePublicProfile";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { formatMonthYear } from "@/lib/format-date";
+import { buildProfileStats } from "@/lib/profile-stats";
 import {
   getMutualFriendsHref,
   getProfileFriendsHref,
+  getProfileRoutesHref,
 } from "@/lib/profile-link";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -36,6 +41,7 @@ export function UserProfileScreen() {
     error,
     refetch,
   } = usePublicProfile(username);
+  useRefetchInvalidatedProfile(username);
   const { data: mutualFriends } = useMutualFriends(
     username,
     (profile?.mutualFriendsCount ?? 0) > 0,
@@ -129,19 +135,19 @@ export function UserProfileScreen() {
               </Text>
             ) : null}
 
-            {profile.friendsCount !== null && (
+            {!profile.previewOnly && (
               <ProfileStats
                 className="self-stretch"
-                stats={[
-                  {
-                    value: String(profile.friendsCount),
-                    label: profile.friendsCount === 1 ? "friend" : "friends",
-                    onPress: profile.friendsListVisible
-                      ? () =>
-                          router.push(getProfileFriendsHref(username, scope))
-                      : undefined,
-                  },
-                ]}
+                stats={buildProfileStats({
+                  routesCount: profile.routesCount,
+                  distanceMeters: profile.distanceMeters,
+                  friendsCount: profile.friendsCount,
+                  onRoutesPress: () =>
+                    router.push(getProfileRoutesHref(username, scope)),
+                  onFriendsPress: profile.friendsListVisible
+                    ? () => router.push(getProfileFriendsHref(username, scope))
+                    : undefined,
+                })}
               />
             )}
 

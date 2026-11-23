@@ -1,4 +1,11 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
+import {
+  queryOptions,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { getPublicProfile } from "@/lib/api/profiles";
 import { AuthErrorCode } from "@/lib/types/api";
 import { isErrorCode } from "@/lib/utils/error";
@@ -17,4 +24,26 @@ export const publicProfileQueryOptions = (username: string) =>
 
 export function usePublicProfile(username: string) {
   return useQuery(publicProfileQueryOptions(username));
+}
+
+export function markProfilesStale(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({
+    queryKey: ["profiles"],
+    refetchType: "none",
+  });
+}
+
+export function useRefetchInvalidatedProfile(username: string) {
+  const queryClient = useQueryClient();
+  useRefreshOnFocus(
+    useCallback(
+      () =>
+        queryClient.refetchQueries({
+          queryKey: publicProfileQueryOptions(username).queryKey,
+          exact: true,
+          predicate: (query) => query.state.isInvalidated,
+        }),
+      [queryClient, username],
+    ),
+  );
 }

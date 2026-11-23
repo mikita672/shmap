@@ -64,6 +64,7 @@ function RootNavigator() {
             <Stack.Screen name="user/[username]/index" />
             <Stack.Screen name="user/[username]/friends" />
             <Stack.Screen name="user/[username]/mutual-friends" />
+            <Stack.Screen name="user/[username]/routes" />
             <Stack.Screen name="chat/[chatId]/index" />
             <Stack.Screen name="chat/[chatId]/info" />
             <Stack.Screen name="chat/[chatId]/add-members" />

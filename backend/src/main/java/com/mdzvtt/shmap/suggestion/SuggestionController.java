@@ -16,18 +16,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/routes/{routeId}/suggestions")
 @RequiredArgsConstructor
 public class SuggestionController {
     private final SuggestionStore suggestionStore;
     private final SuggestionService suggestionService;
 
-    @GetMapping("/routes/{routeId}/suggestions")
+    @GetMapping
     public RouteSuggestionsResponse getSuggestions(@AuthenticationPrincipal User user, @PathVariable Long routeId) {
         return suggestionStore.get(user.getId(), routeId);
     }
 
-    @PostMapping("/routes/{routeId}/suggestions")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RouteSuggestionsResponse suggest(@AuthenticationPrincipal User user, @PathVariable Long routeId,
             @Valid @RequestBody SuggestRequest request) {

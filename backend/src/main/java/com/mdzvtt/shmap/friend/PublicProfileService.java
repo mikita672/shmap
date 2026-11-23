@@ -4,14 +4,19 @@ import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.exception.FriendsListHiddenException;
 import com.mdzvtt.shmap.exception.PrivateAccountException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.feed.RouteCardPages;
+import com.mdzvtt.shmap.feed.dto.FeedPageResponse;
 import com.mdzvtt.shmap.friend.dto.ProfileCardResponse;
 import com.mdzvtt.shmap.friend.dto.PublicProfileResponse;
+import com.mdzvtt.shmap.route.ProfileRouteStats;
+import com.mdzvtt.shmap.route.RouteRepository;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -23,6 +28,8 @@ public class PublicProfileService {
     private final UserBlockRepository userBlockRepository;
     private final FriendshipRepository friendshipRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final RouteRepository routeRepository;
+    private final RouteCardPages routeCardPages;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -44,6 +51,7 @@ public class PublicProfileService {
                         .orElse(0L);
         boolean previewOnly = !canSeeFullProfile(viewerId, user, friendship != null);
         Long friendsCount = previewOnly ? null : friendshipRepository.countByUserId(user.getId());
+        ProfileRouteStats routeStats = previewOnly ? null : routeRepository.findProfileStats(viewerId, user.getId());
 
         return new PublicProfileResponse(
                 toSummary(user),
@@ -56,7 +64,9 @@ public class PublicProfileService {
                 mutualFriendsCount,
                 previewOnly,
                 friendsCount,
-                canSeeFriendsList(viewerId, user, friendship != null));
+                canSeeFriendsList(viewerId, user, friendship != null),
+                routeStats == null ? null : routeStats.routesCount(),
+                routeStats == null ? null : routeStats.distanceMeters());
     }
 
     @Transactional(readOnly = true)
@@ -92,6 +102,21 @@ public class PublicProfileService {
         return friendshipRepository.findFriendsOf(user.getId(), viewerId).stream()
                 .map(this::toSummary)
                 .toList();
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public FeedPageResponse getRoutes(Integer viewerId, String username, String cursor) {
+        User user = findVisibleUser(viewerId, username);
+
+        boolean friends = friendshipRepository.existsByUserIdAndFriendId(viewerId, user.getId());
+        if (!canSeeFullProfile(viewerId, user, friends)) {
+            throw new PrivateAccountException();
+        }
+
+        return routeCardPages.load(viewerId, user.getId(), cursor, (after, limit) -> after == null
+                ? routeRepository.findProfileKeys(viewerId, user.getId(), limit)
+                : routeRepository.findProfileKeysBefore(viewerId, user.getId(), after.completedAt(), after.routeId(),
+                        limit));
     }
 
     private User findVisibleUser(Integer viewerId, String username) {
