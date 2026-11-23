@@ -48,7 +48,7 @@ public class RouteCardPages {
 
     public FeedPageResponse load(Integer viewerId, Integer firstUserId, String cursor, KeysQuery keysQuery) {
         Limit oneMore = Limit.of(PAGE_SIZE + 1);
-        FeedCursor after = cursor == null ? null : FeedCursor.decode(cursor);
+        FeedCursor after = cursor == null || cursor.isEmpty() ? null : FeedCursor.decode(cursor);
         List<FeedCursor> keys = keysQuery.find(after, oneMore);
         if (keys.isEmpty()) {
             return new FeedPageResponse(List.of(), null);
