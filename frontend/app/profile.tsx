@@ -10,16 +10,20 @@ import { Text } from "@/components/ui/text";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileInfo } from "@/components/profile/profile-info";
 import { ChangeAvatarSheet } from "@/components/profile/change-avatar-sheet";
+import { ProfileStats } from "@/components/friends/profile-stats";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
 import { useAvatarActions } from "@/hooks/useAvatarActions";
 import { useProfile } from "@/hooks/useProfile";
-import { shareProfile } from "@/lib/profile-link";
+import { usePublicProfile } from "@/hooks/usePublicProfile";
+import { buildProfileStats } from "@/lib/profile-stats";
+import { getProfileRoutesHref, shareProfile } from "@/lib/profile-link";
 import { getErrorMessage } from "@/lib/utils/error";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { data: profile, isPending, error, refetch } = useProfile();
+  const { data: publicProfile } = usePublicProfile(profile?.username ?? "");
   const avatar = useAvatarActions();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
@@ -80,6 +84,20 @@ export default function ProfileScreen() {
           email={profile.email}
           className="mt-4"
         />
+
+        {publicProfile && (
+          <ProfileStats
+            className="mx-6 mt-6"
+            stats={buildProfileStats({
+              routesCount: publicProfile.routesCount,
+              distanceMeters: publicProfile.distanceMeters,
+              friendsCount: publicProfile.friendsCount,
+              onRoutesPress: () =>
+                router.push(getProfileRoutesHref(profile.username, "root")),
+              onFriendsPress: () => router.push("/friends/hub"),
+            })}
+          />
+        )}
       </View>
 
       <ProfileActions
