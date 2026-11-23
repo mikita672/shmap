@@ -55,6 +55,17 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
         @Query(FEED_KEYS + " and (r.completion.completedAt, r.id) < (:completedAt, :routeId)" + NEWEST_DONE_FIRST)
         List<FeedCursor> findFeedKeysBefore(Integer viewerId, Instant completedAt, Long routeId, Limit limit);
 
+        String PROFILE_KEYS = "select new com.mdzvtt.shmap.feed.FeedCursor(r.completion.completedAt, r.id)"
+                        + " from Route r where r.completion.completedAt is not null and "
+                        + RouteQueries.ON_PROFILE;
+
+        @Query(PROFILE_KEYS + NEWEST_DONE_FIRST)
+        List<FeedCursor> findProfileKeys(Integer viewerId, Integer ownerId, Limit limit);
+
+        @Query(PROFILE_KEYS + " and (r.completion.completedAt, r.id) < (:completedAt, :routeId)" + NEWEST_DONE_FIRST)
+        List<FeedCursor> findProfileKeysBefore(Integer viewerId, Integer ownerId, Instant completedAt, Long routeId,
+                        Limit limit);
+
         @Query("""
                         select new com.mdzvtt.shmap.route.ProfileRouteStats(
                             count(r),
