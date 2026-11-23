@@ -4,6 +4,8 @@ import com.mdzvtt.shmap.block.UserBlockRepository;
 import com.mdzvtt.shmap.exception.FriendsListHiddenException;
 import com.mdzvtt.shmap.exception.PrivateAccountException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
+import com.mdzvtt.shmap.feed.RouteCardPages;
+import com.mdzvtt.shmap.feed.dto.FeedPageResponse;
 import com.mdzvtt.shmap.friend.dto.ProfileCardResponse;
 import com.mdzvtt.shmap.friend.dto.PublicProfileResponse;
 import com.mdzvtt.shmap.route.ProfileRouteStats;
@@ -14,6 +16,7 @@ import com.mdzvtt.shmap.user.UserRepository;
 import com.mdzvtt.shmap.user.dto.UserSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -26,6 +29,7 @@ public class PublicProfileService {
     private final FriendshipRepository friendshipRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final RouteRepository routeRepository;
+    private final RouteCardPages routeCardPages;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -98,6 +102,21 @@ public class PublicProfileService {
         return friendshipRepository.findFriendsOf(user.getId(), viewerId).stream()
                 .map(this::toSummary)
                 .toList();
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public FeedPageResponse getRoutes(Integer viewerId, String username, String cursor) {
+        User user = findVisibleUser(viewerId, username);
+
+        boolean friends = friendshipRepository.existsByUserIdAndFriendId(viewerId, user.getId());
+        if (!canSeeFullProfile(viewerId, user, friends)) {
+            throw new PrivateAccountException();
+        }
+
+        return routeCardPages.load(viewerId, user.getId(), cursor, (after, limit) -> after == null
+                ? routeRepository.findProfileKeys(viewerId, user.getId(), limit)
+                : routeRepository.findProfileKeysBefore(viewerId, user.getId(), after.completedAt(), after.routeId(),
+                        limit));
     }
 
     private User findVisibleUser(Integer viewerId, String username) {
