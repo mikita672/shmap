@@ -17,10 +17,11 @@ export interface FeedRouteCardProps {
   now: number;
   mapWidth: number;
   onPress: () => void;
-  onAuthorPress: () => void;
+  onAuthorPress?: () => void;
 }
 
 const FEED_MAP_HEIGHT = 220;
+const HEADER_CLASS = "flex-row items-center gap-3 px-4 pb-3 pt-3.5";
 
 export function FeedRouteCard({
   route,
@@ -36,34 +37,40 @@ export function FeedRouteCard({
     route.path.status === "READY" && formatDistance(route.path.distanceMeters),
   );
 
+  const header = (
+    <>
+      <Avatar uri={route.participants[0]?.avatarUrl} size={40} tone="surface" />
+      <View className="min-w-0 flex-1">
+        <Text
+          numberOfLines={1}
+          className="text-base leading-6 tracking-[0.5px] text-action-foreground"
+        >
+          {author}
+        </Text>
+        <Text
+          numberOfLines={1}
+          className="text-sm leading-5 tracking-[0.25px] text-secondary"
+        >
+          {joinMeta(withLine, formatFeedTime(route.completedAt, now))}
+        </Text>
+      </View>
+    </>
+  );
+
   return (
     <View className="overflow-hidden rounded-[28px] bg-action">
-      <Pressable
-        onPress={onAuthorPress}
-        accessibilityRole="button"
-        accessibilityLabel={`Open ${author}'s profile`}
-        className="flex-row items-center gap-3 px-4 pb-3 pt-3.5 active:opacity-80"
-      >
-        <Avatar
-          uri={route.participants[0]?.avatarUrl}
-          size={40}
-          tone="surface"
-        />
-        <View className="min-w-0 flex-1">
-          <Text
-            numberOfLines={1}
-            className="text-base leading-6 tracking-[0.5px] text-action-foreground"
-          >
-            {author}
-          </Text>
-          <Text
-            numberOfLines={1}
-            className="text-sm leading-5 tracking-[0.25px] text-secondary"
-          >
-            {joinMeta(withLine, formatFeedTime(route.completedAt, now))}
-          </Text>
-        </View>
-      </Pressable>
+      {onAuthorPress ? (
+        <Pressable
+          onPress={onAuthorPress}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${author}'s profile`}
+          className={`${HEADER_CLASS} active:opacity-80`}
+        >
+          {header}
+        </Pressable>
+      ) : (
+        <View className={HEADER_CLASS}>{header}</View>
+      )}
 
       <Pressable
         onPress={onPress}

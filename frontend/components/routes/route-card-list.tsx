@@ -43,7 +43,7 @@ export interface RouteCardListProps {
   queryKey: readonly unknown[];
   errorMessage: string;
   empty: ReactNode;
-  onAuthorPress: (user: UserSummaryResponse) => void;
+  onAuthorPress?: (user: UserSummaryResponse) => void;
   listRef?: RefObject<FlatList<FeedRouteResponse> | null>;
 }
 
@@ -132,7 +132,9 @@ export function RouteCardList({
               params: { routeId: String(item.id) },
             })
           }
-          onAuthorPress={() => onAuthorPress(item.participants[0])}
+          onAuthorPress={
+            onAuthorPress && (() => onAuthorPress(item.participants[0]))
+          }
         />
       )}
       ItemSeparatorComponent={CardGap}
