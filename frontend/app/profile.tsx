@@ -15,7 +15,10 @@ import { ProfileActions } from "@/components/profile/profile-actions";
 import { ProfileQrModal } from "@/components/profile/profile-qr-modal";
 import { useAvatarActions } from "@/hooks/useAvatarActions";
 import { useProfile } from "@/hooks/useProfile";
-import { usePublicProfile } from "@/hooks/usePublicProfile";
+import {
+  usePublicProfile,
+  useRefetchInvalidatedProfile,
+} from "@/hooks/usePublicProfile";
 import { buildProfileStats } from "@/lib/profile-stats";
 import { getProfileRoutesHref, shareProfile } from "@/lib/profile-link";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -23,7 +26,9 @@ import { getErrorMessage } from "@/lib/utils/error";
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { data: profile, isPending, error, refetch } = useProfile();
-  const { data: publicProfile } = usePublicProfile(profile?.username ?? "");
+  const username = profile?.username ?? "";
+  const { data: publicProfile } = usePublicProfile(username);
+  useRefetchInvalidatedProfile(username);
   const avatar = useAvatarActions();
   const [avatarSheetVisible, setAvatarSheetVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);

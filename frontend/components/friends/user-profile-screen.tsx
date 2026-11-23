@@ -17,7 +17,10 @@ import { Text } from "@/components/ui/text";
 import { useFriendActionsMenu } from "@/hooks/useFriendActionsMenu";
 import { useMutualFriends } from "@/hooks/useMutualFriends";
 import { useProfileScope } from "@/hooks/useProfileScope";
-import { usePublicProfile } from "@/hooks/usePublicProfile";
+import {
+  usePublicProfile,
+  useRefetchInvalidatedProfile,
+} from "@/hooks/usePublicProfile";
 import { useRefreshByUser } from "@/hooks/useRefreshByUser";
 import { formatMonthYear } from "@/lib/format-date";
 import { buildProfileStats } from "@/lib/profile-stats";
@@ -38,6 +41,7 @@ export function UserProfileScreen() {
     error,
     refetch,
   } = usePublicProfile(username);
+  useRefetchInvalidatedProfile(username);
   const { data: mutualFriends } = useMutualFriends(
     username,
     (profile?.mutualFriendsCount ?? 0) > 0,
