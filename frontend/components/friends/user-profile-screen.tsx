@@ -24,6 +24,7 @@ import { buildProfileStats } from "@/lib/profile-stats";
 import {
   getMutualFriendsHref,
   getProfileFriendsHref,
+  getProfileRoutesHref,
 } from "@/lib/profile-link";
 import { AuthErrorCode } from "@/lib/types/api";
 import { getErrorMessage, isErrorCode } from "@/lib/utils/error";
@@ -137,6 +138,8 @@ export function UserProfileScreen() {
                   routesCount: profile.routesCount,
                   distanceMeters: profile.distanceMeters,
                   friendsCount: profile.friendsCount,
+                  onRoutesPress: () =>
+                    router.push(getProfileRoutesHref(username, scope)),
                   onFriendsPress: profile.friendsListVisible
                     ? () => router.push(getProfileFriendsHref(username, scope))
                     : undefined,

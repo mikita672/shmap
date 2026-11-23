@@ -43,6 +43,15 @@ export function getMutualFriendsHref(
     : { pathname: "/user/[username]/mutual-friends", params: { username } };
 }
 
+export function getProfileRoutesHref(
+  username: string,
+  scope: ProfileScope,
+): Href {
+  return scope === "tabs"
+    ? { pathname: "/friends/profile/[username]/routes", params: { username } }
+    : { pathname: "/user/[username]/routes", params: { username } };
+}
+
 export function parseProfileLink(text: string): string | null {
   const match = text.trim().match(PROFILE_LINK_PATTERN);
   if (!match) {
