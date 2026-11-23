@@ -6,6 +6,8 @@ import com.mdzvtt.shmap.exception.PrivateAccountException;
 import com.mdzvtt.shmap.exception.UserNotFoundException;
 import com.mdzvtt.shmap.friend.dto.ProfileCardResponse;
 import com.mdzvtt.shmap.friend.dto.PublicProfileResponse;
+import com.mdzvtt.shmap.route.ProfileRouteStats;
+import com.mdzvtt.shmap.route.RouteRepository;
 import com.mdzvtt.shmap.storage.StorageService;
 import com.mdzvtt.shmap.user.User;
 import com.mdzvtt.shmap.user.UserRepository;
@@ -23,6 +25,7 @@ public class PublicProfileService {
     private final UserBlockRepository userBlockRepository;
     private final FriendshipRepository friendshipRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final RouteRepository routeRepository;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -44,6 +47,7 @@ public class PublicProfileService {
                         .orElse(0L);
         boolean previewOnly = !canSeeFullProfile(viewerId, user, friendship != null);
         Long friendsCount = previewOnly ? null : friendshipRepository.countByUserId(user.getId());
+        ProfileRouteStats routeStats = previewOnly ? null : routeRepository.findProfileStats(viewerId, user.getId());
 
         return new PublicProfileResponse(
                 toSummary(user),
@@ -56,7 +60,9 @@ public class PublicProfileService {
                 mutualFriendsCount,
                 previewOnly,
                 friendsCount,
-                canSeeFriendsList(viewerId, user, friendship != null));
+                canSeeFriendsList(viewerId, user, friendship != null),
+                routeStats == null ? null : routeStats.routesCount(),
+                routeStats == null ? null : routeStats.distanceMeters());
     }
 
     @Transactional(readOnly = true)
