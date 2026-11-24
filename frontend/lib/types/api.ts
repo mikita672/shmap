@@ -417,6 +417,10 @@ export interface FeedPageResponse {
   nextCursor: string | null;
 }
 
+export interface FeedMapResponse {
+  routes: FeedRouteResponse[];
+}
+
 export interface RouteEvent {
   chatId: number;
   routeId: number;
