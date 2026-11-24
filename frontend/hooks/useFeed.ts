@@ -3,6 +3,7 @@ import {
   useInfiniteQuery,
   type QueryClient,
 } from "@tanstack/react-query";
+import { feedMapQueryOptions } from "@/hooks/useFeedMap";
 import { getFeed } from "@/lib/api/feed";
 
 const FEED_STALE_TIME_MS = 60_000;
@@ -23,9 +24,10 @@ export function useFeed() {
 }
 
 export function removeRouteFromFeed(queryClient: QueryClient, routeId: number) {
-  const wasInvalidated =
-    queryClient.getQueryState(feedQueryOptions.queryKey)?.isInvalidated ??
-    false;
+  const keys = [feedQueryOptions.queryKey, feedMapQueryOptions.queryKey];
+  const invalidated = keys.filter(
+    (queryKey) => queryClient.getQueryState(queryKey)?.isInvalidated ?? false,
+  );
   queryClient.setQueryData(feedQueryOptions.queryKey, (old) =>
     old
       ? {
@@ -37,7 +39,18 @@ export function removeRouteFromFeed(queryClient: QueryClient, routeId: number) {
         }
       : old,
   );
-  if (wasInvalidated) void markFeedStale(queryClient);
+  queryClient.setQueryData(feedMapQueryOptions.queryKey, (old) =>
+    old
+      ? { ...old, routes: old.routes.filter((route) => route.id !== routeId) }
+      : old,
+  );
+  for (const queryKey of invalidated) {
+    void queryClient.invalidateQueries({
+      queryKey,
+      exact: true,
+      refetchType: "none",
+    });
+  }
 }
 
 export function markFeedStale(queryClient: QueryClient) {

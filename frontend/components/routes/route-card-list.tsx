@@ -80,7 +80,7 @@ export function RouteCardList({
   const queryClient = useQueryClient();
   useRefreshOnFocus(
     useCallback(
-      () => queryClient.refetchQueries({ queryKey, stale: true }),
+      () => queryClient.refetchQueries({ queryKey, exact: true, stale: true }),
       [queryClient, queryKey],
     ),
   );
@@ -157,7 +157,7 @@ export function RouteCardList({
           <LoadMoreError
             onRetry={() => {
               if (isErrorCode(error, AuthErrorCode.VALIDATION_FAILED)) {
-                queryClient.resetQueries({ queryKey });
+                queryClient.resetQueries({ queryKey, exact: true });
               } else {
                 fetchNextPage();
               }
