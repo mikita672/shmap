@@ -57,15 +57,21 @@ public class RouteCardPages {
         List<FeedCursor> page = hasMore ? keys.subList(0, PAGE_SIZE) : keys;
         String nextCursor = hasMore ? page.getLast().encode() : null;
         List<Long> ids = page.stream().map(key -> key.routeId()).toList();
+        return new FeedPageResponse(cards(viewerId, firstUserId, ids), nextCursor);
+    }
+
+    public List<FeedRouteResponse> cards(Integer viewerId, Integer firstUserId, List<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
         Map<Long, Route> routesById = routeRepository.findWithParticipantsAndStopsByIdIn(ids).stream()
                 .collect(Collectors.toMap(route -> route.getId(), Function.identity()));
         Comparator<User> participantOrder = participantOrder(viewerId, firstUserId, routesById.values());
-        List<FeedRouteResponse> routes = ids.stream()
+        return ids.stream()
                 .map(routesById::get)
                 .filter(Objects::nonNull)
                 .map(route -> toResponse(route, participantOrder))
                 .toList();
-        return new FeedPageResponse(routes, nextCursor);
     }
 
     private Comparator<User> participantOrder(Integer viewerId, Integer firstUserId, Iterable<Route> routes) {

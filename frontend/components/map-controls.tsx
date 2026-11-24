@@ -8,16 +8,18 @@ import {
 } from "@maplibre/maplibre-react-native";
 import Reanimated, {
   useAnimatedStyle,
-  type SharedValue,
+  type DerivedValue,
 } from "react-native-reanimated";
 
 interface MapControlsProps {
   cameraRef: React.RefObject<CameraRef | null>;
   mapRef: React.RefObject<MapRef | null>;
   bearing: Animated.Value;
-  animatedBottomOffset?: SharedValue<number>;
+  animatedBottomOffset?: DerivedValue<number>;
   onMyLocation: () => Promise<void>;
   onCompass: () => void;
+  locationEnabled: boolean;
+  topControl?: React.ReactNode;
 }
 
 export function MapControls({
@@ -27,10 +29,13 @@ export function MapControls({
   animatedBottomOffset,
   onMyLocation,
   onCompass,
+  locationEnabled,
+  topControl,
 }: MapControlsProps) {
   const [isLocating, setIsLocating] = useState(true);
 
   useEffect(() => {
+    if (!locationEnabled) return;
     let isMounted = true;
 
     LocationManager.getCurrentPosition()
@@ -60,7 +65,7 @@ export function MapControls({
       isMounted = false;
       LocationManager.removeListener(listener);
     };
-  }, []);
+  }, [locationEnabled]);
 
   const handleCompass = async () => {
     onCompass();
@@ -103,38 +108,44 @@ export function MapControls({
       className="absolute flex-col items-center gap-3 right-4"
       style={[{ bottom: 16 }, animatedStyle]}
     >
-      <Pressable
-        onPress={handleCompass}
-        className="bg-tab-bubble active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
-        accessibilityLabel="Reset compass to north"
-        accessibilityRole="button"
-      >
-        <Animated.View style={{ transform: [{ rotate }] }}>
-          <Ionicons
-            name="compass-outline"
-            size={24}
-            className="text-tab-icon-active"
-          />
-        </Animated.View>
-      </Pressable>
+      {topControl}
 
-      <Pressable
-        onPress={handleMyLocation}
-        disabled={isLocating}
-        className="bg-tab-bubble active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
-        accessibilityLabel="Go to my location"
-        accessibilityRole="button"
-      >
-        {isLocating ? (
-          <ActivityIndicator size="small" color="#783D19" />
-        ) : (
-          <Ionicons
-            name="navigate-outline"
-            size={22}
-            className="text-tab-icon-active"
-          />
-        )}
-      </Pressable>
+      {locationEnabled && (
+        <>
+          <Pressable
+            onPress={handleCompass}
+            className="bg-tab-bubble active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
+            accessibilityLabel="Reset compass to north"
+            accessibilityRole="button"
+          >
+            <Animated.View style={{ transform: [{ rotate }] }}>
+              <Ionicons
+                name="compass-outline"
+                size={24}
+                className="text-tab-icon-active"
+              />
+            </Animated.View>
+          </Pressable>
+
+          <Pressable
+            onPress={handleMyLocation}
+            disabled={isLocating}
+            className="bg-tab-bubble active:opacity-70 w-11 h-11 rounded-full items-center justify-center shadow-sm shadow-black/10 elevation-3"
+            accessibilityLabel="Go to my location"
+            accessibilityRole="button"
+          >
+            {isLocating ? (
+              <ActivityIndicator size="small" color="#783D19" />
+            ) : (
+              <Ionicons
+                name="navigate-outline"
+                size={22}
+                className="text-tab-icon-active"
+              />
+            )}
+          </Pressable>
+        </>
+      )}
     </Reanimated.View>
   );
 }

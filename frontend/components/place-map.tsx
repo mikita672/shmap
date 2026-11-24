@@ -1,9 +1,11 @@
 import {
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
   type ReactNode,
+  type Ref,
 } from "react";
 import { View, ActivityIndicator, Animated, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,7 +27,11 @@ import {
   MapSearchBar,
   type MapSearchBarProps,
 } from "@/components/map-search-bar";
-import { useSharedValue } from "react-native-reanimated";
+import {
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import {
   PlaceDetailsSheet,
   type PlaceDetailsSheetProps,
@@ -39,10 +45,15 @@ import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 const DEFAULT_ZOOM = 15;
 const FOLLOW_DELAY = 150;
+const OVERLAY_DURATION = 200;
 
 interface SelectedCoordinate {
   lat: number;
   lon: number;
+}
+
+export interface PlaceMapHandle {
+  closePlace: () => void;
 }
 
 export interface PlaceMapProps {
@@ -51,6 +62,11 @@ export interface PlaceMapProps {
   renderActions?: PlaceDetailsSheetProps["renderActions"];
   renderPrimaryAction?: PlaceDetailsSheetProps["renderPrimaryAction"];
   sheetOpensExpanded?: boolean;
+  topControl?: ReactNode;
+  overlayHeight?: number;
+  onMapPress?: () => boolean;
+  onPlaceOpen?: () => void;
+  ref?: Ref<PlaceMapHandle>;
   children?: ReactNode;
 }
 
@@ -60,6 +76,11 @@ export function PlaceMap({
   renderActions,
   renderPrimaryAction,
   sheetOpensExpanded,
+  topControl,
+  overlayHeight = 0,
+  onMapPress,
+  onPlaceOpen,
+  ref,
   children,
 }: PlaceMapProps = {}) {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(
@@ -86,6 +107,16 @@ export function PlaceMap({
     useState<PlaceDetails | null>(initialPlace ?? null);
 
   const animatedBottomOffset = useSharedValue(0);
+  const overlayOffset = useSharedValue(overlayHeight);
+  const controlsOffset = useDerivedValue(() =>
+    Math.max(animatedBottomOffset.get(), overlayOffset.get()),
+  );
+
+  useEffect(() => {
+    overlayOffset.set(
+      withTiming(overlayHeight, { duration: OVERLAY_DURATION }),
+    );
+  }, [overlayHeight, overlayOffset]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -101,6 +132,7 @@ export function PlaceMap({
 
   const handleMapPress = useCallback(
     (event: NativeSyntheticEvent<{ lngLat: [number, number] }>) => {
+      if (onMapPress?.()) return;
       Keyboard.dismiss();
       moveToUserAbortRef.current?.abort();
       setTrackUserLocation(undefined);
@@ -109,6 +141,7 @@ export function PlaceMap({
       setSelectedCoord({ lat, lon });
       setSearchPlaceOverride(null);
       setSheetVisible(true);
+      onPlaceOpen?.();
 
       if (cameraRef.current) {
         cameraRef.current.easeTo({
@@ -117,37 +150,41 @@ export function PlaceMap({
         });
       }
     },
-    [],
+    [onMapPress, onPlaceOpen],
   );
 
-  const handlePlaceSelect = useCallback(async (place: SearchPlace) => {
-    moveToUserAbortRef.current?.abort();
-    setTrackUserLocation(undefined);
+  const handlePlaceSelect = useCallback(
+    async (place: SearchPlace) => {
+      moveToUserAbortRef.current?.abort();
+      setTrackUserLocation(undefined);
 
-    const coord = { lat: place.latitude, lon: place.longitude };
-    setSelectedCoord(coord);
+      const coord = { lat: place.latitude, lon: place.longitude };
+      setSelectedCoord(coord);
 
-    setSearchPlaceOverride(
-      place.details ?? {
-        id: place.id,
-        name: place.name,
-        displayName: place.displayName,
-        category: "Place",
-        latitude: place.latitude,
-        longitude: place.longitude,
-      },
-    );
-    setSheetVisible(true);
+      setSearchPlaceOverride(
+        place.details ?? {
+          id: place.id,
+          name: place.name,
+          displayName: place.displayName,
+          category: "Place",
+          latitude: place.latitude,
+          longitude: place.longitude,
+        },
+      );
+      setSheetVisible(true);
+      onPlaceOpen?.();
 
-    if (cameraRef.current && mapRef.current) {
-      const currentZoom = await mapRef.current.getZoom();
-      cameraRef.current.flyTo({
-        center: [place.longitude, place.latitude],
-        zoom: Math.max(currentZoom, 15),
-        duration: 1200,
-      });
-    }
-  }, []);
+      if (cameraRef.current && mapRef.current) {
+        const currentZoom = await mapRef.current.getZoom();
+        cameraRef.current.flyTo({
+          center: [place.longitude, place.latitude],
+          zoom: Math.max(currentZoom, 15),
+          duration: 1200,
+        });
+      }
+    },
+    [onPlaceOpen],
+  );
 
   const handleSheetClose = useCallback(() => {
     setSheetVisible(false);
@@ -155,6 +192,10 @@ export function PlaceMap({
     setSearchPlaceOverride(null);
     setSearchQuery("");
   }, []);
+
+  useImperativeHandle(ref, () => ({ closePlace: handleSheetClose }), [
+    handleSheetClose,
+  ]);
 
   const handleSheetRetry = useCallback(() => {
     reverseRefetch();
@@ -298,14 +339,16 @@ export function PlaceMap({
         leading={leading}
       />
 
-      {locationPermission && (
+      {(locationPermission || topControl) && (
         <MapControls
           cameraRef={cameraRef}
           mapRef={mapRef}
           bearing={bearing}
-          animatedBottomOffset={animatedBottomOffset}
+          animatedBottomOffset={controlsOffset}
           onMyLocation={handleMyLocation}
           onCompass={() => moveToUserAbortRef.current?.abort()}
+          locationEnabled={locationPermission}
+          topControl={topControl}
         />
       )}
 

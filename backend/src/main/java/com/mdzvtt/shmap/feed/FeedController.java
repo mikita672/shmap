@@ -1,5 +1,6 @@
 package com.mdzvtt.shmap.feed;
 
+import com.mdzvtt.shmap.feed.dto.FeedMapResponse;
 import com.mdzvtt.shmap.feed.dto.FeedPageResponse;
 import com.mdzvtt.shmap.user.User;
 import lombok.RequiredArgsConstructor;
@@ -19,5 +20,10 @@ public class FeedController {
     public FeedPageResponse getFeed(@AuthenticationPrincipal User user,
             @RequestParam(required = false) String cursor) {
         return feedService.getFeed(user.getId(), cursor);
+    }
+
+    @GetMapping("/map")
+    public FeedMapResponse getMap(@AuthenticationPrincipal User user) {
+        return feedService.getMap(user.getId());
     }
 }

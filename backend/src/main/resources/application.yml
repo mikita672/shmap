@@ -51,6 +51,9 @@ spring:
         base-url: ${ai.base-url}
         connect-timeout: 2s
         read-timeout: 20s
+server:
+  compression:
+    enabled: true
 application:
   security:
     jwt:
