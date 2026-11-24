@@ -7,19 +7,18 @@ import {
 import { FriendsRoutesLayer } from "@/components/map/friends-routes-layer";
 import { LayersButton } from "@/components/map/layers-button";
 import { PlaceMap } from "@/components/place-map";
-import { useFeedMap } from "@/hooks/useFeedMap";
-import { useFriendsRoutesLayer } from "@/hooks/useFriendsRoutesLayer";
+import { useFriendsRoutes } from "@/hooks/useFriendsRoutes";
 
 export default function MapScreen() {
-  const [friendsRoutesOn, setFriendsRoutesOn] = useFriendsRoutesLayer();
-  const { data: friendsRoutes } = useFeedMap(friendsRoutesOn);
+  const friendsRoutes = useFriendsRoutes();
 
   return (
     <PlaceMap
       topControl={
         <LayersButton
-          on={friendsRoutesOn}
-          onPress={() => setFriendsRoutesOn(!friendsRoutesOn)}
+          on={friendsRoutes.on}
+          loading={friendsRoutes.loading}
+          onPress={friendsRoutes.toggle}
         />
       }
       renderActions={(place) => (
@@ -30,7 +29,7 @@ export default function MapScreen() {
         </>
       )}
     >
-      {friendsRoutesOn && friendsRoutes && (
+      {friendsRoutes.routes && (
         <FriendsRoutesLayer routes={friendsRoutes.routes} />
       )}
     </PlaceMap>
