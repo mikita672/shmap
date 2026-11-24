@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
-import { useFeedMap } from "@/hooks/useFeedMap";
+import { feedMapQueryOptions, useFeedMap } from "@/hooks/useFeedMap";
 import { useFriendsRoutesLayer } from "@/hooks/useFriendsRoutesLayer";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 
 export function useFriendsRoutes() {
   const [on, setOn] = useFriendsRoutesLayer();
@@ -9,6 +11,18 @@ export function useFriendsRoutes() {
     useFeedMap(on);
   const announceEmptyRef = useRef(false);
   const handledErrorAtRef = useRef(0);
+  const queryClient = useQueryClient();
+
+  useRefreshOnFocus(
+    useCallback(() => {
+      if (!on) return;
+      return queryClient.refetchQueries({
+        queryKey: feedMapQueryOptions.queryKey,
+        exact: true,
+        stale: true,
+      });
+    }, [on, queryClient]),
+  );
 
   const toggle = useCallback(() => {
     announceEmptyRef.current = !on;
