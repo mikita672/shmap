@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import {
@@ -10,7 +10,7 @@ import {
 import { FriendsRoutesLayer } from "@/components/map/friends-routes-layer";
 import { LayersButton } from "@/components/map/layers-button";
 import { MapRouteCard } from "@/components/map/map-route-card";
-import { PlaceMap } from "@/components/place-map";
+import { PlaceMap, type PlaceMapHandle } from "@/components/place-map";
 import { useFriendsRoutes } from "@/hooks/useFriendsRoutes";
 import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
@@ -23,6 +23,7 @@ interface Selection {
 export default function MapScreen() {
   const friendsRoutes = useFriendsRoutes();
   const [selection, setSelection] = useState<Selection | null>(null);
+  const placeMapRef = useRef<PlaceMapHandle>(null);
   const { data: me } = useProfile();
   const openProfile = useOpenProfile();
   const selectedRoute = selection
@@ -32,6 +33,13 @@ export default function MapScreen() {
   return (
     <View className="flex-1">
       <PlaceMap
+        ref={placeMapRef}
+        onMapPress={() => {
+          if (!selectedRoute) return false;
+          setSelection(null);
+          return true;
+        }}
+        onPlaceOpen={() => setSelection(null)}
         topControl={
           <LayersButton
             on={friendsRoutes.on}
@@ -54,13 +62,14 @@ export default function MapScreen() {
           <FriendsRoutesLayer
             routes={friendsRoutes.routes}
             selectedRouteId={selectedRoute?.id ?? null}
-            onPressRoute={(routeId) =>
+            onPressRoute={(routeId) => {
+              placeMapRef.current?.closePlace();
               setSelection((current) =>
                 current?.routeId === routeId
                   ? null
                   : { routeId, at: Date.now() },
-              )
-            }
+              );
+            }}
           />
         )}
       </PlaceMap>
