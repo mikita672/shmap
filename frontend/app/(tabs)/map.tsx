@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { View } from "react-native";
+import { router } from "expo-router";
 import {
   CopyPlaceButton,
   SendPlaceButton,
@@ -6,32 +9,78 @@ import {
 } from "@/components/place-actions";
 import { FriendsRoutesLayer } from "@/components/map/friends-routes-layer";
 import { LayersButton } from "@/components/map/layers-button";
+import { MapRouteCard } from "@/components/map/map-route-card";
 import { PlaceMap } from "@/components/place-map";
 import { useFriendsRoutes } from "@/hooks/useFriendsRoutes";
+import { useOpenProfile } from "@/hooks/useOpenProfile";
+import { useProfile } from "@/hooks/useProfile";
+
+interface Selection {
+  routeId: number;
+  at: number;
+}
 
 export default function MapScreen() {
   const friendsRoutes = useFriendsRoutes();
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const { data: me } = useProfile();
+  const openProfile = useOpenProfile();
+  const selectedRoute = selection
+    ? friendsRoutes.routes?.find((route) => route.id === selection.routeId)
+    : undefined;
 
   return (
-    <PlaceMap
-      topControl={
-        <LayersButton
-          on={friendsRoutes.on}
-          loading={friendsRoutes.loading}
-          onPress={friendsRoutes.toggle}
-        />
-      }
-      renderActions={(place) => (
-        <>
-          <SendPlaceButton onPress={() => openSendPlace(place)} />
-          <CopyPlaceButton place={place} />
-          <SharePlaceButton place={place} />
-        </>
+    <View className="flex-1">
+      <PlaceMap
+        topControl={
+          <LayersButton
+            on={friendsRoutes.on}
+            loading={friendsRoutes.loading}
+            onPress={() => {
+              setSelection(null);
+              friendsRoutes.toggle();
+            }}
+          />
+        }
+        renderActions={(place) => (
+          <>
+            <SendPlaceButton onPress={() => openSendPlace(place)} />
+            <CopyPlaceButton place={place} />
+            <SharePlaceButton place={place} />
+          </>
+        )}
+      >
+        {friendsRoutes.routes && (
+          <FriendsRoutesLayer
+            routes={friendsRoutes.routes}
+            selectedRouteId={selectedRoute?.id ?? null}
+            onPressRoute={(routeId) =>
+              setSelection((current) =>
+                current?.routeId === routeId
+                  ? null
+                  : { routeId, at: Date.now() },
+              )
+            }
+          />
+        )}
+      </PlaceMap>
+
+      {selection && selectedRoute && (
+        <View className="absolute bottom-2 left-2 right-2">
+          <MapRouteCard
+            route={selectedRoute}
+            myId={me?.id}
+            now={selection.at}
+            onAuthorPress={() => openProfile(selectedRoute.participants[0])}
+            onPress={() =>
+              router.push({
+                pathname: "/route/[routeId]",
+                params: { routeId: String(selectedRoute.id) },
+              })
+            }
+          />
+        </View>
       )}
-    >
-      {friendsRoutes.routes && (
-        <FriendsRoutesLayer routes={friendsRoutes.routes} />
-      )}
-    </PlaceMap>
+    </View>
   );
 }
