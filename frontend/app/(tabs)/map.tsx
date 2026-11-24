@@ -15,6 +15,8 @@ import { useFriendsRoutes } from "@/hooks/useFriendsRoutes";
 import { useOpenProfile } from "@/hooks/useOpenProfile";
 import { useProfile } from "@/hooks/useProfile";
 
+const CARD_MARGIN = 8;
+
 interface Selection {
   routeId: number;
   at: number;
@@ -24,6 +26,7 @@ export default function MapScreen() {
   const friendsRoutes = useFriendsRoutes();
   const [selection, setSelection] = useState<Selection | null>(null);
   const placeMapRef = useRef<PlaceMapHandle>(null);
+  const [cardHeight, setCardHeight] = useState(0);
   const { data: me } = useProfile();
   const openProfile = useOpenProfile();
   const selectedRoute = selection
@@ -34,6 +37,7 @@ export default function MapScreen() {
     <View className="flex-1">
       <PlaceMap
         ref={placeMapRef}
+        overlayHeight={selectedRoute ? cardHeight + CARD_MARGIN : 0}
         onMapPress={() => {
           if (!selectedRoute) return false;
           setSelection(null);
@@ -75,7 +79,10 @@ export default function MapScreen() {
       </PlaceMap>
 
       {selection && selectedRoute && (
-        <View className="absolute bottom-2 left-2 right-2">
+        <View
+          className="absolute bottom-2 left-2 right-2"
+          onLayout={(event) => setCardHeight(event.nativeEvent.layout.height)}
+        >
           <MapRouteCard
             route={selectedRoute}
             myId={me?.id}

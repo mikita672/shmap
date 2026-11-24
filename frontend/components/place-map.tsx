@@ -27,7 +27,11 @@ import {
   MapSearchBar,
   type MapSearchBarProps,
 } from "@/components/map-search-bar";
-import { useSharedValue } from "react-native-reanimated";
+import {
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import {
   PlaceDetailsSheet,
   type PlaceDetailsSheetProps,
@@ -41,6 +45,7 @@ import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 const DEFAULT_ZOOM = 15;
 const FOLLOW_DELAY = 150;
+const OVERLAY_DURATION = 200;
 
 interface SelectedCoordinate {
   lat: number;
@@ -58,6 +63,7 @@ export interface PlaceMapProps {
   renderPrimaryAction?: PlaceDetailsSheetProps["renderPrimaryAction"];
   sheetOpensExpanded?: boolean;
   topControl?: ReactNode;
+  overlayHeight?: number;
   onMapPress?: () => boolean;
   onPlaceOpen?: () => void;
   ref?: Ref<PlaceMapHandle>;
@@ -71,6 +77,7 @@ export function PlaceMap({
   renderPrimaryAction,
   sheetOpensExpanded,
   topControl,
+  overlayHeight = 0,
   onMapPress,
   onPlaceOpen,
   ref,
@@ -100,6 +107,16 @@ export function PlaceMap({
     useState<PlaceDetails | null>(initialPlace ?? null);
 
   const animatedBottomOffset = useSharedValue(0);
+  const overlayOffset = useSharedValue(overlayHeight);
+  const controlsOffset = useDerivedValue(() =>
+    Math.max(animatedBottomOffset.get(), overlayOffset.get()),
+  );
+
+  useEffect(() => {
+    overlayOffset.set(
+      withTiming(overlayHeight, { duration: OVERLAY_DURATION }),
+    );
+  }, [overlayHeight, overlayOffset]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -327,7 +344,7 @@ export function PlaceMap({
           cameraRef={cameraRef}
           mapRef={mapRef}
           bearing={bearing}
-          animatedBottomOffset={animatedBottomOffset}
+          animatedBottomOffset={controlsOffset}
           onMyLocation={handleMyLocation}
           onCompass={() => moveToUserAbortRef.current?.abort()}
           locationEnabled={locationPermission}

@@ -8,14 +8,14 @@ import {
 } from "@maplibre/maplibre-react-native";
 import Reanimated, {
   useAnimatedStyle,
-  type SharedValue,
+  type DerivedValue,
 } from "react-native-reanimated";
 
 interface MapControlsProps {
   cameraRef: React.RefObject<CameraRef | null>;
   mapRef: React.RefObject<MapRef | null>;
   bearing: Animated.Value;
-  animatedBottomOffset?: SharedValue<number>;
+  animatedBottomOffset?: DerivedValue<number>;
   onMyLocation: () => Promise<void>;
   onCompass: () => void;
   locationEnabled: boolean;
