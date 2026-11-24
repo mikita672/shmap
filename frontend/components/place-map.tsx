@@ -51,6 +51,7 @@ export interface PlaceMapProps {
   renderActions?: PlaceDetailsSheetProps["renderActions"];
   renderPrimaryAction?: PlaceDetailsSheetProps["renderPrimaryAction"];
   sheetOpensExpanded?: boolean;
+  topControl?: ReactNode;
   children?: ReactNode;
 }
 
@@ -60,6 +61,7 @@ export function PlaceMap({
   renderActions,
   renderPrimaryAction,
   sheetOpensExpanded,
+  topControl,
   children,
 }: PlaceMapProps = {}) {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(
@@ -298,7 +300,7 @@ export function PlaceMap({
         leading={leading}
       />
 
-      {locationPermission && (
+      {(locationPermission || topControl) && (
         <MapControls
           cameraRef={cameraRef}
           mapRef={mapRef}
@@ -306,6 +308,8 @@ export function PlaceMap({
           animatedBottomOffset={animatedBottomOffset}
           onMyLocation={handleMyLocation}
           onCompass={() => moveToUserAbortRef.current?.abort()}
+          locationEnabled={locationPermission}
+          topControl={topControl}
         />
       )}
 
