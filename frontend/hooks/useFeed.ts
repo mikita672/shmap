@@ -23,8 +23,16 @@ export function useFeed() {
   return useInfiniteQuery(feedQueryOptions);
 }
 
-export function removeRouteFromFeed(queryClient: QueryClient, routeId: number) {
+export async function removeRouteFromFeed(
+  queryClient: QueryClient,
+  routeId: number,
+) {
   const keys = [feedQueryOptions.queryKey, feedMapQueryOptions.queryKey];
+  await Promise.all(
+    keys.map((queryKey) =>
+      queryClient.cancelQueries({ queryKey, exact: true }),
+    ),
+  );
   const invalidated = keys.filter(
     (queryKey) => queryClient.getQueryState(queryKey)?.isInvalidated ?? false,
   );

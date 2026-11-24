@@ -66,7 +66,7 @@ export default function RouteScreen() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (isDeleted) removeRouteFromFeed(queryClient, Number(routeId));
+    if (isDeleted) void removeRouteFromFeed(queryClient, Number(routeId));
   }, [isDeleted, queryClient, routeId]);
 
   if (route && !isDeleted) {
