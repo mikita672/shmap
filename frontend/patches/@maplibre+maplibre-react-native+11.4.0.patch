@@ -1,0 +1,72 @@
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/modules/MLRNStaticMapModule.kt b/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/modules/MLRNStaticMapModule.kt
+index a799a56..c147990 100644
+--- a/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/modules/MLRNStaticMapModule.kt
++++ b/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/modules/MLRNStaticMapModule.kt
+@@ -84,6 +84,8 @@ class MLRNStaticMapModule(
+ 
+         val showLogo = if (readableMap.hasKey("logo")) readableMap.getBoolean("logo") else false
+         options.withLogo(showLogo)
++        val showAttribution = if (readableMap.hasKey("attribution")) readableMap.getBoolean("attribution") else true
++        options.withAttribution(showAttribution)
+         readableMap.getString("mapStyle")?.let { mapStyle ->
+             options.withStyleBuilder(
+                 if (ConvertUtils.isJSONValid(mapStyle)) {
+diff --git a/node_modules/@maplibre/maplibre-react-native/lib/typescript/commonjs/modules/static-map/StaticMapManager.d.ts b/node_modules/@maplibre/maplibre-react-native/lib/typescript/commonjs/modules/static-map/StaticMapManager.d.ts
+index d332c21..183a0ac 100644
+--- a/node_modules/@maplibre/maplibre-react-native/lib/typescript/commonjs/modules/static-map/StaticMapManager.d.ts
++++ b/node_modules/@maplibre/maplibre-react-native/lib/typescript/commonjs/modules/static-map/StaticMapManager.d.ts
+@@ -28,6 +28,10 @@ export interface StaticMapOptions {
+      * MapLibre doesn't require you to display the logo.
+      */
+     logo?: boolean;
++    /**
++     * Toggle the attribution text the snapshotter draws on the image (Android only).
++     */
++    attribution?: boolean;
+ }
+ export type StaticMapCenterOptions = StaticMapOptions & {
+     /**
+diff --git a/node_modules/@maplibre/maplibre-react-native/lib/typescript/module/modules/static-map/StaticMapManager.d.ts b/node_modules/@maplibre/maplibre-react-native/lib/typescript/module/modules/static-map/StaticMapManager.d.ts
+index d332c21..183a0ac 100644
+--- a/node_modules/@maplibre/maplibre-react-native/lib/typescript/module/modules/static-map/StaticMapManager.d.ts
++++ b/node_modules/@maplibre/maplibre-react-native/lib/typescript/module/modules/static-map/StaticMapManager.d.ts
+@@ -28,6 +28,10 @@ export interface StaticMapOptions {
+      * MapLibre doesn't require you to display the logo.
+      */
+     logo?: boolean;
++    /**
++     * Toggle the attribution text the snapshotter draws on the image (Android only).
++     */
++    attribution?: boolean;
+ }
+ export type StaticMapCenterOptions = StaticMapOptions & {
+     /**
+diff --git a/node_modules/@maplibre/maplibre-react-native/src/modules/static-map/NativeStaticMapModule.ts b/node_modules/@maplibre/maplibre-react-native/src/modules/static-map/NativeStaticMapModule.ts
+index e883690..4ad2bdd 100644
+--- a/node_modules/@maplibre/maplibre-react-native/src/modules/static-map/NativeStaticMapModule.ts
++++ b/node_modules/@maplibre/maplibre-react-native/src/modules/static-map/NativeStaticMapModule.ts
+@@ -17,6 +17,8 @@ interface NativeStaticMapCreateOptions {
+   output: "base64" | "file";
+ 
+   logo?: boolean;
++
++  attribution?: boolean;
+ }
+ 
+ export interface Spec extends TurboModule {
+diff --git a/node_modules/@maplibre/maplibre-react-native/src/modules/static-map/StaticMapManager.ts b/node_modules/@maplibre/maplibre-react-native/src/modules/static-map/StaticMapManager.ts
+index bf277a3..3dae39b 100644
+--- a/node_modules/@maplibre/maplibre-react-native/src/modules/static-map/StaticMapManager.ts
++++ b/node_modules/@maplibre/maplibre-react-native/src/modules/static-map/StaticMapManager.ts
+@@ -34,6 +34,11 @@ export interface StaticMapOptions {
+    * MapLibre doesn't require you to display the logo.
+    */
+   logo?: boolean;
++  /**
++   * Toggle the attribution text the snapshotter draws on the image (Android only).
++   * Defaults to true. Turn it off only when the app shows its own credit.
++   */
++  attribution?: boolean;
+ }
+ 
+ export type StaticMapCenterOptions = StaticMapOptions & {

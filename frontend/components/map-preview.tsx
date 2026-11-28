@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { MapImageCredit } from "@/components/map/map-image-credit";
 import { useStaticMap } from "@/hooks/useStaticMap";
 import "@/lib/maplibre-log-filter";
 import { Ionicons, MaterialIcons } from "@/lib/icons";
@@ -58,6 +59,7 @@ export function MapPreview({
               left: width / 2 - pinSize / 2,
             }}
           />
+          <MapImageCredit />
         </>
       ) : isError ? (
         <Ionicons

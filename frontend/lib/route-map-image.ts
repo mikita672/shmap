@@ -1,4 +1,4 @@
-import type { MapStyleJson } from "@/hooks/useMapStyle";
+import type { StyleSpecification } from "@maplibre/maplibre-react-native";
 import type { RoutePathResponse, RouteResponse } from "@/lib/types/api";
 
 const PATH_COLOR = "#C4661F";
@@ -68,9 +68,9 @@ export function getRouteImageCamera(
 }
 
 export function buildRouteImageStyle(
-  baseStyle: MapStyleJson,
+  baseStyle: StyleSpecification,
   { line, stops }: { line: GeoJSON.LineString | null; stops: RouteImageStop[] },
-): MapStyleJson {
+): StyleSpecification {
   const features: GeoJSON.Feature[] = stops.map((stop) => ({
     type: "Feature",
     properties: { kind: "stop" },

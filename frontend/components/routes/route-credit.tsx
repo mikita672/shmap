@@ -1,11 +1,15 @@
+import { Pressable } from "react-native";
 import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from "react-native-reanimated";
+import { Link } from "expo-router";
 import { Text } from "@/components/ui/text";
 
 const CREDIT_HEIGHT = 18;
 const SHEET_GAP = 6;
+const ROUTE_CREDIT =
+  "© openrouteservice.org · © OpenStreetMap · © OpenMapTiles";
 
 export interface RouteCreditProps {
   sheetPosition: SharedValue<number>;
@@ -19,14 +23,20 @@ export function RouteCredit({ sheetPosition }: RouteCreditProps) {
   }));
 
   return (
-    <Animated.View
-      pointerEvents="none"
-      className="absolute right-2 top-0 h-[18px] justify-center rounded-md bg-black/45 px-1.5"
-      style={style}
-    >
-      <Text className="text-[10px] leading-[14px] text-map-pin-foreground/90">
-        © openrouteservice.org · © OpenStreetMap
-      </Text>
+    <Animated.View className="absolute right-2 top-0" style={style}>
+      <Link href="/map-data" push asChild>
+        <Pressable
+          hitSlop={8}
+          accessibilityRole="link"
+          accessibilityLabel={`Map data ${ROUTE_CREDIT}`}
+          accessibilityHint="Opens map data and licenses"
+          className="h-[18px] justify-center rounded-md bg-black/45 px-1.5 active:bg-black/60"
+        >
+          <Text className="text-[10px] leading-[14px] text-map-pin-foreground/90">
+            {ROUTE_CREDIT}
+          </Text>
+        </Pressable>
+      </Link>
     </Animated.View>
   );
 }

@@ -18,8 +18,8 @@ import {
 import "@/lib/maplibre-log-filter";
 import { RouteLayers } from "@/components/routes/route-layers";
 import { SuggestionLayers } from "@/components/routes/suggestion-layers";
+import { useMapStyle } from "@/hooks/useMapStyle";
 import { getBounds } from "@/lib/map-camera";
-import { MAP_STYLE } from "@/lib/map-style";
 import { takeRouteFocus } from "@/lib/route-focus";
 import type { RouteResponse, RouteSuggestionResponse } from "@/lib/types/api";
 
@@ -51,6 +51,7 @@ export function RouteMap({
   fitKey = 0,
 }: RouteMapProps) {
   const insets = useSafeAreaInsets();
+  const mapStyle = useMapStyle();
   const { height } = useWindowDimensions();
   const cameraRef = useRef<CameraRef>(null);
   const routeId = route.id;
@@ -151,10 +152,10 @@ export function RouteMap({
 
   return (
     <Map
-      mapStyle={MAP_STYLE}
+      mapStyle={mapStyle}
       style={{ flex: 1 }}
       compass={false}
-      attributionPosition={{ top: insets.top + HEADER_SPACE, left: 12 }}
+      attribution={false}
     >
       <Camera ref={cameraRef} initialViewState={initialViewState} />
       {suggestions && (

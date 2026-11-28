@@ -8,7 +8,6 @@ import {
   type Ref,
 } from "react";
 import { View, ActivityIndicator, Animated, Keyboard } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Map,
   Camera,
@@ -22,6 +21,7 @@ import {
 } from "@maplibre/maplibre-react-native";
 import type { NativeSyntheticEvent } from "react-native";
 import "@/lib/maplibre-log-filter";
+import { MapCredit } from "@/components/map/map-credit";
 import { MapControls } from "@/components/map-controls";
 import {
   MapSearchBar,
@@ -39,13 +39,16 @@ import {
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
 import { getFlyDuration, waitForAnimation } from "@/lib/map-camera";
-import { MAP_STYLE } from "@/lib/map-style";
+import { useMapStyle } from "@/hooks/useMapStyle";
 import { enqueuePermissionRequest } from "@/lib/permission-queue";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
 const DEFAULT_ZOOM = 15;
 const FOLLOW_DELAY = 150;
 const OVERLAY_DURATION = 200;
+const LOGO_POSITION = { bottom: 8, left: 8 };
+const LOGO_WIDTH = 88;
+const CREDIT_POSITION = { bottom: 10, left: 8 + LOGO_WIDTH };
 
 interface SelectedCoordinate {
   lat: number;
@@ -92,7 +95,9 @@ export function PlaceMap({
   const cameraRef = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
   const moveToUserAbortRef = useRef<AbortController>(null);
-  const insets = useSafeAreaInsets();
+  const mapStyle = useMapStyle();
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [creditDismissed, setCreditDismissed] = useState(false);
   const [bearing] = useState(() => new Animated.Value(0));
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number }>();
 
@@ -132,6 +137,7 @@ export function PlaceMap({
 
   const handleMapPress = useCallback(
     (event: NativeSyntheticEvent<{ lngLat: [number, number] }>) => {
+      setCreditDismissed(true);
       if (onMapPress?.()) return;
       Keyboard.dismiss();
       moveToUserAbortRef.current?.abort();
@@ -268,13 +274,16 @@ export function PlaceMap({
     <View className="flex-1">
       <Map
         ref={mapRef}
-        mapStyle={MAP_STYLE}
+        mapStyle={mapStyle}
         style={{ flex: 1 }}
         compass={!locationPermission}
-        attributionPosition={{ top: Math.max(insets.top, 8) + 8, left: 8 }}
+        attribution={false}
+        logoPosition={LOGO_POSITION}
         onPress={handleMapPress}
+        onDidFinishLoadingMap={() => setMapLoaded(true)}
         onRegionWillChange={(event) => {
           if (event.nativeEvent.userInteraction) {
+            setCreditDismissed(true);
             moveToUserAbortRef.current?.abort();
           }
         }}
@@ -329,6 +338,12 @@ export function PlaceMap({
           </ViewAnnotation>
         )}
       </Map>
+
+      <MapCredit
+        ready={mapLoaded}
+        dismissed={creditDismissed}
+        style={CREDIT_POSITION}
+      />
 
       <MapSearchBar
         mapCenter={mapCenter}

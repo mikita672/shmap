@@ -7,11 +7,5 @@ LogManager.onLog(({ message, tag }) => {
   ) {
     return true;
   }
-  if (
-    tag === "Mbgl-MapSnapshotter" &&
-    message.includes("Could not generate attribution")
-  ) {
-    return true;
-  }
   return false;
 });
