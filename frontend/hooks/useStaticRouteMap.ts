@@ -49,6 +49,7 @@ export function useStaticRouteMap({
         width,
         height,
         output: "file",
+        attribution: false,
       });
     },
     enabled: stops.length > 0,

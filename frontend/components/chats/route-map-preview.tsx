@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { MapImageCredit } from "@/components/map/map-image-credit";
 import { useStaticRouteMap } from "@/hooks/useStaticRouteMap";
 import "@/lib/maplibre-log-filter";
 import { Ionicons } from "@/lib/icons";
@@ -79,6 +80,7 @@ export function RouteMapPreview({
         contentFit="cover"
         transition={150}
       />
+      <MapImageCredit />
     </View>
   );
 }

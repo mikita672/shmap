@@ -30,6 +30,7 @@ export function useStaticMap({
         width,
         height,
         output: "file",
+        attribution: false,
       }),
     staleTime: Infinity,
     gcTime: 30 * 60 * 1000,
