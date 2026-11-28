@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { StaticMapImageManager } from "@maplibre/maplibre-react-native";
-import { useMapStyle } from "@/hooks/useMapStyle";
+import { BASE_STYLE } from "@/lib/map-style";
 import { decodePath } from "@/lib/polyline";
 import {
   buildRouteImageStyle,
@@ -19,7 +19,6 @@ export function useStaticRouteMap({
   width,
   height,
 }: StaticRouteMapOptions) {
-  const { data: baseStyle } = useMapStyle();
   const { stops } = route;
   const polyline = route.path.status === "READY" ? route.path.polyline : null;
   const stopKey = stops
@@ -37,10 +36,10 @@ export function useStaticRouteMap({
     ],
     queryFn: () => {
       const camera = getRouteImageCamera(stops);
-      if (!baseStyle || !camera) throw new Error("Route image not ready");
+      if (!camera) throw new Error("Route image not ready");
       return StaticMapImageManager.createImage({
         ...camera,
-        mapStyle: buildRouteImageStyle(baseStyle, {
+        mapStyle: buildRouteImageStyle(BASE_STYLE, {
           line: polyline ? decodePath(polyline) : null,
           stops,
         }),
@@ -49,7 +48,7 @@ export function useStaticRouteMap({
         output: "file",
       });
     },
-    enabled: stops.length > 0 && baseStyle !== undefined,
+    enabled: stops.length > 0,
     staleTime: Infinity,
     gcTime: 30 * 60 * 1000,
     retry: 1,
