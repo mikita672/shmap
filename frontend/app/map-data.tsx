@@ -5,6 +5,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Text } from "@/components/ui/text";
 import { MAP_CREDIT_GROUPS } from "@/lib/map-credits";
+import { MAP_STYLE_NOTICES } from "@/lib/map-style/notices";
 
 export default function MapDataScreen() {
   const insets = useSafeAreaInsets();
@@ -30,6 +31,28 @@ export default function MapDataScreen() {
             ))}
           </SettingsSection>
         ))}
+
+        <SettingsSection title="License notices">
+          {MAP_STYLE_NOTICES.map((notice) => (
+            <View
+              key={notice.title}
+              className="gap-2 rounded-3xl bg-action px-5 py-4"
+            >
+              <Text className="text-base text-action-foreground">
+                {notice.title}
+              </Text>
+              {notice.paragraphs.map((paragraph) => (
+                <Text
+                  key={paragraph}
+                  selectable
+                  className="text-xs leading-5 text-secondary"
+                >
+                  {paragraph}
+                </Text>
+              ))}
+            </View>
+          ))}
+        </SettingsSection>
       </ScrollView>
     </View>
   );
