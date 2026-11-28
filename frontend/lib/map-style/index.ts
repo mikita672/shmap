@@ -1,4 +1,5 @@
 import type { StyleSpecification } from "@maplibre/maplibre-react-native";
+import { buildMapStyle } from "./build-map-style";
 import liberty from "./liberty.json";
 
-export const BASE_STYLE = liberty as StyleSpecification;
+export const MAP_STYLE = buildMapStyle(liberty as StyleSpecification);

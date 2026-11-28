@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { StaticMapImageManager } from "@maplibre/maplibre-react-native";
-import { BASE_STYLE } from "@/lib/map-style";
+import { MAP_STYLE } from "@/lib/map-style";
 import { decodePath } from "@/lib/polyline";
 import {
   buildRouteImageStyle,
@@ -39,7 +39,7 @@ export function useStaticRouteMap({
       if (!camera) throw new Error("Route image not ready");
       return StaticMapImageManager.createImage({
         ...camera,
-        mapStyle: buildRouteImageStyle(BASE_STYLE, {
+        mapStyle: buildRouteImageStyle(MAP_STYLE, {
           line: polyline ? decodePath(polyline) : null,
           stops,
         }),

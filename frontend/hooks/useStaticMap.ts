@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { StaticMapImageManager } from "@maplibre/maplibre-react-native";
-import { BASE_STYLE } from "@/lib/map-style";
+import { MAP_STYLE } from "@/lib/map-style";
 
 const ZOOM = 15;
 
@@ -23,7 +23,7 @@ export function useStaticMap({
       StaticMapImageManager.createImage({
         center: [longitude, latitude],
         zoom: ZOOM,
-        mapStyle: BASE_STYLE,
+        mapStyle: MAP_STYLE,
         width,
         height,
         output: "file",
