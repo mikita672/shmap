@@ -9,5 +9,3 @@ export const MAP_STYLES = {
   light: buildMapStyle(BASE_STYLE, LIGHT_PALETTE),
   dark: buildMapStyle(BASE_STYLE, DARK_PALETTE),
 };
-
-export const MAP_STYLE = MAP_STYLES.light;

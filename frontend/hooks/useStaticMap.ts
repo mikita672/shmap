@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { StaticMapImageManager } from "@maplibre/maplibre-react-native";
-import { MAP_STYLE } from "@/lib/map-style";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { MAP_STYLES } from "@/lib/map-style";
 
 const ZOOM = 15;
 
@@ -17,13 +18,15 @@ export function useStaticMap({
   width,
   height,
 }: StaticMapOptions) {
+  const scheme = useColorScheme();
+
   return useQuery({
-    queryKey: ["static-map", latitude, longitude, width, height],
+    queryKey: ["static-map", scheme, latitude, longitude, width, height],
     queryFn: () =>
       StaticMapImageManager.createImage({
         center: [longitude, latitude],
         zoom: ZOOM,
-        mapStyle: MAP_STYLE,
+        mapStyle: MAP_STYLES[scheme],
         width,
         height,
         output: "file",

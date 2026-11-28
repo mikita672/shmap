@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { StaticMapImageManager } from "@maplibre/maplibre-react-native";
-import { MAP_STYLE } from "@/lib/map-style";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { MAP_STYLES } from "@/lib/map-style";
 import { decodePath } from "@/lib/polyline";
 import {
   buildRouteImageStyle,
@@ -19,6 +20,7 @@ export function useStaticRouteMap({
   width,
   height,
 }: StaticRouteMapOptions) {
+  const scheme = useColorScheme();
   const { stops } = route;
   const polyline = route.path.status === "READY" ? route.path.polyline : null;
   const stopKey = stops
@@ -28,6 +30,7 @@ export function useStaticRouteMap({
   return useQuery({
     queryKey: [
       "static-route-map",
+      scheme,
       route.id,
       polyline ?? "",
       stopKey,
@@ -39,7 +42,7 @@ export function useStaticRouteMap({
       if (!camera) throw new Error("Route image not ready");
       return StaticMapImageManager.createImage({
         ...camera,
-        mapStyle: buildRouteImageStyle(MAP_STYLE, {
+        mapStyle: buildRouteImageStyle(MAP_STYLES[scheme], {
           line: polyline ? decodePath(polyline) : null,
           stops,
         }),
