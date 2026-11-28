@@ -6,6 +6,7 @@ import type { MapPalette } from "./palette";
 import { PAINT_RULES } from "./rules";
 
 const COLOR_PROPERTY = /-color$/;
+const REMOVED_LAYERS = new Set(["park_outline"]);
 
 function applyRules(
   layer: LayerSpecification,
@@ -47,9 +48,9 @@ export function buildMapStyle(
   palette: MapPalette,
 ): StyleSpecification {
   const problems: string[] = [];
-  const layers = base.layers.map((layer) =>
-    applyRules(layer, palette, problems),
-  );
+  const layers = base.layers
+    .filter((layer) => !REMOVED_LAYERS.has(layer.id))
+    .map((layer) => applyRules(layer, palette, problems));
   if (__DEV__ && problems.length > 0) {
     console.warn(`Map style rules:\n${problems.join("\n")}`);
   }

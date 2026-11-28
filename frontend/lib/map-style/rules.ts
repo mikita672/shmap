@@ -19,7 +19,6 @@ export const PAINT_RULES: PaintRule[] = [
       "fill-outline-color": p.parkOutline,
     }),
   },
-  { match: /^park_outline$/, paint: (p) => ({ "line-color": p.parkOutline }) },
   {
     match: /^landcover_wood$/,
     paint: (p) => ({ "fill-color": p.wood, "fill-opacity": 0.7 }),
