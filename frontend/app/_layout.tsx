@@ -7,7 +7,10 @@ import {
 } from "expo-router";
 
 import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from "react-native-reanimated";
 import "../global.css";
 import { PortalHost } from "@rn-primitives/portal";
 import { View } from "react-native";
@@ -36,6 +39,7 @@ LogManager.onLog((log) => {
   return false;
 });
 
+configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 enableFreeze(true);
 setUpNotificationHandler();
 
