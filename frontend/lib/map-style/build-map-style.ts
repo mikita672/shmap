@@ -1,30 +1,31 @@
 import type {
-  LightSpecification,
+  LayerSpecification,
   StyleSpecification,
 } from "@maplibre/maplibre-react-native";
+import type { MapPalette } from "./palette";
+import { PAINT_RULES } from "./rules";
 
-const LIGHT: LightSpecification = {
-  anchor: "viewport",
-  color: "#ffffff",
-  intensity: 0.2,
-  position: [1.15, 210, 30],
-};
+function applyRules(
+  layer: LayerSpecification,
+  palette: MapPalette,
+): LayerSpecification {
+  const overrides = PAINT_RULES.filter((rule) => rule.match.test(layer.id));
+  if (overrides.length === 0 || !("paint" in layer)) return layer;
 
-export function buildMapStyle(base: StyleSpecification): StyleSpecification {
+  const paint = overrides.reduce<Record<string, unknown>>(
+    (merged, rule) => ({ ...merged, ...rule.paint(palette) }),
+    { ...layer.paint },
+  );
+  return { ...layer, paint } as LayerSpecification;
+}
+
+export function buildMapStyle(
+  base: StyleSpecification,
+  palette: MapPalette,
+): StyleSpecification {
   return {
     ...base,
-    light: LIGHT,
-    layers: base.layers.map((layer) =>
-      layer.type === "fill-extrusion" && layer.id === "building-3d"
-        ? {
-            ...layer,
-            paint: {
-              ...layer.paint,
-              "fill-extrusion-opacity": 1,
-              "fill-extrusion-vertical-gradient": false,
-            },
-          }
-        : layer,
-    ),
+    light: palette.light,
+    layers: base.layers.map((layer) => applyRules(layer, palette)),
   };
 }
