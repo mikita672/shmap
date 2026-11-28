@@ -59,6 +59,7 @@ function RootNavigator() {
             <Stack.Screen name="profile" />
             <Stack.Screen name="settings" />
             <Stack.Screen name="blocked-users" />
+            <Stack.Screen name="map-data" />
             <Stack.Screen name="edit-profile" />
             <Stack.Screen name="change-password" />
             <Stack.Screen name="user/[username]/index" />
