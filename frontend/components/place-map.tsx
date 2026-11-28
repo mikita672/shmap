@@ -48,7 +48,7 @@ const FOLLOW_DELAY = 150;
 const OVERLAY_DURATION = 200;
 const LOGO_POSITION = { bottom: 8, left: 8 };
 const LOGO_WIDTH = 88;
-const CREDIT_POSITION = { bottom: 10, left: 8 + LOGO_WIDTH + 6 };
+const CREDIT_POSITION = { bottom: 10, left: 8 + LOGO_WIDTH };
 
 interface SelectedCoordinate {
   lat: number;
@@ -96,6 +96,7 @@ export function PlaceMap({
   const mapRef = useRef<MapRef>(null);
   const moveToUserAbortRef = useRef<AbortController>(null);
   const mapStyle = useMapStyle();
+  const [mapLoaded, setMapLoaded] = useState(false);
   const [creditDismissed, setCreditDismissed] = useState(false);
   const [bearing] = useState(() => new Animated.Value(0));
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number }>();
@@ -279,6 +280,7 @@ export function PlaceMap({
         attribution={false}
         logoPosition={LOGO_POSITION}
         onPress={handleMapPress}
+        onDidFinishLoadingMap={() => setMapLoaded(true)}
         onRegionWillChange={(event) => {
           if (event.nativeEvent.userInteraction) {
             setCreditDismissed(true);
@@ -337,7 +339,11 @@ export function PlaceMap({
         )}
       </Map>
 
-      <MapCredit dismissed={creditDismissed} style={CREDIT_POSITION} />
+      <MapCredit
+        ready={mapLoaded}
+        dismissed={creditDismissed}
+        style={CREDIT_POSITION}
+      />
 
       <MapSearchBar
         mapCenter={mapCenter}

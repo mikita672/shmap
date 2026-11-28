@@ -1,46 +1,69 @@
 import { useEffect, useState } from "react";
-import { Pressable, type ViewStyle } from "react-native";
-import Animated, { FadeOut } from "react-native-reanimated";
+import { Pressable, View, type ViewStyle } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { router } from "expo-router";
 import { Text } from "@/components/ui/text";
 import { MAP_DATA_CREDIT } from "@/lib/map-credits";
 
 const VISIBLE_MS = 5000;
-const FADE_MS = 400;
+const SLIDE_MS = 350;
+const LOGO_GAP = 6;
 
 export interface MapCreditProps {
+  ready: boolean;
   dismissed: boolean;
   style?: ViewStyle;
 }
 
-export function MapCredit({ dismissed, style }: MapCreditProps) {
+export function MapCredit({ ready, dismissed, style }: MapCreditProps) {
   const [timedOut, setTimedOut] = useState(false);
+  const hidden = dismissed || timedOut;
+  const width = useSharedValue(0);
+  const shown = useSharedValue(0);
 
   useEffect(() => {
+    if (!ready) return;
     const timer = setTimeout(() => setTimedOut(true), VISIBLE_MS);
     return () => clearTimeout(timer);
-  }, []);
+  }, [ready]);
 
-  if (dismissed || timedOut) return null;
+  useEffect(() => {
+    if (!ready) return;
+    shown.set(withTiming(hidden ? 0 : 1, { duration: SLIDE_MS }));
+  }, [ready, hidden, shown]);
+
+  const slideStyle = useAnimatedStyle(() => ({
+    opacity: width.get() === 0 ? 0 : 1,
+    transform: [{ translateX: -(1 - shown.get()) * (width.get() + LOGO_GAP) }],
+  }));
 
   return (
-    <Animated.View
-      exiting={FadeOut.duration(FADE_MS)}
-      className="absolute"
-      style={style}
+    <View
+      className="absolute overflow-hidden"
+      style={[{ paddingLeft: LOGO_GAP }, style]}
+      pointerEvents={hidden ? "none" : "box-none"}
     >
-      <Pressable
-        onPress={() => router.push("/map-data")}
-        hitSlop={8}
-        accessibilityRole="link"
-        accessibilityLabel={`Map data ${MAP_DATA_CREDIT}`}
-        accessibilityHint="Opens map data and licenses"
-        className="rounded-md bg-black/45 px-1.5 py-0.5 active:bg-black/60"
+      <Animated.View
+        style={slideStyle}
+        onLayout={(event) => width.set(event.nativeEvent.layout.width)}
       >
-        <Text className="text-[11px] leading-[14px] text-map-pin-foreground/90">
-          {MAP_DATA_CREDIT}
-        </Text>
-      </Pressable>
-    </Animated.View>
+        <Pressable
+          onPress={() => router.push("/map-data")}
+          hitSlop={8}
+          accessibilityRole="link"
+          accessibilityLabel={`Map data ${MAP_DATA_CREDIT}`}
+          accessibilityHint="Opens map data and licenses"
+          className="rounded-md bg-black/45 px-1.5 py-0.5 active:bg-black/60"
+        >
+          <Text className="text-[11px] leading-[14px] text-map-pin-foreground/90">
+            {MAP_DATA_CREDIT}
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </View>
   );
 }
