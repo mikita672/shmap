@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { router } from "expo-router";
+import { Link } from "expo-router";
 import { Text } from "@/components/ui/text";
 import { MAP_DATA_CREDIT } from "@/lib/map-credits";
 
@@ -51,18 +51,19 @@ export function MapCredit({ ready, dismissed, style }: MapCreditProps) {
         style={slideStyle}
         onLayout={(event) => width.set(event.nativeEvent.layout.width)}
       >
-        <Pressable
-          onPress={() => router.push("/map-data")}
-          hitSlop={8}
-          accessibilityRole="link"
-          accessibilityLabel={`Map data ${MAP_DATA_CREDIT}`}
-          accessibilityHint="Opens map data and licenses"
-          className="rounded-md bg-black/45 px-1.5 py-0.5 active:bg-black/60"
-        >
-          <Text className="text-[11px] leading-[14px] text-map-pin-foreground/90">
-            {MAP_DATA_CREDIT}
-          </Text>
-        </Pressable>
+        <Link href="/map-data" push asChild>
+          <Pressable
+            hitSlop={8}
+            accessibilityRole="link"
+            accessibilityLabel={`Map data ${MAP_DATA_CREDIT}`}
+            accessibilityHint="Opens map data and licenses"
+            className="rounded-md bg-black/45 px-1.5 py-0.5 active:bg-black/60"
+          >
+            <Text className="text-[11px] leading-[14px] text-map-pin-foreground/90">
+              {MAP_DATA_CREDIT}
+            </Text>
+          </Pressable>
+        </Link>
       </Animated.View>
     </View>
   );
