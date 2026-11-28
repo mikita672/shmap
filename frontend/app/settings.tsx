@@ -95,6 +95,14 @@ export default function SettingsScreen() {
               onPress={() => router.push("/change-password")}
             />
           </SettingsSection>
+
+          <SettingsSection title="About">
+            <SettingsRow
+              icon="info-outline"
+              label="Map data & licenses"
+              onPress={() => router.push("/map-data")}
+            />
+          </SettingsSection>
         </View>
 
         <View style={{ paddingBottom: insets.bottom + 24 }}>
