@@ -153,4 +153,19 @@ export const PAINT_RULES: PaintRule[] = [
       "text-halo-color": p.labelHalo,
     }),
   },
+  {
+    match: /^natural_earth$/,
+    paint: (p) => ({
+      "raster-brightness-max": p.reliefBrightness,
+      "raster-saturation": p.reliefSaturation,
+    }),
+  },
+  {
+    match: /^road_area_pattern$/,
+    paint: (p) => ({ "fill-opacity": p.patternOpacity }),
+  },
+  {
+    match: /^landcover_wetland$/,
+    paint: (p) => ({ "fill-opacity": 0.8 * p.patternOpacity }),
+  },
 ];

@@ -39,7 +39,7 @@ import {
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { Ionicons } from "@/lib/icons";
 import { getFlyDuration, waitForAnimation } from "@/lib/map-camera";
-import { MAP_STYLE } from "@/lib/map-style";
+import { useMapStyle } from "@/hooks/useMapStyle";
 import { enqueuePermissionRequest } from "@/lib/permission-queue";
 import type { SearchPlace, PlaceDetails } from "@/lib/api/geocoding";
 
@@ -93,6 +93,7 @@ export function PlaceMap({
   const mapRef = useRef<MapRef>(null);
   const moveToUserAbortRef = useRef<AbortController>(null);
   const insets = useSafeAreaInsets();
+  const mapStyle = useMapStyle();
   const [bearing] = useState(() => new Animated.Value(0));
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number }>();
 
@@ -268,7 +269,7 @@ export function PlaceMap({
     <View className="flex-1">
       <Map
         ref={mapRef}
-        mapStyle={MAP_STYLE}
+        mapStyle={mapStyle}
         style={{ flex: 1 }}
         compass={!locationPermission}
         attributionPosition={{ top: Math.max(insets.top, 8) + 8, left: 8 }}

@@ -39,6 +39,9 @@ export interface MapPalette {
   transitLabel: string;
   waterLabel: string;
   labelHalo: string;
+  reliefBrightness: number;
+  reliefSaturation: number;
+  patternOpacity: number;
 }
 
 export const LIGHT_PALETTE: MapPalette = {
@@ -85,4 +88,56 @@ export const LIGHT_PALETTE: MapPalette = {
   transitLabel: "#4F6F88",
   waterLabel: "#4F6F88",
   labelHalo: "#FFFFFF",
+  reliefBrightness: 1,
+  reliefSaturation: 0,
+  patternOpacity: 1,
+};
+
+export const DARK_PALETTE: MapPalette = {
+  light: {
+    anchor: "viewport",
+    color: "#FFF4E0",
+    intensity: 0.2,
+    position: [1.15, 210, 30],
+  },
+  land: "#23261F",
+  residential: "#272A22",
+  park: "#2E3A26",
+  parkOutline: "#36432D",
+  wood: "#2B3624",
+  grass: "#2C3725",
+  pitch: "#2F3828",
+  cemetery: "#2C3527",
+  hospital: "#3A2C2A",
+  school: "#2F2E25",
+  sand: "#34322A",
+  ice: "#2E3436",
+  water: "#1B2A33",
+  aeroway: "#2B2D26",
+  runway: "#35372F",
+  building: "#2F322A",
+  buildingOutline: "#3A3D33",
+  building3d: "#33362D",
+  boundary: "#6A6253",
+  boundaryCountry: "#857A66",
+  minorRoad: "#3A3C33",
+  minorRoadCasing: "#2A2C25",
+  majorRoad: "#4A4A3C",
+  majorRoadCasing: "#2F3027",
+  motorway: "#6B5A3E",
+  motorwayCasing: "#4A3F2D",
+  path: "#4A4C42",
+  pathCasing: "#2A2C25",
+  rail: "#4A4A40",
+  placeLabel: "#E3D3B3",
+  placeLabelMinor: "#C9B79A",
+  roadLabel: "#C9B79A",
+  pathLabel: "#9C8F7A",
+  poiLabel: "#C9B79A",
+  transitLabel: "#8FB0C8",
+  waterLabel: "#7FA3B8",
+  labelHalo: "#1E201A",
+  reliefBrightness: 0.35,
+  reliefSaturation: -0.5,
+  patternOpacity: 0.12,
 };

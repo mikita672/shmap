@@ -1,9 +1,13 @@
 import type { StyleSpecification } from "@maplibre/maplibre-react-native";
 import { buildMapStyle } from "./build-map-style";
 import liberty from "./liberty.json";
-import { LIGHT_PALETTE } from "./palette";
+import { DARK_PALETTE, LIGHT_PALETTE } from "./palette";
 
-export const MAP_STYLE = buildMapStyle(
-  liberty as StyleSpecification,
-  LIGHT_PALETTE,
-);
+const BASE_STYLE = liberty as StyleSpecification;
+
+export const MAP_STYLES = {
+  light: buildMapStyle(BASE_STYLE, LIGHT_PALETTE),
+  dark: buildMapStyle(BASE_STYLE, DARK_PALETTE),
+};
+
+export const MAP_STYLE = MAP_STYLES.light;
