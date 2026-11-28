@@ -436,6 +436,7 @@
       "filter": [
         "all",
         ["==", ["get", "ramp"], 1],
+        ["!=", ["get", "class"], "motorway"],
         ["==", ["get", "brunnel"], "tunnel"]
       ],
       "layout": {
@@ -675,6 +676,7 @@
       "filter": [
         "all",
         ["==", ["get", "ramp"], 1],
+        ["!=", ["get", "class"], "motorway"],
         ["==", ["get", "brunnel"], "tunnel"]
       ],
       "layout": {
