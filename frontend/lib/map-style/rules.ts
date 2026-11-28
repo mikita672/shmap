@@ -38,7 +38,10 @@ export const PAINT_RULES: PaintRule[] = [
   { match: /^landuse_hospital$/, paint: (p) => ({ "fill-color": p.hospital }) },
   { match: /^landuse_school$/, paint: (p) => ({ "fill-color": p.school }) },
   { match: /^water$/, paint: (p) => ({ "fill-color": p.water }) },
-  { match: /^waterway_/, paint: (p) => ({ "line-color": p.water }) },
+  {
+    match: /^waterway_(tunnel|river|other)$/,
+    paint: (p) => ({ "line-color": p.water }),
+  },
   { match: /^aeroway_fill$/, paint: (p) => ({ "fill-color": p.aeroway }) },
   {
     match: /^aeroway_(runway|taxiway)$/,
@@ -100,5 +103,54 @@ export const PAINT_RULES: PaintRule[] = [
   {
     match: /^(road|tunnel|bridge)_(major|transit)_rail(_hatching)?$/,
     paint: (p) => ({ "line-color": p.rail }),
+  },
+  {
+    match: /^(waterway_line_label|water_name_(point|line)_label)$/,
+    paint: (p) => ({
+      "text-color": p.waterLabel,
+      "text-halo-color": p.labelHalo,
+    }),
+  },
+  {
+    match: /^(poi_r\d+|airport)$/,
+    paint: (p) => ({
+      "text-color": p.poiLabel,
+      "text-halo-color": p.labelHalo,
+    }),
+  },
+  {
+    match: /^poi_transit$/,
+    paint: (p) => ({
+      "text-color": p.transitLabel,
+      "text-halo-color": p.labelHalo,
+    }),
+  },
+  {
+    match: /^highway-name-path$/,
+    paint: (p) => ({
+      "text-color": p.pathLabel,
+      "text-halo-color": p.labelHalo,
+    }),
+  },
+  {
+    match: /^highway-name-(minor|major)$/,
+    paint: (p) => ({
+      "text-color": p.roadLabel,
+      "text-halo-color": p.labelHalo,
+    }),
+  },
+  {
+    match: /^label_(village|town|city|city_capital|country_\d)$/,
+    paint: (p) => ({
+      "text-color": p.placeLabel,
+      "text-halo-color": p.labelHalo,
+    }),
+  },
+  {
+    match: /^label_(other|state)$/,
+    paint: (p) => ({
+      "text-color": p.placeLabelMinor,
+      "text-halo-color": p.labelHalo,
+    }),
   },
 ];

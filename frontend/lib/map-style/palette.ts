@@ -31,6 +31,14 @@ export interface MapPalette {
   path: string;
   pathCasing: string;
   rail: string;
+  placeLabel: string;
+  placeLabelMinor: string;
+  roadLabel: string;
+  pathLabel: string;
+  poiLabel: string;
+  transitLabel: string;
+  waterLabel: string;
+  labelHalo: string;
 }
 
 export const LIGHT_PALETTE: MapPalette = {
@@ -69,4 +77,12 @@ export const LIGHT_PALETTE: MapPalette = {
   path: "#FFFFFF",
   pathCasing: "#DDD6C6",
   rail: "#C9C3B6",
+  placeLabel: "#3E3A32",
+  placeLabelMinor: "#6B6355",
+  roadLabel: "#6B6355",
+  pathLabel: "#9C8F7A",
+  poiLabel: "#6B6355",
+  transitLabel: "#4F6F88",
+  waterLabel: "#4F6F88",
+  labelHalo: "#FFFFFF",
 };
