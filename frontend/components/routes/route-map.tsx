@@ -19,7 +19,7 @@ import "@/lib/maplibre-log-filter";
 import { RouteLayers } from "@/components/routes/route-layers";
 import { SuggestionLayers } from "@/components/routes/suggestion-layers";
 import { getBounds } from "@/lib/map-camera";
-import { MAP_STYLE } from "@/lib/map-style";
+import { BASE_STYLE } from "@/lib/map-style";
 import { takeRouteFocus } from "@/lib/route-focus";
 import type { RouteResponse, RouteSuggestionResponse } from "@/lib/types/api";
 
@@ -151,7 +151,7 @@ export function RouteMap({
 
   return (
     <Map
-      mapStyle={MAP_STYLE}
+      mapStyle={BASE_STYLE}
       style={{ flex: 1 }}
       compass={false}
       attributionPosition={{ top: insets.top + HEADER_SPACE, left: 12 }}
