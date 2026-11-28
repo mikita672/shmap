@@ -81,3 +81,5 @@ export const MAP_CREDIT_GROUPS: MapCreditGroup[] = [
     ],
   },
 ];
+
+export const MAP_DATA_CREDIT = "© OpenStreetMap  © OpenMapTiles";
