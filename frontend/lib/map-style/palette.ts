@@ -22,6 +22,15 @@ export interface MapPalette {
   building3d: string;
   boundary: string;
   boundaryCountry: string;
+  minorRoad: string;
+  minorRoadCasing: string;
+  majorRoad: string;
+  majorRoadCasing: string;
+  motorway: string;
+  motorwayCasing: string;
+  path: string;
+  pathCasing: string;
+  rail: string;
 }
 
 export const LIGHT_PALETTE: MapPalette = {
@@ -51,4 +60,13 @@ export const LIGHT_PALETTE: MapPalette = {
   building3d: "#E9E4DA",
   boundary: "#B9A99A",
   boundaryCountry: "#8F8273",
+  minorRoad: "#FFFFFF",
+  minorRoadCasing: "#E2DCCD",
+  majorRoad: "#FFF6DF",
+  majorRoadCasing: "#E8D3A6",
+  motorway: "#F6D9A8",
+  motorwayCasing: "#D9B27A",
+  path: "#FFFFFF",
+  pathCasing: "#DDD6C6",
+  rail: "#C9C3B6",
 };

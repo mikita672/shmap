@@ -64,4 +64,41 @@ export const PAINT_RULES: PaintRule[] = [
     match: /^boundary_(2|disputed)$/,
     paint: (p) => ({ "line-color": p.boundaryCountry }),
   },
+  {
+    match: /^(road|tunnel|bridge)_motorway(_link)?_casing$/,
+    paint: (p) => ({ "line-color": p.motorwayCasing }),
+  },
+  {
+    match: /^(road|tunnel|bridge)_motorway(_link)?$/,
+    paint: (p) => ({ "line-color": p.motorway }),
+  },
+  {
+    match:
+      /^(road|tunnel|bridge)_(trunk_primary|secondary_tertiary|link)_casing$/,
+    paint: (p) => ({ "line-color": p.majorRoadCasing }),
+  },
+  {
+    match: /^(road|tunnel|bridge)_(trunk_primary|secondary_tertiary|link)$/,
+    paint: (p) => ({ "line-color": p.majorRoad }),
+  },
+  {
+    match: /^(road|tunnel|bridge)_(minor|street|service_track)_casing$/,
+    paint: (p) => ({ "line-color": p.minorRoadCasing }),
+  },
+  {
+    match: /^(road|tunnel|bridge)_(minor|street|service_track)$/,
+    paint: (p) => ({ "line-color": p.minorRoad }),
+  },
+  {
+    match: /^bridge_path_pedestrian_casing$/,
+    paint: (p) => ({ "line-color": p.pathCasing }),
+  },
+  {
+    match: /^(road|tunnel|bridge)_path_pedestrian$/,
+    paint: (p) => ({ "line-color": p.path }),
+  },
+  {
+    match: /^(road|tunnel|bridge)_(major|transit)_rail(_hatching)?$/,
+    paint: (p) => ({ "line-color": p.rail }),
+  },
 ];
