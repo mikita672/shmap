@@ -155,7 +155,7 @@ export function RouteMap({
       mapStyle={mapStyle}
       style={{ flex: 1 }}
       compass={false}
-      attributionPosition={{ top: insets.top + HEADER_SPACE, left: 12 }}
+      attribution={false}
     >
       <Camera ref={cameraRef} initialViewState={initialViewState} />
       {suggestions && (
